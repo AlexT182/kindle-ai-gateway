@@ -82,12 +82,38 @@ async def build_messages_with_search(messages: List[Dict[str, Any]]) -> List[Dic
 
     return final_messages
 
+REASONING_PATTERNS = [
+    r"\b(tại sao|vì sao|chứng minh|phân tích|suy luận|logic|so sánh|giải thích chi tiết|toán|code|lập trình|thuật toán)\b",
+    r"\b(why|prove|analyze|reason|logic|compare|detailed explanation|math|coding|algorithm|step by step)\b"
+]
+
+def resolve_model(requested_model: str, messages: List[Dict[str, Any]]) -> str:
+    if requested_model != "alex-agent":
+        return requested_model
+
+    # Auto-detect complexity from last user message
+    last_user_msg = ""
+    for m in reversed(messages):
+        if m.get("role") == "user":
+            last_user_msg = m.get("content", "")
+            break
+
+    msg = last_user_msg.lower()
+    for pattern in REASONING_PATTERNS:
+        if re.search(pattern, msg):
+            print(f"[Agent Router] Complex query detected -> Routing to deepseek-reasoner (Pro/Reasoning)")
+            return "deepseek-reasoner"
+
+    print(f"[Agent Router] Standard query detected -> Routing to deepseek-chat (Flash/Chat)")
+    return "deepseek-chat"
+
 async def call_deepseek_non_stream(
     messages: List[Dict[str, Any]], 
     model: str = "deepseek-chat",
     temperature: float = 0.7,
     max_tokens: int = 2048
 ) -> Dict[str, Any]:
+    actual_model = resolve_model(model, messages)
     processed_messages = await build_messages_with_search(messages)
     
     headers = {
@@ -95,13 +121,15 @@ async def call_deepseek_non_stream(
         "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
     }
     
+    # DeepSeek reasoner model does not support temperature parameter in some endpoints
     payload = {
-        "model": model if model in ("deepseek-chat", "deepseek-reasoner") else "deepseek-chat",
+        "model": actual_model,
         "messages": processed_messages,
-        "temperature": temperature,
         "max_tokens": max_tokens,
         "stream": False
     }
+    if actual_model != "deepseek-reasoner":
+        payload["temperature"] = temperature
 
     async with httpx.AsyncClient(timeout=60.0) as client:
         resp = await client.post(
@@ -137,6 +165,7 @@ async def call_deepseek_stream(
     temperature: float = 0.7,
     max_tokens: int = 2048
 ) -> AsyncGenerator[str, None]:
+    actual_model = resolve_model(model, messages)
     processed_messages = await build_messages_with_search(messages)
     
     headers = {
@@ -146,12 +175,13 @@ async def call_deepseek_stream(
     }
     
     payload = {
-        "model": model if model in ("deepseek-chat", "deepseek-reasoner") else "deepseek-chat",
+        "model": actual_model,
         "messages": processed_messages,
-        "temperature": temperature,
         "max_tokens": max_tokens,
         "stream": True
     }
+    if actual_model != "deepseek-reasoner":
+        payload["temperature"] = temperature
 
     async with httpx.AsyncClient(timeout=90.0) as client:
         async with client.stream(
