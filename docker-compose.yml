@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  kindle-ai-gateway:
+    build: .
+    container_name: kindle-ai-gateway
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - AUTH_TOKEN=${AUTH_TOKEN:-kindle-secret-token}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      - ENABLE_WEB_SEARCH=true
+      - SEARCH_MAX_RESULTS=5
+    env_file:
+      - .env
