@@ -22,14 +22,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def verify_token(authorization: Optional[str] = Header(None)):
-    if not settings.AUTH_TOKEN:
+def verify_token(
+    authorization: Optional[str] = Header(None),
+    x_api_key: Optional[str] = Header(None, alias="x-api-key")
+):
+    if not settings.AUTH_TOKEN or settings.AUTH_TOKEN.strip() == "":
         return True
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Thiếu Authorization header")
-    parts = authorization.split(" ")
-    token = parts[1] if len(parts) == 2 else parts[0]
-    if token != settings.AUTH_TOKEN:
+        
+    expected_token = settings.AUTH_TOKEN.strip()
+    sent_token = ""
+    
+    if authorization:
+        parts = authorization.strip().split(" ")
+        sent_token = parts[-1].strip()
+    elif x_api_key:
+        sent_token = x_api_key.strip()
+
+    if not sent_token:
+        raise HTTPException(status_code=401, detail="Thiếu API Key trong Authorization header")
+
+    if sent_token != expected_token:
+        print(f"[Auth] Token mismatch: received '{sent_token}' != expected '{expected_token}'")
         raise HTTPException(status_code=403, detail="Invalid API Key / Token")
     return True
 
