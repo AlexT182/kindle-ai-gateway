@@ -65,9 +65,6 @@ def format_search_results(results: List[Dict[str, str]]) -> str:
         return ""
     formatted = ["=== KẾT QUẢ TÌM KIẾM INTERNET THỜI GIAN THỰC ==="]
     for i, r in enumerate(results, 1):
-        formatted.append(f"[{i}] {r['title']}
-Nguồn: {r['url']}
-Nội dung: {r['content']}
-")
+        formatted.append(f"[{i}] {r['title']}\nNguồn: {r['url']}\nNội dung: {r['content']}\n")
     formatted.append("================================================")
     return "\n".join(formatted)

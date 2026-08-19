@@ -61,6 +61,7 @@ def health():
     return {"status": "ok", "time": time.time()}
 
 @app.get("/v1/models")
+@app.get("/models")
 def list_models(auth: bool = Depends(verify_token)):
     return {
         "object": "list",
@@ -86,16 +87,20 @@ def list_models(auth: bool = Depends(verify_token)):
         ]
     }
 
-@app.post("/v1/chat/completions")
-async def chat_completions(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
+async def handle_chat_completion(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
     if not settings.DEEPSEEK_API_KEY:
         raise HTTPException(status_code=500, detail="Server chưa cấu hình DEEPSEEK_API_KEY")
+
+    # Map model name
+    target_model = req.model or "deepseek-chat"
+    if target_model == "alex-agent":
+        target_model = "deepseek-chat"
 
     if req.stream:
         return StreamingResponse(
             call_deepseek_stream(
                 messages=req.messages,
-                model=req.model or "deepseek-chat",
+                model=target_model,
                 temperature=req.temperature or 0.7,
                 max_tokens=req.max_tokens or 2048
             ),
@@ -104,11 +109,27 @@ async def chat_completions(req: ChatCompletionRequest, auth: bool = Depends(veri
     else:
         resp = await call_deepseek_non_stream(
             messages=req.messages,
-            model=req.model or "deepseek-chat",
+            model=target_model,
             temperature=req.temperature or 0.7,
             max_tokens=req.max_tokens or 2048
         )
         return JSONResponse(content=resp)
+
+@app.post("/v1/chat/completions")
+async def chat_completions_v1(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
+    return await handle_chat_completion(req, auth)
+
+@app.post("/chat/completions")
+async def chat_completions_no_v1(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
+    return await handle_chat_completion(req, auth)
+
+@app.post("/v1")
+async def chat_completions_root_v1(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
+    return await handle_chat_completion(req, auth)
+
+@app.post("/")
+async def chat_completions_root(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
+    return await handle_chat_completion(req, auth)
 
 if __name__ == "__main__":
     import uvicorn
