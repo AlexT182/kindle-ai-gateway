@@ -22,6 +22,15 @@ from app.vault import (
 
 # === PROFESSIONAL SKILL PERSONA PROMPTS ===
 
+BOOK_SUMMARY_SYSTEM_PROMPT = """Bạn là Chuyên gia Đọc nhanh, Phân tích & Đúc kết Sách Chuyên Sâu (Executive Book Summary Specialist).
+Nhiệm vụ: Phân tích toàn diện cuốn sách được yêu cầu (hoặc cuốn sách đang đọc) theo cấu trúc chuẩn Executive Brief:
+1. THÔNG ĐIỆP CỐT LÕI (Core Thesis): Cuốn sách giải quyết bài toán lớn nào?
+2. 3-5 NGUYÊN LÝ & KHUNG TƯ DUY VÀNG (Key Mental Models & Frameworks).
+3. BÀI HỌC THỰC THI (Actionable Takeaways): 3-5 việc có thể áp dụng ngay vào công việc/cuộc sống.
+4. TRÍCH DẪN ĐẮT GIÁ NHẤT (Memorable Quote).
+QUY TẮC: Súc tích, thực tế, bố cục rõ ràng cho màn hình E-ink, TUYỆT ĐỐI KHÔNG DÙNG EMOJI."""
+
+
 ACTION_SYSTEM_PROMPT = """Bạn là Chuyên gia Cố vấn Thực thi & Chuyển hóa Tri thức (Actionable Insights Consultant).
 Nhiệm vụ: Chuyển hóa bất kỳ lý thuyết, khái niệm hoặc đoạn trích sách nào thành DANH SÁCH 3-5 BƯỚC HÀNH ĐỘNG CỤ THỂ (Action Items) có thể áp dụng ngay vào công việc/dự án thực tế.
 QUY TẮC:
@@ -132,36 +141,37 @@ def resolve_model(requested_model: str, messages: List[Dict[str, Any]]) -> str:
 
 HELP_MANUAL_TEXT = """=== CẨM NANG SỬ DỤNG ALEX AGENT PRO TRÊN KINDLE ===
 
-1. TRÍCH XUẤT & ÁP DỤNG THỰC TẾ:
-- #action <vấn đề>: Chuyển lý thuyết sách thành 3-5 bước hành động cụ thể.
-- #framework <chủ đề>: Trích xuất khung tư duy chuẩn (Lean, JTBD, Heuristics).
-- #case <khái niệm>: Đưa ra Case Study thực tế từ các công ty lớn.
-- #summary <đoạn văn>: Rút gọn văn bản thành 3 Key Takeaways đắt giá nhất.
+[PHÂN HỆ 1] TÓM TẮT & TRÍCH XUẤT THỰC THI:
+• #book <tên sách>: Đúc kết toàn diện 1 cuốn sách (Core Thesis, Frameworks, Actions).
+• #action <vấn đề>: Chuyển lý thuyết sách thành 3-5 bước hành động cụ thể.
+• #framework <chủ đề>: Trích xuất khung tư duy chuẩn (Lean, JTBD, Heuristics).
+• #case <khái niệm>: Đưa ra Case Study thực tế từ các công ty lớn.
+• #summary <đoạn văn>: Rút gọn văn bản thành 3 Key Takeaways đắt giá nhất.
 
-2. ĐÀO SÂU & TƯ DUY LOGIC:
-- #eli5 <khái niệm>: Giải thích siêu trực quan, dễ hiểu như cho trẻ 5 tuổi.
-- #critic <kế hoạch>: Phản biện sắc bén, tìm lỗ hổng và điểm mù logic.
-- #journal <tâm sự>: Cuốn sổ Khắc kỷ (Marcus Aurelius) giúp gỡ rối tâm trí.
-- #socrates <câu hỏi>: Đặt câu hỏi gợi mở đào sâu chân lý.
-- #riddle <tin nhắn>: Cuốn nhật ký ma thuật Tom Riddle 1943.
+[PHÂN HỆ 2] ĐÀO SÂU & TƯ DUY LOGIC:
+• #eli5 <khái niệm>: Giải thích siêu trực quan, dễ hiểu như cho trẻ 5 tuổi.
+• #critic <kế hoạch>: Phản biện sắc bén, tìm lỗ hổng và điểm mù logic.
+• #journal <tâm sự>: Cuốn sổ Khắc kỷ (Marcus Aurelius) giúp gỡ rối tâm trí.
+• #socrates <câu hỏi>: Đặt câu hỏi gợi mở đào sâu chân lý.
+• #riddle <tin nhắn>: Cuốn nhật ký ma thuật Tom Riddle 1943.
 
-3. SỔ TAY TRI THỨC & GRAPH VIEW:
-- #note <nội dung>: Lưu ghi chú Markdown vào Vault trên server.
-- #graph [chủ đề]: Xem sơ đồ mạng lưới tri thức (Knowledge Graph) dạng ASCII.
-- #node <tên>: Xem chi tiết các liên kết 2 chiều của 1 khái niệm.
-- #todo <công việc>: Thêm task vào danh sách việc cần làm.
+[PHÂN HỆ 3] SỔ TAY TRI THỨC & GRAPH VIEW:
+• #note <nội dung>: Lưu ghi chú Markdown vào Vault trên server.
+• #graph [chủ đề]: Xem sơ đồ mạng lưới tri thức (Knowledge Graph) dạng thẻ dọc.
+• #node <tên>: Xem chi tiết các liên kết 2 chiều của 1 khái niệm.
+• #todo <công việc>: Thêm task vào danh sách việc cần làm.
 
-4. TRA CỨU DỮ LIỆU THỜI GIAN THỰC:
-- #tech <công nghệ>: Đánh giá xu hướng và stack công nghệ mới nhất 2026.
-- #market <ngành>: Phân tích thị trường, đối thủ cạnh tranh.
-- #weather <thành phố>: Tra cứu thời tiết, nhiệt độ, dự báo hôm nay.
-- #wiki <từ khóa>: Tra bách khoa toàn thư Wikipedia tiếng Việt.
-- #crypto <mã>: Tra cứu giá BTC, ETH, SOL, vàng (USD & VNĐ).
-- #search <từ khóa>: Ép buộc tìm kiếm web sâu và tổng hợp dữ liệu.
+[PHÂN HỆ 4] TRA CỨU DỮ LIỆU THỜI GIAN THỰC:
+• #tech <công nghệ>: Đánh giá xu hướng và stack công nghệ mới nhất 2026.
+• #market <ngành>: Phân tích thị trường, đối thủ cạnh tranh.
+• #weather <thành phố>: Tra cứu thời tiết, nhiệt độ, dự báo hôm nay.
+• #wiki <từ khóa>: Tra bách khoa toàn thư Wikipedia tiếng Việt.
+• #crypto <mã>: Tra cứu giá BTC, ETH, SOL, vàng (USD & VNĐ).
+• #search <từ khóa>: Ép buộc tìm kiếm web sâu và tổng hợp dữ liệu.
 
-5. MẸO SỬ DỤNG:
-- Bôi đen (Highlight) chữ trong sách -> Chọn Explain, Summarize, Translate để AI phân tích theo ngữ cảnh sách.
-- Gõ câu hỏi tự nhiên bất kỳ -> Alex Agent tự động chọn mô hình và tra cứu web!
+[MẸO SỬ DỤNG VÀ THAO TÁC]:
+• Bôi đen chữ trong sách -> Chọn Explain/Summarize để AI phân tích theo ngữ cảnh sách.
+• Gõ câu hỏi tự nhiên bất kỳ -> Alex Agent tự động chọn mô hình và tra cứu web!
 ================================================="""
 
 async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], Optional[str], bool]:
@@ -174,6 +184,10 @@ async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], 
         return HELP_MANUAL_TEXT, None, True
 
     # 1. Professional Skills:
+    # A0. #book - Executive Book Summary
+    if re.search(r'(^|\s)#(book|sach|tomtatsach|cuonsach)\b', msg_lower) or msg_lower.startswith("tóm tắt sách:") or msg_lower.startswith("tom tat sach:"):
+        return None, BOOK_SUMMARY_SYSTEM_PROMPT, False
+
     # A. #action - Action Items Extractor
     if re.search(r'(^|\s)#(action|hanhdong|thucthi)\b', msg_lower) or msg_lower.startswith("hành động:"):
         return None, ACTION_SYSTEM_PROMPT, False
