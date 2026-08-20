@@ -3,7 +3,7 @@ import json
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Header, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse, Response
+from fastapi.responses import StreamingResponse, JSONResponse, Response, RedirectResponse
 from pydantic import BaseModel, Field
 
 from app.config import settings
@@ -141,6 +141,11 @@ async def handle_chat_completion(req: ChatCompletionRequest, auth: bool = Depend
             max_tokens=req.max_tokens or 2048
         )
         return JSONResponse(content=resp)
+
+@app.get("/")
+@app.get("/v1")
+def root_redirect():
+    return RedirectResponse(url="/admin")
 
 @app.post("/v1/chat/completions")
 async def chat_completions_v1(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):

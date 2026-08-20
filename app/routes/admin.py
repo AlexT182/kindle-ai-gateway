@@ -76,6 +76,7 @@ def logout():
     return resp
 
 @router.get("", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 @router.get("/dashboard", response_class=HTMLResponse)
 def dashboard_view(request: Request):
     if not is_authenticated(request):
