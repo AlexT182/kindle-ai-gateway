@@ -3,7 +3,7 @@ import json
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Header, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from app.config import settings
@@ -98,6 +98,10 @@ def health_check():
         "agent": "alex-agent-v2",
         "system": "Kindle AI Agent OS"
     }
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
 
 @app.get("/v1/models")
 @app.get("/models")
