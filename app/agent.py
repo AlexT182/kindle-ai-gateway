@@ -1,7 +1,7 @@
 import json
 import time
 import re
-from typing import List, Dict, Any, AsyncGenerator
+from typing import List, Dict, Any, AsyncGenerator, Optional, Tuple
 import httpx
 from app.config import settings
 from app.search import web_search, format_search_results
