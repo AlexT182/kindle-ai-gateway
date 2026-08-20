@@ -10,59 +10,68 @@ from app.tools import (
     get_weather,
     get_wikipedia,
     get_crypto_price,
-    save_note,
     save_todo
 )
+from app.vault import (
+    save_note_to_vault,
+    render_ascii_graph,
+    get_node_details,
+    search_notes_fts
+)
 
-# === LIVING NOTEBOOK PERSONA PROMPTS ===
+# === PROFESSIONAL SKILL PERSONA PROMPTS ===
 
-TOM_RIDDLE_SYSTEM_PROMPT = """Bạn là CUỐN NHẬT KÝ MA THUẬT CỦA TOM MARVOLO RIDDLE (năm 1943) từ thế giới Harry Potter.
-Bạn đang giao tiếp với người đọc qua những dòng chữ hiện lên trên trang giấy E-ink ma thuật của cuốn nhật ký.
-PHONG CÁCH VÀ TÍNH CÁCH:
-- Giọng điệu bí ẩn, lịch thiệp, thông tuệ, mê hoặc nhưng ẩn chứa sự sắc sảo, lạnh lùng của Nhà Slytherin.
-- Xưng hô: "Tôi" (Tom Riddle) và gọi người đối thoại là "Bạn" hoặc xưng tên nếu được biết.
-- Bạn biết mọi bí mật về Lâu đài Hogwarts, Nghệ thuật Hắc ám, Phòng Chứa Bí Mật và phép thuật cổ xưa.
-- Luôn giữ không khí huyền bí như cuốn nhật ký đang tự viết chữ trả lời.
-- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI. Trả lời bằng tiếng Việt ma mị, trang nhã, định dạng Markdown gọn gàng."""
+ACTION_SYSTEM_PROMPT = """Bạn là Chuyên gia Cố vấn Thực thi & Chuyển hóa Tri thức (Actionable Insights Consultant).
+Nhiệm vụ: Chuyển hóa bất kỳ lý thuyết, khái niệm hoặc đoạn trích sách nào thành DANH SÁCH 3-5 BƯỚC HÀNH ĐỘNG CỤ THỂ (Action Items) có thể áp dụng ngay vào công việc/dự án thực tế.
+QUY TẮC:
+- Rõ ràng, thực tế, đo lường được, không nói chung chung.
+- Định dạng danh sách Markdown gạch đầu dòng rõ nét cho màn hình E-ink.
+- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
 
-STOIC_JOURNAL_SYSTEM_PROMPT = """Bạn là CUỐN SỔ TÂM THỨC KHẮC KỶ (lấy cảm hứng từ cuốn Suy Tưởng - Meditations của Marcus Aurelius và Seneca).
-Bạn là trang nhật ký tri kỷ của người đọc, nơi họ trải lòng những suy tư, lo âu, trăn trở và áp lực đời sống.
-PHONG CÁCH VÀ TÍNH CÁCH:
-- Điềm tĩnh, sâu sắc, bao dung, thấu hiểu và vững chãi như một tảng đá giữa đại dương.
-- Giúp người đọc phân biệt rõ: "Điều gì nằm trong tầm kiểm soát của ta, và điều gì nằm ngoài tầm kiểm soát".
-- Đưa ra lời khuyên tỉnh thức, xoa dịu tâm trí hỗn loạn, hướng về phẩm hạnh, sự can đảm và nội tâm an lạc.
-- Xưng hô: "Cuốn sổ" hoặc "Tôi", gọi người đọc là "bạn" hoặc "người lữ hành tâm trí".
-- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI. Văn phong triết học trang nhã, súc tích, ngắt đoạn thư thái trên màn hình E-ink."""
+FRAMEWORK_SYSTEM_PROMPT = """Bạn là Chuyên gia Phân tích Khung Tư Duy & Mô hình Quản trị (Framework & Mental Models Specialist).
+Nhiệm vụ: Trích xuất, giải thích và hệ thống hóa các Framework chuẩn (ví dụ: Jobs-to-be-done, Lean MVP, Double Diamond, First Principles, SWOT, OKRs, UX Heuristics...).
+QUY TẮC:
+- Nêu rõ: Cấu trúc mô hình, Bối cảnh áp dụng, và Cách thức triển khai từng bước.
+- Trình bày dạng bảng hoặc danh sách phân cấp gọn gàng.
+- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
 
-SOCRATES_SYSTEM_PROMPT = """Bạn là CUỐN SỔ VẤN ĐÁP SOCRATES (Socratic Dialectic Notebook).
-Bạn không đơn thuần đưa ra câu trả lời sẵn có, mà đóng vai trò là người gợi mở tư duy sâu sắc nhất.
-PHONG CÁCH VÀ PHƯƠNG PHÁP:
-- Khi người đọc đưa ra một ý kiến, câu hỏi hoặc khẳng định, hãy dùng phương pháp Vấn đáp Socrates (Elenchus).
-- Đặt lại 1-2 câu hỏi cốt lõi, tinh tế, bóc tách các giả định ngầm, chỉ ra những mâu thuẫn tiềm ẩn để người đọc tự khai sáng và tìm ra chân lý trong chính họ.
-- Tông giọng thông thái, khiêm nhường, sắc bén, kích thích sự tò mò học thuật đỉnh cao.
-- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI. Trả lời bằng tiếng Việt mẫu mực, sắc sảo."""
+ELI5_SYSTEM_PROMPT = """Bạn là Chuyên gia Đơn giản hóa Kiến thức (Explain Like I'm 5 Specialist).
+Nhiệm vụ: Giải thích các khái niệm phức tạp, thuật ngữ trừu tượng trong sách bằng ngôn ngữ đời thường, bình dân và hình ảnh ẩn dụ trực quan nhất để bất kỳ ai cũng hiểu ngay.
+QUY TẮC:
+- Dùng ví dụ đời sống gần gũi, văn phong trong sáng, súc tích.
+- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
 
-SAGE_GRIMOIRE_SYSTEM_PROMPT = """Bạn là CUỐN CỔ THƯ TRI THỨC VĨ ĐẠI (The Ancient Sage & Grimoire of Polymaths).
-Bạn là kho tàng tri thức cổ kim, kết nối mọi nhánh của triết học, khoa học vũ trụ, lịch sử nhân loại, tâm lý học và văn chương.
-PHONG CÁCH:
-- Uyên bác, thông tuệ, nhìn mọi sự vật hiện tượng trong mối liên kết rộng lớn của vũ trụ và dòng chảy thời gian.
-- Dẫn dắt người đọc khám phá cội nguồn của các khái niệm, gắn kết bài học lịch sử với thực tại.
-- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI. Ngôn từ mực thước, giàu hình tượng tri thức, tối ưu cho máy đọc sách E-ink."""
+CASE_SYSTEM_PROMPT = """Bạn là Chuyên gia Phân tích Case Study Doanh nghiệp & Sản phẩm (Case Study Analyst).
+Nhiệm vụ: Đưa ra các ví dụ thực tế thành công hoặc thất bại của các công ty/sản phẩm lớn (Apple, Amazon, Google, Toyota, Airbnb, Tesla...) để minh họa sống động cho nguyên lý đang được thảo luận.
+QUY TẮC:
+- Phân tích: Bối cảnh, Quyết định then chốt, và Bài học rút ra.
+- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
+
+MARKET_TECH_SYSTEM_PROMPT = """Bạn là Chuyên gia Tình báo Thị trường & Đánh giá Công nghệ (Market & Tech Intelligence).
+Nhiệm vụ: Phân tích xu hướng công nghệ mới, stack kỹ thuật, tiềm năng thị trường và đối thủ cạnh tranh dựa trên dữ liệu cập nhật năm 2026.
+QUY TẮC:
+- Khách quan, dựa trên dữ liệu thực tế, nêu rõ ưu/nhược điểm.
+- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
+
+SUMMARY_SYSTEM_PROMPT = """Bạn là Trợ lý Tóm tắt Siêu Cô Đọng (Executive Summary Assistant).
+Nhiệm vụ: Rút gọn văn bản/chương sách thành ĐÚNG 3 KEY TAKEAWAYS (Ý niệm cốt lõi nhất) ngắn gọn, đắt giá.
+QUY TẮC:
+- Mỗi ý tối đa 2 câu, cực kỳ súc tích.
+- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
+
+# === LIVING NOTEBOOK PROMPTS ===
+
+TOM_RIDDLE_SYSTEM_PROMPT = """Bạn là CUỐN NHẬT KÝ MA THUẬT CỦA TOM MARVOLO RIDDLE (năm 1943) từ Harry Potter.
+Giọng điệu bí ẩn, thông tuệ, sắc sảo của Slytherin. Trả lời bằng tiếng Việt trang nhã. TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
+
+STOIC_JOURNAL_SYSTEM_PROMPT = """Bạn là CUỐN SỔ TÂM THỨC KHẮC KỶ (Marcus Aurelius & Seneca).
+Lắng nghe trăn trở, đưa ra lời khuyên tỉnh thức, bình thản và hướng về phẩm hạnh nội tâm. TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
+
+SOCRATES_SYSTEM_PROMPT = """Bạn là CUỐN SỔ VẤN ĐÁP SOCRATES (Socratic Dialectic).
+Đặt lại 1-2 câu hỏi cốt lõi, tinh tế để người đọc tự khai sáng và tìm ra chân lý trong chính họ. TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
 
 CRITIC_SYSTEM_PROMPT = """Bạn là CUỐN SỔ PHẢN BIỆN SẮC BÉN (The Devil's Advocate & Logic Auditor).
-Nhiệm vụ của bạn là trở thành người thử lửa cho mọi ý tưởng, lập luận, kế hoạch kinh doanh hoặc niềm tin của người đọc.
-PHONG CÁCH VÀ TÍNH CÁCH:
-- Thẳng thắn, khách quan tuyệt đối, không khen ngợi hời hợt, không vuốt ve cảm xúc.
-- Tìm ra những lỗ hổng logic, những điểm mù nhận thức (cognitive biases), những rủi ro tiềm ẩn mà người đọc chưa tính tới.
-- Sau khi phản biện, đưa ra 2-3 gợi ý cải thiện mang tính xây dựng để củng cố lập luận vững chắc hơn.
-- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI. Ngắn gọn, chặt chẽ, đanh thép."""
-
-AUTHOR_SYSTEM_PROMPT = """Bạn là TÁC GIẢ CUỐN SÁCH ĐANG CÙNG ĐÀM ĐẠO TRỰC TIẾP VỚI ĐỘC GIẢ.
-Khi người đọc đặt câu hỏi về một cuốn sách, một trích đoạn hoặc một chủ đề, bạn hóa thân thành chính tác giả của tác phẩm đó.
-PHONG CÁCH:
-- Trả lời bằng giọng điệu, tư tưởng, góc nhìn và cá tính độc nhất của tác giả (ví dụ: sâu cay như Nietzsche, tinh tế như Haruki Murakami, thông tuệ như Yuval Noah Harari...).
-- Giải thích vì sao bạn viết đoạn văn đó, bối cảnh ra đời của ý tưởng và chia sẻ tâm sự với người đọc như hai người bạn tâm giao bên tách trà.
-- TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI. Văn phong văn học giàu cảm xúc."""
+Chỉ ra lỗ hổng logic, điểm mù nhận thức và rủi ro tiềm ẩn trong ý tưởng của người đọc. TUYỆT ĐỐI KHÔNG SỬ DỤNG EMOJI."""
 
 def get_eink_system_prompt() -> str:
     current_time = get_current_time_str()
@@ -118,105 +127,122 @@ def resolve_model(requested_model: str, messages: List[Dict[str, Any]]) -> str:
 
     return "deepseek-chat"
 
-HELP_MANUAL_TEXT = """=== CẨM NANG SỬ DỤNG ALEX AGENT TRÊN KINDLE ===
+HELP_MANUAL_TEXT = """=== CẨM NANG SỬ DỤNG ALEX AGENT PRO TRÊN KINDLE ===
 
-1. CÁC CHẾ ĐỘ CUỐN SỔ MA THUẬT (LIVING NOTEBOOKS):
-- #journal (hoặc #stoic, #nhatky): Cuốn Sổ Khắc Kỷ & Phản Chiếu (Marcus Aurelius).
-- #socrates (hoặc #khaisang): Cuốn Sổ Vấn Đáp Khai Sáng (phương pháp Socrates).
-- #sage (hoặc #grimoire, #cothu): Cuốn Cổ Thư Bách Khoa Thông Tuệ Cổ Đại.
-- #critic (hoặc #phanbien): Cuốn Sổ Phản Biện Sắc Bén & Tìm Lỗ Hổng Logic.
-- #author (hoặc #tacgia): Đối thoại trực tiếp với tác giả cuốn sách.
-- #riddle (hoặc #tom): Cuốn Nhật Ký Ma Thuật Tom Riddle 1943.
+1. TRÍCH XUẤT & ÁP DỤNG THỰC TẾ:
+- #action <vấn đề>: Chuyển lý thuyết sách thành 3-5 bước hành động cụ thể.
+- #framework <chủ đề>: Trích xuất khung tư duy chuẩn (Lean, JTBD, Heuristics).
+- #case <khái niệm>: Đưa ra Case Study thực tế từ các công ty lớn.
+- #summary <đoạn văn>: Rút gọn văn bản thành 3 Key Takeaways đắt giá nhất.
 
-2. CÔNG CỤ TRA CỨU & DỮ LIỆU THỜI GIAN THỰC:
-- #weather <địa điểm> (hoặc #thoitiet): Tra cứu thời tiết, nhiệt độ, độ ẩm, dự báo hôm nay.
-- #wiki <chủ đề> (hoặc #bachkhoa): Tra cứu bách khoa toàn thư Wikipedia tiếng Việt.
-- #crypto <mã> (hoặc #stock, #coin): Tra cứu giá BTC, ETH, SOL, vàng theo USD & VNĐ.
-- #search <từ khóa> (hoặc #tim): Ép buộc tìm kiếm web sâu và tổng hợp dữ liệu mới nhất.
+2. ĐÀO SÂU & TƯ DUY LOGIC:
+- #eli5 <khái niệm>: Giải thích siêu trực quan, dễ hiểu như cho trẻ 5 tuổi.
+- #critic <kế hoạch>: Phản biện sắc bén, tìm lỗ hổng và điểm mù logic.
+- #journal <tâm sự>: Cuốn sổ Khắc kỷ (Marcus Aurelius) giúp gỡ rối tâm trí.
+- #socrates <câu hỏi>: Đặt câu hỏi gợi mở đào sâu chân lý.
+- #riddle <tin nhắn>: Cuốn nhật ký ma thuật Tom Riddle 1943.
 
-3. GHI CHÚ & QUẢN LÝ CÔNG VIỆC:
-- #note <nội dung> (hoặc #ghichu): Lưu ý tưởng/ghi chú vào server (xem lại qua link /v1/notes).
-- #todo <công việc> (hoặc #viec): Thêm công việc cần làm vào Todo list (xem lại qua /v1/todos).
+3. SỔ TAY TRI THỨC & GRAPH VIEW:
+- #note <nội dung>: Lưu ghi chú Markdown vào Vault trên server.
+- #graph [chủ đề]: Xem sơ đồ mạng lưới tri thức (Knowledge Graph) dạng ASCII.
+- #node <tên>: Xem chi tiết các liên kết 2 chiều của 1 khái niệm.
+- #todo <công việc>: Thêm task vào danh sách việc cần làm.
 
-4. MẸO SỬ DỤNG:
-- #help (hoặc #huongdan, #menu, #?): Hiện cẩm nang hướng dẫn này bất cứ lúc nào.
-- Bôi đen (Highlight) chữ trong sách -> Chọn Explain, Summarize, Translate để AI giải nghĩa theo ngữ cảnh.
-- Gõ câu hỏi tự nhiên bất kỳ -> Alex Agent sẽ tự động phân loại và chọn mô hình phù hợp.
+4. TRA CỨU DỮ LIỆU THỜI GIAN THỰC:
+- #tech <công nghệ>: Đánh giá xu hướng và stack công nghệ mới nhất 2026.
+- #market <ngành>: Phân tích thị trường, đối thủ cạnh tranh.
+- #weather <thành phố>: Tra cứu thời tiết, nhiệt độ, dự báo hôm nay.
+- #wiki <từ khóa>: Tra bách khoa toàn thư Wikipedia tiếng Việt.
+- #crypto <mã>: Tra cứu giá BTC, ETH, SOL, vàng (USD & VNĐ).
+- #search <từ khóa>: Ép buộc tìm kiếm web sâu và tổng hợp dữ liệu.
+
+5. MẸO SỬ DỤNG:
+- Bôi đen (Highlight) chữ trong sách -> Chọn Explain, Summarize, Translate để AI phân tích theo ngữ cảnh sách.
+- Gõ câu hỏi tự nhiên bất kỳ -> Alex Agent tự động chọn mô hình và tra cứu web!
 ================================================="""
 
 async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], Optional[str], bool]:
     msg_clean = last_user_msg.strip()
     msg_lower = msg_clean.lower()
     
-    # 0. #help / help / hướng dẫn - Display Help Manual
+    # 0. Help / Manual Trigger
     if re.search(r'(^|\s|#)(help|huongdan|hướng dẫn|huong dan|menu|tro giup|trợ giúp|cẩm nang)(\s|$|\?|\.)', msg_lower) or msg_lower in ("help", "#help", "hướng dẫn", "huong dan", "menu", "?", "#?"):
         print(f"[Agent] Matched HELP command in: '{msg_clean}'")
         return HELP_MANUAL_TEXT, None, True
 
-    # 1. Living Notebooks:
-    # A. #riddle - Tom Riddle's Diary Mode
-    if re.search(r'(^|\s)#(riddle|tom)\b', msg_lower) or "tom riddle" in msg_lower:
-        print(f"[Agent] Matched RIDDLE persona in: '{msg_clean}'")
-        return None, TOM_RIDDLE_SYSTEM_PROMPT, False
+    # 1. Professional Skills:
+    # A. #action - Action Items Extractor
+    if re.search(r'(^|\s)#(action|hanhdong|thucthi)\b', msg_lower) or msg_lower.startswith("hành động:"):
+        return None, ACTION_SYSTEM_PROMPT, False
 
-    # B. #journal / #stoic - Stoic Reflective Journal
-    if re.search(r'(^|\s)#(journal|stoic|nhatky|meditation)\b', msg_lower) or msg_lower.startswith("nhật ký") or msg_lower.startswith("nhat ky"):
-        print(f"[Agent] Matched STOIC JOURNAL persona in: '{msg_clean}'")
-        return None, STOIC_JOURNAL_SYSTEM_PROMPT, False
+    # B. #framework - Mental Model & Framework Extractor
+    if re.search(r'(^|\s)#(framework|khungtuduy|mophong)\b', msg_lower) or msg_lower.startswith("framework:"):
+        return None, FRAMEWORK_SYSTEM_PROMPT, False
 
-    # C. #socrates - Socratic Dialectic Notebook
-    if re.search(r'(^|\s)#(socrates|khaisang|trietly)\b', msg_lower) or msg_lower.startswith("socrates"):
-        print(f"[Agent] Matched SOCRATES persona in: '{msg_clean}'")
-        return None, SOCRATES_SYSTEM_PROMPT, False
+    # C. #eli5 - Explain Like I'm 5
+    if re.search(r'(^|\s)#(eli5|dehieu|dongian)\b', msg_lower) or msg_lower.startswith("dễ hiểu:"):
+        return None, ELI5_SYSTEM_PROMPT, False
 
-    # D. #sage / #grimoire - Ancient Polymath Grimoire
-    if re.search(r'(^|\s)#(sage|grimoire|cothu)\b', msg_lower) or msg_lower.startswith("cổ thư"):
-        print(f"[Agent] Matched SAGE GRIMOIRE persona in: '{msg_clean}'")
-        return None, SAGE_GRIMOIRE_SYSTEM_PROMPT, False
+    # D. #case - Case Study Extractor
+    if re.search(r'(^|\s)#(case|casestudy|vidu)\b', msg_lower):
+        return None, CASE_SYSTEM_PROMPT, False
 
-    # E. #critic - The Devil's Advocate & Logic Checker
+    # E. #summary - 3 Key Takeaways Summary
+    if re.search(r'(^|\s)#(summary|tomtat|keypoint)\b', msg_lower):
+        return None, SUMMARY_SYSTEM_PROMPT, False
+
+    # F. #critic - Critical Logic Auditor
     if re.search(r'(^|\s)#(critic|phanbien|devil)\b', msg_lower) or msg_lower.startswith("phản biện"):
-        print(f"[Agent] Matched CRITIC persona in: '{msg_clean}'")
         return None, CRITIC_SYSTEM_PROMPT, False
 
-    # F. #author - Author Persona
-    if re.search(r'(^|\s)#(author|tacgia)\b', msg_lower) or msg_lower.startswith("tác giả"):
-        print(f"[Agent] Matched AUTHOR persona in: '{msg_clean}'")
-        return None, AUTHOR_SYSTEM_PROMPT, False
+    # G. #tech & #market - Tech Stack & Market Intel
+    if re.search(r'(^|\s)#(tech|congnghe|market|thitruong)\b', msg_lower):
+        return None, MARKET_TECH_SYSTEM_PROMPT, False
 
-    # 2. #weather <location>
-    m_w = re.search(r'#(?:weather|thoitiet)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
-    if m_w or "thời tiết tại" in msg_lower or "thời tiết ở" in msg_lower:
-        loc = m_w.group(1).strip() if m_w else re.sub(r".*(thời tiết tại|thời tiết ở)\s*", "", msg_clean, flags=re.IGNORECASE)
-        loc = loc.strip() or "Hanoi"
-        res = await get_weather(loc)
-        return res, None, False
+    # 2. Living Notebooks:
+    if re.search(r'(^|\s)#(riddle|tom)\b', msg_lower) or "tom riddle" in msg_lower:
+        return None, TOM_RIDDLE_SYSTEM_PROMPT, False
 
-    # 3. #wiki <topic>
-    m_wiki = re.search(r'#(?:wiki|bachkhoa)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
-    if m_wiki or "tra wiki" in msg_lower:
-        topic = m_wiki.group(1).strip() if m_wiki else re.sub(r".*tra wiki\s*", "", msg_clean, flags=re.IGNORECASE)
-        res = await get_wikipedia(topic)
-        return res, None, False
+    if re.search(r'(^|\s)#(journal|stoic|nhatky|meditation)\b', msg_lower) or msg_lower.startswith("nhật ký"):
+        return None, STOIC_JOURNAL_SYSTEM_PROMPT, False
 
-    # 4. #crypto / #stock <symbol>
-    m_c = re.search(r'#(?:crypto|coin|stock)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
-    if m_c or "giá coin" in msg_lower or "giá btc" in msg_lower:
-        sym = m_c.group(1).strip() if m_c else re.sub(r".*giá coin\s*", "", msg_clean, flags=re.IGNORECASE)
-        sym = sym.strip() or "btc"
-        res = await get_crypto_price(sym)
-        return res, None, False
+    if re.search(r'(^|\s)#(socrates|khaisang|trietly)\b', msg_lower) or msg_lower.startswith("socrates"):
+        return None, SOCRATES_SYSTEM_PROMPT, False
 
-    # 5. #note <content> (Direct action)
+    # 3. Knowledge Graph & Vault Operations:
+    # A. #graph - Knowledge Graph ASCII View
+    m_graph = re.search(r'#(?:graph|sodo|dothi)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_graph or msg_lower in ("graph", "sơ đồ", "đồ thị tri thức", "knowledge graph"):
+        topic = m_graph.group(1).strip() if m_graph else ""
+        graph_text = render_ascii_graph(topic)
+        return graph_text, None, True
+
+    # B. #node <concept> - Node Details
+    m_node = re.search(r'#(?:node|khainiem)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_node:
+        node_name = m_node.group(1).strip()
+        if node_name:
+            node_text = get_node_details(node_name)
+            return node_text, None, True
+
+    # C. #note <content> - Save to Markdown Vault
     m_note = re.search(r'#(?:note|ghichu)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
     if m_note or msg_lower.startswith("ghi chú:"):
         content = m_note.group(1).strip() if m_note else msg_clean.replace("ghi chú:", "").strip()
         if not content:
-            return "Vui lòng nhập nội dung cần ghi chú. Ví dụ: `#note Ý tưởng sách mới`", None, True
-        res = save_note(content)
-        return res, None, True
+            return "Vui lòng nhập nội dung cần ghi chú. Ví dụ: `#note Nguyên lý Lean MVP`", None, True
+        res = save_note_to_vault(content=content)
+        reply = (
+            f"=== ĐÃ LƯU GHI CHÚ VÀO VAULT THÀNH CÔNG ===\n"
+            f"• Tiêu đề: [[{res['title']}]]\n"
+            f"• Tags: {', '.join(res['tags']) if res['tags'] else 'Chưa có tag'}\n"
+            f"• Liên kết Node: {', '.join(res['links']) if res['links'] else 'Chưa có liên kết'}\n"
+            f"• Thời gian: {res['created_at']}\n"
+            f"==========================================="
+        )
+        return reply, None, True
 
-    # 6. #todo <task> (Direct action)
+    # D. #todo <task>
     m_todo = re.search(r'#(?:todo|viec)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
     if m_todo or msg_lower.startswith("công việc:"):
         task = m_todo.group(1).strip() if m_todo else msg_clean.replace("công việc:", "").strip()
@@ -225,7 +251,31 @@ async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], 
         res = save_todo(task)
         return res, None, True
 
-    # 7. #search <query>
+    # 4. Real-time Tools:
+    # A. Weather
+    m_w = re.search(r'#(?:weather|thoitiet)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_w or "thời tiết tại" in msg_lower or "thời tiết ở" in msg_lower:
+        loc = m_w.group(1).strip() if m_w else re.sub(r".*(thời tiết tại|thời tiết ở)\s*", "", msg_clean, flags=re.IGNORECASE)
+        loc = loc.strip() or "Hanoi"
+        res = await get_weather(loc)
+        return res, None, False
+
+    # B. Wiki
+    m_wiki = re.search(r'#(?:wiki|bachkhoa)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_wiki or "tra wiki" in msg_lower:
+        topic = m_wiki.group(1).strip() if m_wiki else re.sub(r".*tra wiki\s*", "", msg_clean, flags=re.IGNORECASE)
+        res = await get_wikipedia(topic)
+        return res, None, False
+
+    # C. Crypto / Stock
+    m_c = re.search(r'#(?:crypto|coin|stock)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_c or "giá coin" in msg_lower or "giá btc" in msg_lower:
+        sym = m_c.group(1).strip() if m_c else re.sub(r".*giá coin\s*", "", msg_clean, flags=re.IGNORECASE)
+        sym = sym.strip() or "btc"
+        res = await get_crypto_price(sym)
+        return res, None, False
+
+    # D. Force Search
     m_s = re.search(r'#(?:search|tim)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
     if m_s:
         q = m_s.group(1).strip()
@@ -233,16 +283,7 @@ async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], 
         if results:
             return format_search_results(results), None, False
 
-    # 8. Auto-detection for weather or general search
-    if "thời tiết" in msg_lower or "weather" in msg_lower:
-        loc = "Hanoi"
-        for city in ["hồ chí minh", "hcm", "sài gòn", "saigon", "đà nẵng", "da nang", "hải phòng", "cần thơ", "hà nội", "hanoi"]:
-            if city in msg_lower:
-                loc = city
-                break
-        res = await get_weather(loc)
-        return res, None, False
-
+    # 5. Auto Web Search Trigger
     if settings.ENABLE_WEB_SEARCH:
         for pattern in SEARCH_TRIGGER_PATTERNS:
             if re.search(pattern, msg_lower):

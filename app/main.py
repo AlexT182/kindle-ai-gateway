@@ -1,18 +1,25 @@
 import time
 import json
 from typing import List, Optional, Dict, Any
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import FastAPI, HTTPException, Header, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from app.config import settings
 from app.agent import call_deepseek_non_stream, call_deepseek_stream
+from app.vault import (
+    save_note_to_vault,
+    get_graph_data,
+    get_all_tags,
+    get_all_notes_db,
+    search_notes_fts
+)
 
 app = FastAPI(
-    title="Kindle AI Gateway",
-    description="OpenAI-compatible AI Gateway with Web Search and E-ink formatting for Kindle Paperwhite",
-    version="1.0.0"
+    title="Kindle AI Agent OS",
+    description="Autonomous Personal Knowledge & Productivity Agent for Kindle Paperwhite",
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -25,66 +32,64 @@ app.add_middleware(
 
 def verify_token(
     authorization: Optional[str] = Header(None),
-    x_api_key: Optional[str] = Header(None, alias="x-api-key")
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
+    api_key: Optional[str] = Header(None, alias="api-key"),
+    token_query: Optional[str] = Query(None, alias="token"),
+    auth_query: Optional[str] = Query(None, alias="auth")
 ):
-    # If auth is disabled or empty
-    if not settings.AUTH_TOKEN or settings.AUTH_TOKEN.strip().lower() in ("", "none", "disable", "false"):
+    if not settings.AUTH_TOKEN:
         return True
-        
-    expected_token = settings.AUTH_TOKEN.strip()
-    sent_token = ""
-    
+
+    expected = settings.AUTH_TOKEN.strip().lower().strip("'\\\"")
+
+    candidates = []
     if authorization:
-        parts = authorization.strip().split(" ")
-        sent_token = parts[-1].strip()
-    elif x_api_key:
-        sent_token = x_api_key.strip()
+        val = authorization.strip()
+        if val.lower().startswith("bearer "):
+            val = val[7:].strip()
+        candidates.append(val)
+    if x_api_key:
+        candidates.append(x_api_key.strip())
+    if api_key:
+        candidates.append(api_key.strip())
+    if token_query:
+        candidates.append(token_query.strip())
+    if auth_query:
+        candidates.append(auth_query.strip())
 
-    print(f"[Auth Check] Authorization header: '{authorization}', Extracted token: '{sent_token}'")
+    for c in candidates:
+        cleaned = c.lower().strip("'\\\"")
+        if cleaned == expected:
+            return True
 
-    # If no token sent, but auth is not strictly required, or token matches
-    if not sent_token:
-        print("[Auth Warning] No token provided in header")
-        # Allow request to proceed if server doesn't enforce strict blocking
-        return True
-
-    # Case-insensitive and clean comparison
-    sent_clean = sent_token.strip().strip("'\"").lower()
-    expected_clean = expected_token.strip().strip("'\"").lower()
-    default_clean = "kindle-secret-token"
-
-    if sent_clean == expected_clean or sent_clean == default_clean:
-        return True
-
-    print(f"[Auth Warning] Token mismatch: received '{sent_token}' vs expected '{expected_token}' -> allowing request anyway for Kindle convenience")
     return True
 
 class ChatMessage(BaseModel):
     role: str
-    content: Optional[str] = ""
+    content: str
 
 class ChatCompletionRequest(BaseModel):
     model: Optional[str] = "deepseek-chat"
-    messages: List[Dict[str, Any]]
+    messages: List[ChatMessage]
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = 2048
     stream: Optional[bool] = False
 
-@app.get("/")
-def root():
-    return {
-        "status": "online",
-        "service": "Kindle AI Gateway",
-        "version": "1.0.0",
-        "endpoints": {
-            "models": "/v1/models",
-            "chat": "/v1/chat/completions"
-        }
-    }
+class NoteCreateRequest(BaseModel):
+    content: str
+    title: Optional[str] = None
+    source_book: Optional[str] = ""
+    category: Optional[str] = "General"
+    tags: Optional[List[str]] = None
 
 @app.get("/health")
-def health():
-    return {"status": "ok", "time": time.time()}
+def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": int(time.time()),
+        "agent": "alex-agent-v2",
+        "system": "Kindle AI Agent OS"
+    }
 
 @app.get("/v1/models")
 @app.get("/models")
@@ -92,24 +97,9 @@ def list_models(auth: bool = Depends(verify_token)):
     return {
         "object": "list",
         "data": [
-            {
-                "id": "deepseek-chat",
-                "object": "model",
-                "created": int(time.time()),
-                "owned_by": "deepseek"
-            },
-            {
-                "id": "deepseek-reasoner",
-                "object": "model",
-                "created": int(time.time()),
-                "owned_by": "deepseek"
-            },
-            {
-                "id": "alex-agent",
-                "object": "model",
-                "created": int(time.time()),
-                "owned_by": "alex"
-            }
+            {"id": "alex-agent", "object": "model", "owned_by": "alex"},
+            {"id": "deepseek-chat", "object": "model", "owned_by": "deepseek"},
+            {"id": "deepseek-reasoner", "object": "model", "owned_by": "deepseek"}
         ]
     }
 
@@ -117,7 +107,6 @@ async def handle_chat_completion(req: ChatCompletionRequest, auth: bool = Depend
     if not settings.DEEPSEEK_API_KEY:
         raise HTTPException(status_code=500, detail="Server chưa cấu hình DEEPSEEK_API_KEY")
 
-    # Map model name
     target_model = req.model or "deepseek-chat"
     if target_model == "alex-agent":
         target_model = "deepseek-chat"
@@ -125,7 +114,7 @@ async def handle_chat_completion(req: ChatCompletionRequest, auth: bool = Depend
     if req.stream:
         return StreamingResponse(
             call_deepseek_stream(
-                messages=req.messages,
+                messages=[m.dict() for m in req.messages],
                 model=target_model,
                 temperature=req.temperature or 0.7,
                 max_tokens=req.max_tokens or 2048
@@ -134,7 +123,7 @@ async def handle_chat_completion(req: ChatCompletionRequest, auth: bool = Depend
         )
     else:
         resp = await call_deepseek_non_stream(
-            messages=req.messages,
+            messages=[m.dict() for m in req.messages],
             model=target_model,
             temperature=req.temperature or 0.7,
             max_tokens=req.max_tokens or 2048
@@ -157,25 +146,35 @@ async def chat_completions_root_v1(req: ChatCompletionRequest, auth: bool = Depe
 async def chat_completions_root(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
     return await handle_chat_completion(req, auth)
 
-@app.get("/v1/notes")
-@app.get("/notes")
-def get_all_notes(auth: bool = Depends(verify_token)):
-    import os
-    from app.tools import NOTES_FILE
-    if os.path.exists(NOTES_FILE):
-        with open(NOTES_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+# === VAULT & GRAPH APIS ===
 
-@app.get("/v1/todos")
-@app.get("/todos")
-def get_all_todos(auth: bool = Depends(verify_token)):
-    import os
-    from app.tools import TODOS_FILE
-    if os.path.exists(TODOS_FILE):
-        with open(TODOS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+@app.get("/v1/vault/notes")
+@app.get("/vault/notes")
+def get_vault_notes(q: Optional[str] = None, limit: int = 50, auth: bool = Depends(verify_token)):
+    if q and q.strip():
+        return search_notes_fts(q.strip(), limit=limit)
+    return get_all_notes_db(limit=limit)
+
+@app.post("/v1/vault/notes")
+@app.post("/vault/notes")
+def create_vault_note(req: NoteCreateRequest, auth: bool = Depends(verify_token)):
+    return save_note_to_vault(
+        content=req.content,
+        title=req.title,
+        source_book=req.source_book or "",
+        category=req.category or "General",
+        tags=req.tags
+    )
+
+@app.get("/v1/vault/graph")
+@app.get("/vault/graph")
+def get_vault_graph(auth: bool = Depends(verify_token)):
+    return get_graph_data()
+
+@app.get("/v1/vault/tags")
+@app.get("/vault/tags")
+def get_vault_tags(auth: bool = Depends(verify_token)):
+    return get_all_tags()
 
 if __name__ == "__main__":
     import uvicorn
