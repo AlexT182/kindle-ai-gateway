@@ -366,7 +366,7 @@ async def call_deepseek_stream(
     processed_messages, direct_reply = await build_messages_with_search(messages)
     
     if direct_reply:
-        chunk = {
+        chunk_content = {
             "id": f"chatcmpl-direct-{int(time.time())}",
             "object": "chat.completion.chunk",
             "created": int(time.time()),
@@ -374,10 +374,23 @@ async def call_deepseek_stream(
             "choices": [{
                 "index": 0,
                 "delta": {"role": "assistant", "content": direct_reply},
+                "finish_reason": None
+            }]
+        }
+        yield f"data: {json.dumps(chunk_content, ensure_ascii=False)}\n\n"
+        
+        chunk_stop = {
+            "id": f"chatcmpl-direct-{int(time.time())}",
+            "object": "chat.completion.chunk",
+            "created": int(time.time()),
+            "model": model,
+            "choices": [{
+                "index": 0,
+                "delta": {},
                 "finish_reason": "stop"
             }]
         }
-        yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
+        yield f"data: {json.dumps(chunk_stop, ensure_ascii=False)}\n\n"
         yield "data: [DONE]\n\n"
         return
 
