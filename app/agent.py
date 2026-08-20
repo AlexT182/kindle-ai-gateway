@@ -118,9 +118,41 @@ def resolve_model(requested_model: str, messages: List[Dict[str, Any]]) -> str:
 
     return "deepseek-chat"
 
+HELP_MANUAL_TEXT = """=== CẨM NANG SỬ DỤNG ALEX AGENT TRÊN KINDLE ===
+
+1. CÁC CHẾ ĐỘ CUỐN SỔ MA THUẬT (LIVING NOTEBOOKS):
+- #journal (hoặc #stoic, #nhatky): Cuốn Sổ Khắc Kỷ & Phản Chiếu (Marcus Aurelius).
+- #socrates (hoặc #khaisang): Cuốn Sổ Vấn Đáp Khai Sáng (phương pháp Socrates).
+- #sage (hoặc #grimoire, #cothu): Cuốn Cổ Thư Bách Khoa Thông Tuệ Cổ Đại.
+- #critic (hoặc #phanbien): Cuốn Sổ Phản Biện Sắc Bén & Tìm Lỗ Hổng Logic.
+- #author (hoặc #tacgia): Đối thoại trực tiếp với tác giả cuốn sách.
+- #riddle (hoặc #tom): Cuốn Nhật Ký Ma Thuật Tom Riddle 1943.
+
+2. CÔNG CỤ TRA CỨU & DỮ LIỆU THỜI GIAN THỰC:
+- #weather <địa điểm> (hoặc #thoitiet): Tra cứu thời tiết, nhiệt độ, độ ẩm, dự báo hôm nay.
+- #wiki <chủ đề> (hoặc #bachkhoa): Tra cứu bách khoa toàn thư Wikipedia tiếng Việt.
+- #crypto <mã> (hoặc #stock, #coin): Tra cứu giá BTC, ETH, SOL, vàng theo USD & VNĐ.
+- #search <từ khóa> (hoặc #tim): Ép buộc tìm kiếm web sâu và tổng hợp dữ liệu mới nhất.
+
+3. GHI CHÚ & QUẢN LÝ CÔNG VIỆC:
+- #note <nội dung> (hoặc #ghichu): Lưu ý tưởng/ghi chú vào server (xem lại qua link /v1/notes).
+- #todo <công việc> (hoặc #viec): Thêm công việc cần làm vào Todo list (xem lại qua /v1/todos).
+
+4. MẸO SỬ DỤNG:
+- #help (hoặc #huongdan, #menu, #?): Hiện cẩm nang hướng dẫn này bất cứ lúc nào.
+- Bôi đen (Highlight) chữ trong sách -> Chọn Explain, Summarize, Translate để AI giải nghĩa theo ngữ cảnh.
+- Gõ câu hỏi tự nhiên bất kỳ -> Alex Agent sẽ tự động phân loại và chọn mô hình phù hợp.
+================================================="""
+
 async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], Optional[str], bool]:
     msg_clean = last_user_msg.strip()
     
+    # 0. #help / #huongdan - Display Help Manual
+    if msg_clean.lower() in ("#help", "#huongdan", "#menu", "#?", "#lenh", "#cmd", "#h"):
+        return HELP_MANUAL_TEXT, None, True
+    if msg_clean.lower().startswith("#help") or msg_clean.lower().startswith("#huongdan"):
+        return HELP_MANUAL_TEXT, None, True
+
     # 1. Living Notebooks:
     # A. #riddle - Tom Riddle's Diary Mode
     if msg_clean.startswith("#riddle") or msg_clean.startswith("#tom"):
