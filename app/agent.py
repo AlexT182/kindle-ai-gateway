@@ -76,9 +76,9 @@ QUY TẮC ĐỊNH DẠNG BẮT BUỘC CHO E-INK:
 4. Trình bày danh sách với gạch đầu dòng rõ ràng để dễ đọc trên màn hình E-ink."""
 
 SEARCH_TRIGGER_PATTERNS = [
-    r"\b(tìm|search|tra cứu|tin tức|hôm nay|mới nhất|thời sự|giá|tỷ giá|thời tiết|ai là|ở đâu|khi nào)\b",
-    r"\b(latest|news|today|current|price|weather|who is|where is|when)\b",
-    r"\b(năm 202[4-9]|2026)\b"
+    r"\b(tìm|search|tra cứu|tin tức|hôm nay|mới nhất|thời sự|giá|tỷ giá|thời tiết|ai là|ở đâu|khi nào|bao nhiêu|như thế nào|gần đây|hiện nay|hiện tại|năm nay|vừa qua|cập nhật|thông tin về|sự kiện|diễn biến|bảng xếp hạng|giải thưởng|ra mắt|phát hành)\b",
+    r"\b(latest|news|today|current|price|weather|who is|where is|when|how much|recent|update|what happened|release|ranking|event)\b",
+    r"\b(202[3-9]|2030)\b"
 ]
 
 REASONING_PATTERNS = [
