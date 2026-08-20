@@ -1,124 +1,109 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="space-y-8 max-w-6xl mx-auto">
+<div class="container">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
-            <h2 class="text-2xl font-bold text-white">Bảng Điều Khiển Trung Tâm (Overview)</h2>
-            <p class="text-slate-400 text-sm mt-1">Theo dõi hoạt động, kho tri thức và trạng thái hệ sinh thái Kindle AI Gateway.</p>
+            <h2>Bảng Điều Khiển Trung Tâm (Overview)</h2>
+            <p class="subtitle">Theo dõi hoạt động, kho tri thức và trạng thái hệ sinh thái Kindle AI Gateway.</p>
         </div>
-        <div class="flex items-center space-x-3">
-            <a href="/admin/notes" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20 flex items-center space-x-2">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                <span>Tạo Ghi Chú Mới</span>
-            </a>
+        <div>
+            <a href="/admin/notes" class="btn btn-primary">+ Tạo Ghi Chú Mới</a>
         </div>
     </div>
 
     <!-- Quick Stats -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                <i data-lucide="file-text" class="w-6 h-6"></i>
+    <div class="grid-4">
+        <div class="card stat-card">
+            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg>
             </div>
             <div>
-                <span class="text-xs text-slate-400 font-medium">Tổng Ghi Chú (Vault)</span>
-                <h3 class="text-2xl font-bold text-white mt-0.5">{{ stats.notes_count }}</h3>
+                <div class="stat-label">Tổng Ghi Chú (Vault)</div>
+                <div class="stat-val">{{ stats.notes_count }}</div>
             </div>
         </div>
 
-        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <i data-lucide="network" class="w-6 h-6"></i>
+        <div class="card stat-card">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="7" y1="6" x2="10" y2="10"/><line x1="17" y1="6" x2="14" y2="10"/></svg>
             </div>
             <div>
-                <span class="text-xs text-slate-400 font-medium">Liên Kết Đồ Thị (Edges)</span>
-                <h3 class="text-2xl font-bold text-white mt-0.5">{{ stats.edges_count }}</h3>
+                <div class="stat-label">Liên Kết Đồ Thị (Edges)</div>
+                <div class="stat-val">{{ stats.edges_count }}</div>
             </div>
         </div>
 
-        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
-                <i data-lucide="tag" class="w-6 h-6"></i>
+        <div class="card stat-card">
+            <div class="stat-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
             </div>
             <div>
-                <span class="text-xs text-slate-400 font-medium">Chủ Đề / Tags</span>
-                <h3 class="text-2xl font-bold text-white mt-0.5">{{ stats.tags_count }}</h3>
+                <div class="stat-label">Chủ Đề / Tags</div>
+                <div class="stat-val">{{ stats.tags_count }}</div>
             </div>
         </div>
 
-        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                <i data-lucide="cpu" class="w-6 h-6"></i>
+        <div class="card stat-card">
+            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/></svg>
             </div>
             <div>
-                <span class="text-xs text-slate-400 font-medium">AI Model Hoạt Động</span>
-                <h3 class="text-base font-bold text-white mt-1">DeepSeek V3 / R1</h3>
+                <div class="stat-label">AI Models</div>
+                <div class="stat-val" style="font-size: 15px; margin-top: 6px;">DeepSeek V3/R1</div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Notes & Graph Quick Preview -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Recent Notes List -->
-        <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-white flex items-center space-x-2">
-                    <i data-lucide="clock" class="w-4 h-4 text-indigo-400"></i>
-                    <span>Ghi Chú & Trích Dẫn Gần Đây</span>
-                </h3>
-                <a href="/admin/notes" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">Xem tất cả →</a>
+    <!-- Recent Notes & Graph Preview -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+        <!-- Recent Notes -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #ffffff;">Ghi Chú & Trích Dẫn Gần Đây</h3>
+                <a href="/admin/notes" style="font-size: 12px; color: var(--brand-primary); text-decoration: none;">Xem tất cả →</a>
             </div>
-            <div class="space-y-3">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
                 {% for note in recent_notes %}
-                <div class="p-4 bg-slate-950/60 border border-slate-800/80 rounded-xl hover:border-indigo-500/40 transition">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <h4 class="font-semibold text-white text-sm">[[{{ note.title }}]]</h4>
-                            <p class="text-xs text-slate-400 mt-1 line-clamp-2">{{ note.content_raw }}</p>
-                        </div>
-                        <span class="text-[11px] text-slate-500 font-mono whitespace-nowrap ml-3">{{ note.created_at[:10] }}</span>
+                <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #ffffff;">[[{{ note.title }}]]</h4>
+                        <span style="font-size: 11px; color: var(--text-dim); font-family: monospace;">{{ note.created_at[:10] }}</span>
                     </div>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">{{ note.content_raw[:140] }}...</p>
                     {% if note.source_book %}
-                    <div class="mt-2.5 flex items-center space-x-2 text-[11px] text-indigo-400 font-medium">
-                        <i data-lucide="book" class="w-3.5 h-3.5"></i>
-                        <span>{{ note.source_book }}</span>
-                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--brand-primary); font-weight: 500;">📖 {{ note.source_book }}</div>
                     {% endif %}
                 </div>
                 {% else %}
-                <div class="text-center py-8 text-slate-500 text-sm">
-                    Chưa có ghi chú nào. Hãy dùng lệnh <code class="text-indigo-400">#note</code> trên Kindle để ghi chép!
+                <div style="text-align: center; padding: 32px; color: var(--text-dim); font-size: 13px;">
+                    Chưa có ghi chú nào. Hãy dùng lệnh <code style="color: var(--brand-primary);">#note</code> trên Kindle để ghi chép!
                 </div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- Quick Knowledge Graph Summary -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+        <!-- Graph View Card -->
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-                <h3 class="font-bold text-white flex items-center space-x-2 mb-4">
-                    <i data-lucide="network" class="w-4 h-4 text-emerald-400"></i>
-                    <span>Đồ Thị Tri Thức 3D</span>
-                </h3>
-                <p class="text-xs text-slate-400 leading-relaxed mb-6">
-                    Xem toàn bộ mạng lưới liên kết giữa các ghi chú, sách đọc và khái niệm cốt lõi dạng 3D Force-Directed Graph tương tác như Obsidian.
+                <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 12px;">Đồ Thị Tri Thức 3D</h3>
+                <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
+                    Trực quan hóa mạng lưới liên kết giữa các ghi chú, cuốn sách và khái niệm cốt lõi theo phong cách Obsidian Graph View.
                 </p>
-                <div class="p-4 bg-slate-950/80 border border-slate-800 rounded-xl space-y-2 text-xs">
-                    <div class="flex justify-between text-slate-300">
-                        <span>Số cụm tri thức:</span>
-                        <span class="font-semibold text-indigo-400">{{ stats.tags_count }} clusters</span>
+                <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Số cụm tri thức:</span>
+                        <span style="color: #818cf8; font-weight: 600;">{{ stats.tags_count }} clusters</span>
                     </div>
-                    <div class="flex justify-between text-slate-300">
-                        <span>Độ kết nối trung bình:</span>
-                        <span class="font-semibold text-emerald-400">{{ "%.1f"|format(stats.edges_count / (stats.notes_count or 1)) }} links/note</span>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Độ kết nối trung bình:</span>
+                        <span style="color: #34d399; font-weight: 600;">{{ "%.1f"|format(stats.edges_count / (stats.notes_count or 1)) }} links/note</span>
                     </div>
                 </div>
             </div>
-            <a href="/admin/graph" class="w-full mt-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold text-center transition flex items-center justify-center space-x-2">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
-                <span>Mở 3D Graph View</span>
+            <a href="/admin/graph" class="btn btn-secondary" style="width: 100%; margin-top: 20px;">
+                <span>✨ Mở 3D Graph View</span>
             </a>
         </div>
     </div>

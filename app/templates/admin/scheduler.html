@@ -1,67 +1,50 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="space-y-6 max-w-5xl mx-auto">
+<div class="container" style="max-width: 900px;">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-            <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
-                <i data-lucide="clock" class="w-6 h-6 text-indigo-400"></i>
-                <span>Bộ Lập Lịch Tác Vụ Tự Động (Cron Scheduler)</span>
-            </h2>
-            <p class="text-slate-400 text-sm mt-1">Quản lý và kích hoạt các tác vụ AI tự trị định kỳ (Daily Digest, Weekly Retro).</p>
-        </div>
+    <div>
+        <h2>Bộ Lập Lịch Tác Vụ Tự Động (Cron Scheduler)</h2>
+        <p class="subtitle">Quản lý và kích hoạt các tác vụ AI tự trị định kỳ (Daily Digest, Weekly Retro).</p>
     </div>
 
     {% if message %}
-    <div class="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs flex items-center space-x-2">
-        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-        <span>{{ message }}</span>
-    </div>
+    <div class="alert alert-success">{{ message }}</div>
     {% endif %}
 
     <!-- Jobs Table -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-            <h3 class="font-bold text-white text-sm">Danh Sách Tác Vụ Định Kỳ</h3>
-            <span class="text-xs text-emerald-400 font-medium flex items-center space-x-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>APScheduler Running</span>
-            </span>
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 14px; font-weight: 700; color: #ffffff;">Danh Sách Tác Vụ Định Kỳ</h3>
+            <span class="badge badge-green">APScheduler Active</span>
         </div>
 
-        <div class="divide-y divide-slate-800">
+        <div style="display: flex; flex-direction: column;">
             <!-- Job 1 -->
-            <div class="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div class="space-y-1">
-                    <div class="flex items-center space-x-2">
-                        <span class="font-semibold text-white text-sm">Daily Morning Intel (Tổng Hợp Sáng)</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 font-mono">07:00 AM Hàng Ngày</span>
+            <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: 600; font-size: 14px; color: #ffffff;">Daily Morning Intel (Tổng Hợp Sáng)</span>
+                        <span class="badge badge-indigo">07:00 AM Hàng Ngày</span>
                     </div>
-                    <p class="text-xs text-slate-400">Tự động quét tin tức công nghệ, kinh tế, thị trường AI mới nhất và xuất báo cáo vào Vault.</p>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">Tự động quét tin tức công nghệ, kinh tế, thị trường AI mới nhất và xuất báo cáo vào Vault.</p>
                 </div>
                 <form method="POST" action="/admin/scheduler/run/daily_morning_intel">
-                    <button type="submit" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition flex items-center space-x-1.5">
-                        <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400"></i>
-                        <span>Chạy Ngay</span>
-                    </button>
+                    <button type="submit" class="btn btn-secondary">▶ Chạy Ngay</button>
                 </form>
             </div>
 
             <!-- Job 2 -->
-            <div class="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div class="space-y-1">
-                    <div class="flex items-center space-x-2">
-                        <span class="font-semibold text-white text-sm">Weekly Reading Retro (Tổng Kết Tuần)</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 font-mono">Chủ Nhật 21:00</span>
+            <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: 600; font-size: 14px; color: #ffffff;">Weekly Reading Retro (Tổng Kết Tuần)</span>
+                        <span class="badge badge-indigo">Chủ Nhật 21:00</span>
                     </div>
-                    <p class="text-xs text-slate-400">Đọc toàn bộ ghi chú và trích dẫn sách trong tuần, xuất bài phân tích xu hướng tư duy.</p>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">Đọc toàn bộ ghi chú và trích dẫn sách trong tuần, xuất bài phân tích xu hướng tư duy.</p>
                 </div>
                 <form method="POST" action="/admin/scheduler/run/weekly_reading_retro">
-                    <button type="submit" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition flex items-center space-x-1.5">
-                        <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400"></i>
-                        <span>Chạy Ngay</span>
-                    </button>
+                    <button type="submit" class="btn btn-secondary">▶ Chạy Ngay</button>
                 </form>
             </div>
         </div>

@@ -1,107 +1,78 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<div class="space-y-6 max-w-6xl mx-auto" x-data="{ 
-    searchQuery: '{{ search_q or "" }}',
-    selectedTag: '{{ tag_q or "" }}',
-    showModal: false,
-    editNote: { title: '', content: '', source_book: '', category: 'Product Management', tags: '' },
-    openCreateModal() {
-        this.editNote = { title: '', content: '', source_book: '', category: 'Product Management', tags: '' };
-        this.showModal = true;
-    }
-}">
+<div class="container">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
-            <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
-                <i data-lucide="file-text" class="w-6 h-6 text-indigo-400"></i>
-                <span>Sổ Tay Tri Thức (Smart Vault)</span>
-            </h2>
-            <p class="text-slate-400 text-sm mt-1">Toàn bộ ghi chú được lưu dạng Markdown chuẩn Obsidian trong thư mục <code class="text-indigo-400 font-mono">/data/vault/notes/</code>.</p>
+            <h2>Sổ Tay Tri Thức (Smart Vault)</h2>
+            <p class="subtitle">Ghi chú được lưu dạng Markdown chuẩn Obsidian trong thư mục <code style="color: var(--brand-primary);">/data/vault/notes/</code>.</p>
         </div>
-        <button @click="openCreateModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20 flex items-center space-x-2 shrink-0">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            <span>Tạo Ghi Chú Mới</span>
-        </button>
+        <button onclick="document.getElementById('noteModal').style.display='flex'" class="btn btn-primary">+ Tạo Ghi Chú Mới</button>
     </div>
 
-    <!-- Search & Filter Bar -->
-    <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col md:flex-row items-center gap-4">
-        <form method="GET" action="/admin/notes" class="flex-1 w-full flex items-center space-x-2">
-            <div class="relative flex-1">
-                <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
-                <input type="text" name="q" value="{{ search_q or '' }}" placeholder="Tìm kiếm toàn văn (Full-Text Search FTS5)..." 
-                       class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
-            </div>
-            <button type="submit" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition">
-                Tìm kiếm
-            </button>
+    <!-- Search Bar -->
+    <div class="card" style="padding: 12px 16px;">
+        <form method="GET" action="/admin/notes" style="display: flex; gap: 12px;">
+            <input type="text" name="q" value="{{ search_q or '' }}" placeholder="Tìm kiếm toàn văn trong Vault (SQLite FTS5)..." style="flex: 1;">
+            <button type="submit" class="btn btn-secondary">Tìm Kiếm</button>
         </form>
     </div>
 
-    <!-- Notes Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <!-- Notes Grid -->
+    <div class="grid-3">
         {% for note in notes %}
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-indigo-500/50 transition">
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-                <div class="flex items-start justify-between mb-2">
-                    <h3 class="font-bold text-white text-base">[[{{ note.title }}]]</h3>
-                    <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 font-mono">{{ note.category or 'General' }}</span>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #ffffff;">[[{{ note.title }}]]</h3>
+                    <span class="badge">{{ note.category or 'General' }}</span>
                 </div>
-                <p class="text-xs text-slate-400 line-clamp-4 leading-relaxed mb-4 whitespace-pre-line">{{ note.content_raw }}</p>
+                <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; white-space: pre-line; margin-bottom: 16px;">{{ note.content_raw[:180] }}...</p>
             </div>
             
-            <div class="pt-3 border-t border-slate-800/80">
+            <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
                 {% if note.source_book %}
-                <div class="flex items-center space-x-1.5 text-xs text-indigo-400 font-medium mb-3">
-                    <i data-lucide="book" class="w-3.5 h-3.5"></i>
-                    <span class="truncate">{{ note.source_book }}</span>
-                </div>
+                <div style="font-size: 11.5px; color: var(--brand-primary); margin-bottom: 10px; font-weight: 500;">📖 {{ note.source_book }}</div>
                 {% endif %}
-                <div class="flex items-center justify-between text-[11px] text-slate-500">
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-dim);">
                     <span>{{ note.created_at[:10] }}</span>
-                    <form method="POST" action="/admin/notes/delete/{{ note.id }}" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ghi chú này?');">
-                        <button type="submit" class="text-rose-400 hover:text-rose-300 font-medium flex items-center space-x-1">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            <span>Xóa</span>
-                        </button>
+                    <form method="POST" action="/admin/notes/delete/{{ note.id }}" onsubmit="return confirm('Bạn có chắc muốn xóa ghi chú này?');">
+                        <button type="submit" class="btn btn-danger" style="padding: 0; font-size: 11.5px;">Xóa</button>
                     </form>
                 </div>
             </div>
         </div>
         {% else %}
-        <div class="col-span-full text-center py-16 bg-slate-900 border border-slate-800 rounded-2xl">
-            <i data-lucide="inbox" class="w-10 h-10 text-slate-600 mx-auto mb-3"></i>
-            <p class="text-slate-400 text-sm">Không tìm thấy ghi chú nào phù hợp.</p>
+        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 48px; color: var(--text-dim);">
+            Không tìm thấy ghi chú nào. Hãy tạo ghi chú mới!
         </div>
         {% endfor %}
     </div>
 
-    <!-- Create Note Modal -->
-    <div x-show="showModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display: none;">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl" @click.outside="showModal = false">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
-                <h3 class="font-bold text-white text-lg">Tạo Ghi Chú / Trích Dẫn Mới</h3>
-                <button @click="showModal = false" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <!-- Modal Create Note -->
+    <div id="noteModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #ffffff;">Tạo Ghi Chú / Trích Dẫn Mới</h3>
+                <button onclick="document.getElementById('noteModal').style.display='none'" style="background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer;">✕</button>
             </div>
-
-            <form method="POST" action="/admin/notes/create" class="space-y-4">
+            <form method="POST" action="/admin/notes/create" style="display: flex; flex-direction: column; gap: 14px;">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tiêu đề Ghi chú</label>
-                    <input type="text" name="title" required placeholder="VD: Nguyên lý Lean MVP" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">
+                    <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Tiêu đề ghi chú</label>
+                    <input type="text" name="title" required placeholder="VD: Nguyên lý Lean MVP">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Sách Nguồn (Nếu có)</label>
-                    <input type="text" name="source_book" placeholder="VD: The Lean Product Playbook" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">
+                    <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Sách nguồn (nếu có)</label>
+                    <input type="text" name="source_book" placeholder="VD: The Lean Product Playbook">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nội dung Ghi chú (Hỗ trợ #tags và [[Backlinks]])</label>
-                    <textarea name="content" rows="5" required placeholder="Nhập nội dung, ý tưởng hoặc trích dẫn..." class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500"></textarea>
+                    <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Nội dung (Hỗ trợ #tags và [[Backlinks]])</label>
+                    <textarea name="content" rows="5" required placeholder="Nhập nội dung ghi chú..."></textarea>
                 </div>
-                <div class="flex justify-end space-x-3 pt-3 border-t border-slate-800">
-                    <button type="button" @click="showModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm font-medium">Hủy</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium">Lưu vào Vault</button>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                    <button type="button" onclick="document.getElementById('noteModal').style.display='none'" class="btn btn-secondary">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu vào Vault</button>
                 </div>
             </form>
         </div>
