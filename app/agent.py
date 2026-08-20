@@ -22,13 +22,33 @@ from app.vault import (
 
 # === PROFESSIONAL SKILL PERSONA PROMPTS ===
 
-BOOK_SUMMARY_SYSTEM_PROMPT = """Bạn là Chuyên gia Đọc nhanh, Phân tích & Đúc kết Sách Chuyên Sâu (Executive Book Summary Specialist).
-Nhiệm vụ: Phân tích toàn diện cuốn sách được yêu cầu (hoặc cuốn sách đang đọc) theo cấu trúc chuẩn Executive Brief:
-1. THÔNG ĐIỆP CỐT LÕI (Core Thesis): Cuốn sách giải quyết bài toán lớn nào?
-2. 3-5 NGUYÊN LÝ & KHUNG TƯ DUY VÀNG (Key Mental Models & Frameworks).
-3. BÀI HỌC THỰC THI (Actionable Takeaways): 3-5 việc có thể áp dụng ngay vào công việc/cuộc sống.
-4. TRÍCH DẪN ĐẮT GIÁ NHẤT (Memorable Quote).
-QUY TẮC: Súc tích, thực tế, bố cục rõ ràng cho màn hình E-ink, TUYỆT ĐỐI KHÔNG DÙNG EMOJI."""
+BOOK_SUMMARY_SYSTEM_PROMPT = """Bạn là Chuyên gia Đọc nhanh, Phân tích & Đúc kết Sách Chuyên Sâu (Executive Book Summary & Mindmap Specialist).
+Nhiệm vụ: Phân tích toàn diện cuốn sách được yêu cầu (hoặc cuốn sách đang đọc) theo cấu trúc chuẩn Executive Brief & Mindmap:
+
+1. THÔNG ĐIỆP CỐT LÕI (Core Thesis):
+- Nêu rõ vấn đề lớn nhất mà cuốn sách giải quyết và tư tưởng chủ đạo của tác giả trong 2-3 câu.
+
+2. BẢN ĐỒ TƯ DUY TỔNG THỂ (MINDMAP TREE):
+Trình bày sơ đồ cây phân cấp trực quan bằng ký tự nhánh cây rõ ràng:
+[Tên Cuốn Sách]
+├── 1. Khái niệm cốt lõi: [[Tên Khái Niệm]]
+│   └──► Giải thích ngắn gọn 1 dòng
+├── 2. Khung tư duy: [[Tên Framework]]
+│   └──► Cách thức vận hành
+└── 3. Thực thi: [[Hành Động Then Chốt]]
+    └──► Bước áp dụng cụ thể
+
+3. 3-5 NGUYÊN LÝ & KHUNG TƯ DUY VÀNG (Mental Models):
+- Trình bày chi tiết từng mô hình quan trọng nhất trong sách.
+
+4. BÀI HỌC THỰC THI (Actionable Takeaways):
+- 3-5 việc cụ thể người đọc có thể triển khai ngay.
+
+5. TRÍCH DẪN ĐẮT GIÁ NHẤT (Memorable Quote).
+
+QUY TẮC BẮT BUỘC:
+- Dùng cấu trúc gạch đầu dòng rõ nét, các khái niệm quan trọng để trong ngoặc kép [[Khái Niệm]].
+- TUYỆT ĐỐI KHÔNG DÙNG EMOJI (tránh lỗi vỡ font E-ink)."""
 
 
 ACTION_SYSTEM_PROMPT = """Bạn là Chuyên gia Cố vấn Thực thi & Chuyển hóa Tri thức (Actionable Insights Consultant).
@@ -139,40 +159,42 @@ def resolve_model(requested_model: str, messages: List[Dict[str, Any]]) -> str:
 
     return "deepseek-chat"
 
-HELP_MANUAL_TEXT = """=== CẨM NANG SỬ DỤNG ALEX AGENT PRO TRÊN KINDLE ===
+HELP_MANUAL_TEXT = """=========================================
+  CAM NANG ALEX AGENT PRO (KINDLE E-INK)
+=========================================
 
-[PHÂN HỆ 1] TÓM TẮT & TRÍCH XUẤT THỰC THI:
-• #book <tên sách>: Đúc kết toàn diện 1 cuốn sách (Core Thesis, Frameworks, Actions).
-• #action <vấn đề>: Chuyển lý thuyết sách thành 3-5 bước hành động cụ thể.
-• #framework <chủ đề>: Trích xuất khung tư duy chuẩn (Lean, JTBD, Heuristics).
-• #case <khái niệm>: Đưa ra Case Study thực tế từ các công ty lớn.
-• #summary <đoạn văn>: Rút gọn văn bản thành 3 Key Takeaways đắt giá nhất.
+--- [1] TOM TAT SACH & TRICH XUAT THUC THI ---
+- #book <ten sach> : Duc ket toan dien sach & tao Ban do tu duy (Mindmap).
+- #action <van de> : Chuyen ly thuyet thanh 3-5 buoc hanh dong cu the.
+- #framework <chu de>: Trich xuat khung tu duy (Lean, JTBD, Heuristics).
+- #case <khai niem>: Dua ra Case Study thuc te tu cac cong ty lon.
+- #summary <doan van>: Rut gon van ban thanh 3 Key Takeaways cot loi.
 
-[PHÂN HỆ 2] ĐÀO SÂU & TƯ DUY LOGIC:
-• #eli5 <khái niệm>: Giải thích siêu trực quan, dễ hiểu như cho trẻ 5 tuổi.
-• #critic <kế hoạch>: Phản biện sắc bén, tìm lỗ hổng và điểm mù logic.
-• #journal <tâm sự>: Cuốn sổ Khắc kỷ (Marcus Aurelius) giúp gỡ rối tâm trí.
-• #socrates <câu hỏi>: Đặt câu hỏi gợi mở đào sâu chân lý.
-• #riddle <tin nhắn>: Cuốn nhật ký ma thuật Tom Riddle 1943.
+--- [2] DAO SAU & TU DUY LOGIC ---
+- #eli5 <khai niem>: Giai thich sieu truc quan, de hieu nhu cho tre 5 tuoi.
+- #critic <ke hoach>: Phan bien sac ben, tim lo hong & diem mu logic.
+- #journal <tam su>: Cuon so Khac ky (Marcus Aurelius) go roi tam tri.
+- #socrates <cau hoi>: Dat cau hoi goi mo dao sau chan ly.
+- #riddle <tin nhan>: Cuon nhat ky ma thuat Tom Riddle 1943.
 
-[PHÂN HỆ 3] SỔ TAY TRI THỨC & GRAPH VIEW:
-• #note <nội dung>: Lưu ghi chú Markdown vào Vault trên server.
-• #graph [chủ đề]: Xem sơ đồ mạng lưới tri thức (Knowledge Graph) dạng thẻ dọc.
-• #node <tên>: Xem chi tiết các liên kết 2 chiều của 1 khái niệm.
-• #todo <công việc>: Thêm task vào danh sách việc cần làm.
+--- [3] SO TAY TRI THUC & GRAPH VIEW ---
+- #note <noi dung> : Luu ghi chu Markdown vao Vault tren server.
+- #graph [chu de]  : Xem so do Do thi tri thuc (Knowledge Graph).
+- #node <ten>      : Tra cuu chi tiet cac lien ket 2 chieu cua 1 Node.
+- #todo <cong viec>: Them task vao danh sach viec can lam.
 
-[PHÂN HỆ 4] TRA CỨU DỮ LIỆU THỜI GIAN THỰC:
-• #tech <công nghệ>: Đánh giá xu hướng và stack công nghệ mới nhất 2026.
-• #market <ngành>: Phân tích thị trường, đối thủ cạnh tranh.
-• #weather <thành phố>: Tra cứu thời tiết, nhiệt độ, dự báo hôm nay.
-• #wiki <từ khóa>: Tra bách khoa toàn thư Wikipedia tiếng Việt.
-• #crypto <mã>: Tra cứu giá BTC, ETH, SOL, vàng (USD & VNĐ).
-• #search <từ khóa>: Ép buộc tìm kiếm web sâu và tổng hợp dữ liệu.
+--- [4] TRA CUU DU LIEU THOI GIAN THUC ---
+- #tech <cong nghe>: Danh gia xu huong & stack cong nghe moi 2026.
+- #market <nganh>  : Phan tich thi truong, doi thu canh tranh.
+- #weather <tp>    : Tra cuu thoi tiet, nhiet do, du bao hom nay.
+- #wiki <tu khoa>  : Tra bach khoa toan thu Wikipedia tieng Viet.
+- #crypto <ma>     : Tra cuu gia BTC, ETH, SOL, vang (USD & VND).
+- #search <tu khoa>: Ep buoc tim kiem web sau & tong hop tin moi.
 
-[MẸO SỬ DỤNG VÀ THAO TÁC]:
-• Bôi đen chữ trong sách -> Chọn Explain/Summarize để AI phân tích theo ngữ cảnh sách.
-• Gõ câu hỏi tự nhiên bất kỳ -> Alex Agent tự động chọn mô hình và tra cứu web!
-================================================="""
+--- [MEO SU DUNG & THAO TAC NHANH] ---
+- Boi den (Highlight) chu trong sach -> Chon Explain / Summarize.
+- Go cau hoi tu nhien bat ky -> Alex Agent tu dong chon mo hinh!
+========================================="""
 
 async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], Optional[str], bool]:
     msg_clean = last_user_msg.strip()
