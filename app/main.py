@@ -156,6 +156,26 @@ async def chat_completions_root_v1(req: ChatCompletionRequest, auth: bool = Depe
 async def chat_completions_root(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
     return await handle_chat_completion(req, auth)
 
+@app.get("/v1/notes")
+@app.get("/notes")
+def get_all_notes(auth: bool = Depends(verify_token)):
+    import os
+    from app.tools import NOTES_FILE
+    if os.path.exists(NOTES_FILE):
+        with open(NOTES_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+@app.get("/v1/todos")
+@app.get("/todos")
+def get_all_todos(auth: bool = Depends(verify_token)):
+    import os
+    from app.tools import TODOS_FILE
+    if os.path.exists(TODOS_FILE):
+        with open(TODOS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
