@@ -149,84 +149,91 @@ async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], 
     msg_lower = msg_clean.lower()
     
     # 0. #help / help / hướng dẫn - Display Help Manual
-    help_keywords = [
-        "#help", "help", "#huongdan", "huong dan", "hướng dẫn", 
-        "#menu", "menu", "#?", "?", "#lenh", "danh sách lệnh", 
-        "cac lenh", "cẩm nang", "huongdan", "tro giup", "trợ giúp"
-    ]
-    if msg_lower in help_keywords or any(msg_lower.startswith(k) for k in ["#help", "#huongdan", "hướng dẫn", "huong dan", "help "]):
+    if re.search(r'(^|\s|#)(help|huongdan|hướng dẫn|huong dan|menu|tro giup|trợ giúp|cẩm nang)(\s|$|\?|\.)', msg_lower) or msg_lower in ("help", "#help", "hướng dẫn", "huong dan", "menu", "?", "#?"):
+        print(f"[Agent] Matched HELP command in: '{msg_clean}'")
         return HELP_MANUAL_TEXT, None, True
 
     # 1. Living Notebooks:
     # A. #riddle - Tom Riddle's Diary Mode
-    if msg_lower.startswith("#riddle") or msg_lower.startswith("#tom") or msg_lower.startswith("tom riddle") or msg_lower == "riddle":
+    if re.search(r'(^|\s)#(riddle|tom)\b', msg_lower) or "tom riddle" in msg_lower:
+        print(f"[Agent] Matched RIDDLE persona in: '{msg_clean}'")
         return None, TOM_RIDDLE_SYSTEM_PROMPT, False
 
     # B. #journal / #stoic - Stoic Reflective Journal
-    if any(msg_lower.startswith(k) for k in ["#journal", "#stoic", "#nhatky", "#meditation", "nhật ký", "nhat ky"]):
+    if re.search(r'(^|\s)#(journal|stoic|nhatky|meditation)\b', msg_lower) or msg_lower.startswith("nhật ký") or msg_lower.startswith("nhat ky"):
+        print(f"[Agent] Matched STOIC JOURNAL persona in: '{msg_clean}'")
         return None, STOIC_JOURNAL_SYSTEM_PROMPT, False
 
     # C. #socrates - Socratic Dialectic Notebook
-    if any(msg_lower.startswith(k) for k in ["#socrates", "#khaisang", "#trietly", "socrates"]):
+    if re.search(r'(^|\s)#(socrates|khaisang|trietly)\b', msg_lower) or msg_lower.startswith("socrates"):
+        print(f"[Agent] Matched SOCRATES persona in: '{msg_clean}'")
         return None, SOCRATES_SYSTEM_PROMPT, False
 
     # D. #sage / #grimoire - Ancient Polymath Grimoire
-    if any(msg_lower.startswith(k) for k in ["#sage", "#grimoire", "#cothu", "cổ thư"]):
+    if re.search(r'(^|\s)#(sage|grimoire|cothu)\b', msg_lower) or msg_lower.startswith("cổ thư"):
+        print(f"[Agent] Matched SAGE GRIMOIRE persona in: '{msg_clean}'")
         return None, SAGE_GRIMOIRE_SYSTEM_PROMPT, False
 
     # E. #critic - The Devil's Advocate & Logic Checker
-    if any(msg_lower.startswith(k) for k in ["#critic", "#phanbien", "#devil", "phản biện"]):
+    if re.search(r'(^|\s)#(critic|phanbien|devil)\b', msg_lower) or msg_lower.startswith("phản biện"):
+        print(f"[Agent] Matched CRITIC persona in: '{msg_clean}'")
         return None, CRITIC_SYSTEM_PROMPT, False
 
     # F. #author - Author Persona
-    if any(msg_lower.startswith(k) for k in ["#author", "#tacgia", "tác giả", "tac gia"]):
+    if re.search(r'(^|\s)#(author|tacgia)\b', msg_lower) or msg_lower.startswith("tác giả"):
+        print(f"[Agent] Matched AUTHOR persona in: '{msg_clean}'")
         return None, AUTHOR_SYSTEM_PROMPT, False
 
     # 2. #weather <location>
-    if any(msg_lower.startswith(k) for k in ["#weather", "#thoitiet", "thời tiết tại", "thời tiết ở"]):
-        loc = re.sub(r"^(#(weather|thoitiet)|thời tiết tại|thời tiết ở|thoi tiet tai|thoi tiet o)\s*", "", msg_clean, flags=re.IGNORECASE)
+    m_w = re.search(r'#(?:weather|thoitiet)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_w or "thời tiết tại" in msg_lower or "thời tiết ở" in msg_lower:
+        loc = m_w.group(1).strip() if m_w else re.sub(r".*(thời tiết tại|thời tiết ở)\s*", "", msg_clean, flags=re.IGNORECASE)
         loc = loc.strip() or "Hanoi"
         res = await get_weather(loc)
         return res, None, False
 
     # 3. #wiki <topic>
-    if any(msg_lower.startswith(k) for k in ["#wiki", "#bachkhoa", "tra wiki", "bách khoa"]):
-        topic = re.sub(r"^(#(wiki|bachkhoa)|tra wiki|bách khoa)\s*", "", msg_clean, flags=re.IGNORECASE)
+    m_wiki = re.search(r'#(?:wiki|bachkhoa)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_wiki or "tra wiki" in msg_lower:
+        topic = m_wiki.group(1).strip() if m_wiki else re.sub(r".*tra wiki\s*", "", msg_clean, flags=re.IGNORECASE)
         res = await get_wikipedia(topic)
         return res, None, False
 
     # 4. #crypto / #stock <symbol>
-    if any(msg_lower.startswith(k) for k in ["#crypto", "#coin", "#stock", "giá coin", "giá btc", "giá eth"]):
-        sym = re.sub(r"^(#(crypto|coin|stock)|giá coin|gia coin)\s*", "", msg_clean, flags=re.IGNORECASE)
+    m_c = re.search(r'#(?:crypto|coin|stock)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_c or "giá coin" in msg_lower or "giá btc" in msg_lower:
+        sym = m_c.group(1).strip() if m_c else re.sub(r".*giá coin\s*", "", msg_clean, flags=re.IGNORECASE)
+        sym = sym.strip() or "btc"
         res = await get_crypto_price(sym)
         return res, None, False
 
     # 5. #note <content> (Direct action)
-    if any(msg_lower.startswith(k) for k in ["#note", "#ghichu", "ghi chú:"]):
-        content = re.sub(r"^(#(note|ghichu)|ghi chú:)\s*", "", msg_clean, flags=re.IGNORECASE)
-        if not content.strip():
+    m_note = re.search(r'#(?:note|ghichu)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_note or msg_lower.startswith("ghi chú:"):
+        content = m_note.group(1).strip() if m_note else msg_clean.replace("ghi chú:", "").strip()
+        if not content:
             return "Vui lòng nhập nội dung cần ghi chú. Ví dụ: `#note Ý tưởng sách mới`", None, True
         res = save_note(content)
         return res, None, True
 
     # 6. #todo <task> (Direct action)
-    if any(msg_lower.startswith(k) for k in ["#todo", "#viec", "công việc:"]):
-        task = re.sub(r"^(#(todo|viec)|công việc:)\s*", "", msg_clean, flags=re.IGNORECASE)
-        if not task.strip():
+    m_todo = re.search(r'#(?:todo|viec)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_todo or msg_lower.startswith("công việc:"):
+        task = m_todo.group(1).strip() if m_todo else msg_clean.replace("công việc:", "").strip()
+        if not task:
             return "Vui lòng nhập nội dung công việc. Ví dụ: `#todo Đọc xong chương 5`", None, True
         res = save_todo(task)
         return res, None, True
 
     # 7. #search <query>
-    if msg_clean.startswith("#search") or msg_clean.startswith("#tim"):
-        q = re.sub(r"^#(search|tim)\s*", "", msg_clean)
+    m_s = re.search(r'#(?:search|tim)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    if m_s:
+        q = m_s.group(1).strip()
         results = await web_search(q, max_results=settings.SEARCH_MAX_RESULTS)
         if results:
             return format_search_results(results), None, False
 
     # 8. Auto-detection for weather or general search
-    msg_lower = msg_clean.lower()
-    
     if "thời tiết" in msg_lower or "weather" in msg_lower:
         loc = "Hanoi"
         for city in ["hồ chí minh", "hcm", "sài gòn", "saigon", "đà nẵng", "da nang", "hải phòng", "cần thơ", "hà nội", "hanoi"]:
