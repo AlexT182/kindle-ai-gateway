@@ -1,8 +1,10 @@
 import os
 import re
 import yaml
+import io
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
+from PIL import Image, ImageDraw, ImageFont
 
 from app.db import (
     upsert_note_index,
@@ -24,51 +26,12 @@ os.makedirs(BOOKS_DIR, exist_ok=True)
 os.makedirs(DIGESTS_DIR, exist_ok=True)
 
 def extract_wikilinks(content: str) -> List[str]:
-    # Extracts [[Node Name]] or [[Node Name|Alias]]
     matches = re.findall(r'\[\[([^\]\|]+)(?:\|[^\]]+)?\]\]', content)
     return [m.strip() for m in matches if m.strip()]
 
 def extract_hashtags(content: str) -> List[str]:
-    # Extracts #tag
     matches = re.findall(r'(?:^|\s)#([a-zA-Z0-9_\-]+)', content)
     return [m.strip().lower() for m in matches if m.strip()]
-
-def parse_markdown_file(file_path: str) -> Optional[Dict[str, Any]]:
-    if not os.path.exists(file_path):
-        return None
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            raw = f.read()
-        
-        frontmatter = {}
-        body = raw
-        
-        # Check for YAML Frontmatter
-        if raw.startswith("---"):
-            parts = raw.split("---", 2)
-            if len(parts) >= 3:
-                try:
-                    frontmatter = yaml.safe_load(parts[1]) or {}
-                    body = parts[2].strip()
-                except Exception:
-                    body = raw
-                    
-        return {
-            "id": frontmatter.get("id", os.path.splitext(os.path.basename(file_path))[0]),
-            "title": frontmatter.get("title", os.path.splitext(os.path.basename(file_path))[0]),
-            "source_book": frontmatter.get("source_book", ""),
-            "category": frontmatter.get("category", "General"),
-            "tags": frontmatter.get("tags", []),
-            "related_nodes": frontmatter.get("related_nodes", []),
-            "created_at": frontmatter.get("created_at", datetime.now().isoformat()),
-            "updated_at": frontmatter.get("updated_at", datetime.now().isoformat()),
-            "content": body,
-            "raw": raw,
-            "file_path": file_path
-        }
-    except Exception as e:
-        print(f"[Vault Parse Error on {file_path}]: {e}")
-        return None
 
 def save_note_to_vault(
     content: str,
@@ -81,23 +44,18 @@ def save_note_to_vault(
     timestamp_str = now.strftime("%Y%m%d-%H%M%S")
     note_id = f"note-{timestamp_str}"
     
-    # Auto-generate title if missing
     if not title or not title.strip():
         lines = [l.strip() for l in content.splitlines() if l.strip()]
         first_line = lines[0] if lines else "Ghi chú không tiêu đề"
-        title = re.sub(r'^[#\-\*\s]+', '', first_line)[:50].strip() or f"Ghi chú {now.strftime('%d/%m/%Y %H:%M')}"
+        title = re.sub(r'^[#\-\*\s]+', '', first_line)[:40].strip() or f"Ghi chú {now.strftime('%d/%m/%Y %H:%M')}"
         
-    # Extract tags and wikilinks from content
     extracted_tags = extract_hashtags(content)
     all_tags = list(set((tags or []) + extracted_tags))
-    
     extracted_links = extract_wikilinks(content)
     
-    # Clean filename
-    clean_filename = re.sub(r'[\\/*?:"<>|]', '_', title)[:40].strip() or note_id
+    clean_filename = re.sub(r'[\\/*?:"<>|]', '_', title)[:35].strip() or note_id
     file_path = os.path.join(NOTES_DIR, f"{clean_filename}.md")
     
-    # Handle filename collisions
     idx = 1
     while os.path.exists(file_path):
         file_path = os.path.join(NOTES_DIR, f"{clean_filename}_{idx}.md")
@@ -119,7 +77,6 @@ def save_note_to_vault(
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(file_content)
         
-    # Upsert into SQLite Index
     upsert_note_index(
         note_id=note_id,
         title=title,
@@ -143,7 +100,6 @@ def save_note_to_vault(
     }
 
 def get_graph_data() -> Dict[str, Any]:
-    # Fetch all nodes and edges for Web 3D Force Graph
     notes = get_all_notes_db(limit=500)
     edges = get_graph_edges()
     
@@ -173,7 +129,6 @@ def get_graph_data() -> Dict[str, Any]:
             
     links = []
     for e in edges:
-        # Ensure both endpoints exist in nodes list
         if e["source_node"] not in node_set:
             node_set.add(e["source_node"])
             nodes.append({"id": e["source_node"], "name": e["source_node"], "group": "Concept", "val": 3, "book": "", "note_id": ""})
@@ -190,42 +145,57 @@ def get_graph_data() -> Dict[str, Any]:
     return {"nodes": nodes, "links": links}
 
 def render_ascii_graph(topic: Optional[str] = None) -> str:
+    """
+    Kindle E-ink Optimized Vertical Knowledge Card Layout.
+    Strictly constrained to 36-38 characters to prevent wrapping distortion on 6-inch screens.
+    """
+    notes = get_all_notes_db(limit=30)
     edges = get_graph_edges()
-    notes = get_all_notes_db(limit=50)
     
-    if not edges and not notes:
-        return "=== SƠ ĐỒ ĐỒ THỊ TRI THỨC (KNOWLEDGE GRAPH) ===\nChưa có ghi chú nào trong Vault. Hãy dùng lệnh `#note <nội dung>` để lưu ghi chú đầu tiên!\n================================================"
+    if not notes:
+        return (
+            "=== SƠ ĐỒ ĐỒ THỊ TRI THỨC (VAULT) ===\n"
+            "Chưa có ghi chú nào trong Vault.\n"
+            "Dùng lệnh `#note <nội dung>` để lưu\n"
+            "ghi chú đầu tiên!\n"
+            "====================================="
+        )
 
-    res = [
-        "=== SƠ ĐỒ ĐỒ THỊ TRI THỨC (KNOWLEDGE GRAPH) ===",
-        f"Tổng số Ghi chú: {len(notes)} | Liên kết mạng lưới: {len(edges)}",
-        "------------------------------------------------"
+    # Group notes by Source Book
+    book_groups: Dict[str, List[Dict[str, Any]]] = {}
+    for n in notes:
+        book = n.get("source_book") or "Ý tưởng cá nhân"
+        book_groups.setdefault(book, []).append(n)
+        
+    out = [
+        "=== ĐỒ THỊ TRI THỨC (KNOWLEDGE GRAPH) ===",
+        f"Tổng: {len(notes)} ghi chú | {len(edges)} liên kết mạng",
+        ""
     ]
     
-    if topic and topic.strip():
-        top_clean = topic.strip().lower()
-        matched_edges = [e for e in edges if top_clean in e["source_node"].lower() or top_clean in e["target_node"].lower()]
-        if matched_edges:
-            res.append(f"CÁC MỐI LIÊN KẾT LIÊN QUAN ĐẾN '{topic.upper()}':")
-            for e in matched_edges[:15]:
-                res.append(f"• [{e['source_node']}] ───({e['link_type']})───► [[{e['target_node']}]]")
-        else:
-            res.append(f"Chưa tìm thấy liên kết trực tiếp cho chủ đề '{topic}'.")
-    else:
-        # Show general cluster connections
-        if edges:
-            res.append("MẠNG LƯỚI LIÊN KẾT GẦN ĐÂY:")
-            for e in edges[:12]:
-                res.append(f"• [{e['source_node']}] ───({e['link_type']})───► [[{e['target_node']}]]")
-        else:
-            res.append("DANH SÁCH GHI CHÚ GẦN ĐÂY:")
-            for n in notes[:8]:
-                res.append(f"• [[{n['title']}]] (Nguồn: {n['source_book'] or 'Ý tưởng cá nhân'})")
-                
-    res.append("------------------------------------------------")
-    res.append("Mẹo: Dùng `#node <tên>` để xem chi tiết 1 khái niệm, hoặc `#note` để ghi chép.")
-    res.append("================================================")
-    return "\n".join(res)
+    for book, b_notes in list(book_groups.items())[:4]:
+        # Truncate book title cleanly
+        b_title = book[:30] + "..." if len(book) > 30 else book
+        out.append(f"┌─ 📚 {b_title}")
+        
+        for idx, n in enumerate(b_notes[:3]):
+            is_last_note = (idx == len(b_notes) - 1 or idx == 2)
+            prefix = "└─" if is_last_note else "├─"
+            n_title = n['title'][:25]
+            out.append(f"{prefix} 💡 [[{n_title}]]")
+            
+            # Find outbound links for this note
+            node_links = [e['target_node'] for e in edges if e['source_node'] == n['title']]
+            for l in node_links[:2]:
+                l_clean = l[:20]
+                out.append(f"│   └──► [[{l_clean}]]")
+        out.append("")
+
+    out.append("-------------------------------------")
+    out.append("• Mẹo: Gõ `#node <tên>` xem 2 chiều.")
+    out.append("• Xem ảnh nét: /v1/vault/graph/image")
+    out.append("=====================================")
+    return "\n".join(out)
 
 def get_node_details(node_name: str) -> str:
     edges = get_graph_edges()
@@ -234,16 +204,84 @@ def get_node_details(node_name: str) -> str:
     inbound = [e["source_node"] for e in edges if e["target_node"].lower() == name_clean.lower()]
     outbound = [e["target_node"] for e in edges if e["source_node"].lower() == name_clean.lower()]
     
-    # Look up note content
     notes = search_notes_fts(name_clean, limit=1)
     note_content = notes[0]["content_raw"] if notes else "Chưa có nội dung ghi chú chi tiết."
     
     res = [
-        f"=== CHI TIẾT KHÁI NIỆM: [[{name_clean.upper()}]] ===",
-        f"Nội dung tóm tắt:\n{note_content[:300]}...",
-        "------------------------------------------------",
-        f"• Liên kết Đến (Inbound): {', '.join(inbound) if inbound else 'Không có'}",
-        f"• Liên kết Đi (Outbound): {', '.join(outbound) if outbound else 'Không có'}",
-        "================================================"
+        f"=== KHÁI NIỆM: [[{name_clean.upper()[:25]}]] ===",
+        f"Trích dẫn / Ý tưởng:\n{note_content[:180]}...",
+        "-------------------------------------",
+        f"• Liên kết Đến (Inbound):\n  {', '.join(inbound[:3]) if inbound else 'Không có'}",
+        f"• Liên kết Đi (Outbound):\n  {', '.join(outbound[:3]) if outbound else 'Không có'}",
+        "====================================="
     ]
     return "\n".join(res)
+
+def generate_kindle_graph_image() -> bytes:
+    """
+    Generate a high-contrast 300 DPI Black & White portrait image (750x1000)
+    specifically designed for Kindle Paperwhite 6-inch E-ink display.
+    """
+    width, height = 750, 1000
+    image = Image.new("L", (width, height), color=255) # 8-bit grayscale, pure white background
+    draw = ImageDraw.Draw(image)
+    
+    # Try loading system font, fallback to default
+    try:
+        font_title = ImageFont.truetype("arial.ttf", 24)
+        font_box = ImageFont.truetype("arial.ttf", 18)
+        font_sub = ImageFont.truetype("arial.ttf", 14)
+    except Exception:
+        font_title = ImageFont.load_default()
+        font_box = ImageFont.load_default()
+        font_sub = ImageFont.load_default()
+
+    # Draw Header
+    draw.rectangle([(20, 20), (width - 20, 70)], fill=0) # Black header bar
+    draw.text((40, 32), "KINDLE KNOWLEDGE GRAPH (300 PPI)", fill=255, font=font_title)
+    
+    notes = get_all_notes_db(limit=8)
+    edges = get_graph_edges()
+    
+    # Group into vertical tree cards
+    y_offset = 100
+    for idx, n in enumerate(notes[:5]):
+        card_top = y_offset
+        card_bottom = y_offset + 130
+        
+        # Outer Card Box
+        draw.rounded_rectangle([(30, card_top), (width - 30, card_bottom)], radius=12, outline=0, width=3)
+        
+        # Book badge
+        book_title = n.get("source_book") or "Ghi chép ý tưởng"
+        draw.text((50, card_top + 15), f"BOOK: {book_title[:45]}", fill=0, font=font_sub)
+        
+        # Note Node Box (Inner pill)
+        draw.rounded_rectangle([(50, card_top + 42), (width - 50, card_top + 80)], radius=8, fill=230, outline=0, width=2)
+        draw.text((65, card_top + 50), f"[[{n['title'][:40]}]]", fill=0, font=font_box)
+        
+        # Cross links
+        related = [e['target_node'] for e in edges if e['source_node'] == n['title']]
+        if related:
+            draw.text((70, card_top + 95), f"--> Connects to: [[{', '.join(related[:2])}]]", fill=80, font=font_sub)
+        else:
+            draw.text((70, card_top + 95), f"Tags: {', '.join(n.get('tags', [])[:3]) or 'General'}", fill=80, font=font_sub)
+
+        # Draw vertical flow arrow to next card
+        if idx < len(notes[:5]) - 1:
+            draw.line([(width // 2, card_bottom), (width // 2, card_bottom + 30)], fill=0, width=3)
+            draw.polygon([
+                (width // 2, card_bottom + 30),
+                (width // 2 - 8, card_bottom + 18),
+                (width // 2 + 8, card_bottom + 18)
+            ], fill=0)
+
+        y_offset += 165
+        if y_offset > height - 120:
+            break
+
+    # Output to PNG bytes
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    buf.seek(0)
+    return buf.getvalue()

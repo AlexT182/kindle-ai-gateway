@@ -13,7 +13,8 @@ from app.vault import (
     get_graph_data,
     get_all_tags,
     get_all_notes_db,
-    search_notes_fts
+    search_notes_fts,
+    generate_kindle_graph_image
 )
 from app.routes.admin import router as admin_router
 from app.scheduler import start_scheduler
@@ -187,6 +188,12 @@ def create_vault_note(req: NoteCreateRequest, auth: bool = Depends(verify_token)
 @app.get("/vault/graph")
 def get_vault_graph(auth: bool = Depends(verify_token)):
     return get_graph_data()
+
+@app.get("/v1/vault/graph/image")
+@app.get("/vault/graph/image")
+def get_vault_graph_image():
+    img_bytes = generate_kindle_graph_image()
+    return Response(content=img_bytes, media_type="image/png")
 
 @app.get("/v1/vault/tags")
 @app.get("/vault/tags")
