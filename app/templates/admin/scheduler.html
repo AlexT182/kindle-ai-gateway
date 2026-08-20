@@ -13,12 +13,19 @@
         </div>
     </div>
 
+    {% if message %}
+    <div class="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs flex items-center space-x-2">
+        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+        <span>{{ message }}</span>
+    </div>
+    {% endif %}
+
     <!-- Jobs Table -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         <div class="p-5 border-b border-slate-800 flex items-center justify-between">
             <h3 class="font-bold text-white text-sm">Danh Sách Tác Vụ Định Kỳ</h3>
             <span class="text-xs text-emerald-400 font-medium flex items-center space-x-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>APScheduler Running</span>
             </span>
         </div>
@@ -33,12 +40,12 @@
                     </div>
                     <p class="text-xs text-slate-400">Tự động quét tin tức công nghệ, kinh tế, thị trường AI mới nhất và xuất báo cáo vào Vault.</p>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <button class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition flex items-center space-x-1.5">
+                <form method="POST" action="/admin/scheduler/run/daily_morning_intel">
+                    <button type="submit" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition flex items-center space-x-1.5">
                         <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400"></i>
                         <span>Chạy Ngay</span>
                     </button>
-                </div>
+                </form>
             </div>
 
             <!-- Job 2 -->
@@ -50,12 +57,12 @@
                     </div>
                     <p class="text-xs text-slate-400">Đọc toàn bộ ghi chú và trích dẫn sách trong tuần, xuất bài phân tích xu hướng tư duy.</p>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <button class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition flex items-center space-x-1.5">
+                <form method="POST" action="/admin/scheduler/run/weekly_reading_retro">
+                    <button type="submit" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition flex items-center space-x-1.5">
                         <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400"></i>
                         <span>Chạy Ngay</span>
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     </div>

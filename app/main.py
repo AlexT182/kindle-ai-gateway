@@ -16,6 +16,7 @@ from app.vault import (
     search_notes_fts
 )
 from app.routes.admin import router as admin_router
+from app.scheduler import start_scheduler
 
 app = FastAPI(
     title="Kindle AI Agent OS",
@@ -24,6 +25,10 @@ app = FastAPI(
 )
 
 app.include_router(admin_router)
+
+@app.on_event("startup")
+def on_startup():
+    start_scheduler()
 
 app.add_middleware(
     CORSMiddleware,

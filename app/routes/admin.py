@@ -13,6 +13,12 @@ from app.vault import (
     get_graph_edges,
     delete_note_index
 )
+from app.persona import (
+    get_baseline_profile,
+    save_baseline_profile,
+    get_evolving_memory
+)
+from app.scheduler import trigger_job_manual
 
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates"))
 
@@ -118,40 +124,68 @@ def persona_view(request: Request):
     if not is_authenticated(request):
         return RedirectResponse(url="/admin/login")
         
-    profile = {
-        "user_name": "Alex",
-        "user_role": "Product Manager / Tech Entrepreneur",
-        "thinking_models": ["First Principles Thinking", "Lean & Iterative Prototyping", "Stoic Philosophy"],
-        "communication_rules": [
-            "Thẳng thắn, phản biện logic, không tâng bốc",
-            "Trình bày cấu trúc gạch đầu dòng rõ nét cho E-ink",
-            "Tuyệt đối không dùng emoji"
-        ]
-    }
+    profile = get_baseline_profile()
+    memory = get_evolving_memory()
+    
     return templates.TemplateResponse("admin/persona.html", {
         "request": request,
         "active_tab": "persona",
         "title": "Cá Tính AI - Kindle AI Agent",
         "profile": profile,
+        "memory": memory,
         "message": None
     })
 
 @router.post("/persona/save")
-def save_persona_admin(request: Request, user_name: str = Form(...), user_role: str = Form(...), thinking_models: str = Form(...), communication_rules: str = Form(...)):
+def save_persona_admin(
+    request: Request,
+    user_name: str = Form(...),
+    user_role: str = Form(...),
+    thinking_models: str = Form(...),
+    communication_rules: str = Form(...)
+):
     if not is_authenticated(request):
         return RedirectResponse(url="/admin/login")
-    # Redirect with success
-    return RedirectResponse(url="/admin/persona", status_code=303)
+        
+    models_list = [m.strip() for m in thinking_models.splitlines() if m.strip()]
+    rules_list = [r.strip() for r in communication_rules.splitlines() if r.strip()]
+    
+    profile_data = {
+        "user_name": user_name.strip(),
+        "user_role": user_role.strip(),
+        "thinking_models": models_list,
+        "communication_rules": rules_list,
+        "favorite_authors": ["Don Norman", "Dan Olsen", "Peter Thiel", "Nassim Taleb"]
+    }
+    save_baseline_profile(profile_data)
+    
+    memory = get_evolving_memory()
+    return templates.TemplateResponse("admin/persona.html", {
+        "request": request,
+        "active_tab": "persona",
+        "title": "Cá Tính AI - Kindle AI Agent",
+        "profile": profile_data,
+        "memory": memory,
+        "message": "Đã lưu cấu hình cá tính Persona thành công!"
+    })
 
 @router.get("/scheduler", response_class=HTMLResponse)
-def scheduler_view(request: Request):
+def scheduler_view(request: Request, msg: str = None):
     if not is_authenticated(request):
         return RedirectResponse(url="/admin/login")
     return templates.TemplateResponse("admin/scheduler.html", {
         "request": request,
         "active_tab": "scheduler",
-        "title": "Bộ Lập Lịch - Kindle AI Agent"
+        "title": "Bộ Lập Lịch - Kindle AI Agent",
+        "message": msg
     })
+
+@router.post("/scheduler/run/{job_name}")
+async def run_scheduler_job_manual(request: Request, job_name: str):
+    if not is_authenticated(request):
+        return RedirectResponse(url="/admin/login")
+    res = await trigger_job_manual(job_name)
+    return RedirectResponse(url=f"/admin/scheduler?msg={res}", status_code=303)
 
 @router.get("/mcp", response_class=HTMLResponse)
 def mcp_view(request: Request):

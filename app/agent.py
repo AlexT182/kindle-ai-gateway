@@ -12,6 +12,7 @@ from app.tools import (
     get_crypto_price,
     save_todo
 )
+from app.persona import get_unified_persona_prompt
 from app.vault import (
     save_note_to_vault,
     render_ascii_graph,
@@ -75,7 +76,9 @@ Chỉ ra lỗ hổng logic, điểm mù nhận thức và rủi ro tiềm ẩn t
 
 def get_eink_system_prompt() -> str:
     current_time = get_current_time_str()
-    return f"""Bạn là trợ lý đọc sách và nghiên cứu thông minh Alex Agent trên thiết bị Kindle Paperwhite (màn hình E-ink đơn sắc).
+    persona_str = get_unified_persona_prompt()
+    return f"""{persona_str}
+
 THỜI GIAN THỰC HIỆN TẠI: {current_time}
 
 QUY TẮC ĐỊNH DẠNG BẮT BUỘC CHO E-INK:
