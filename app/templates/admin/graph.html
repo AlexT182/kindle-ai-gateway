@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="space-y-4 max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="network" class="w-6 h-6 text-emerald-400"></i>
+                <span>3D Interactive Knowledge Graph View</span>
+            </h2>
+            <p class="text-slate-400 text-sm mt-1">Trực quan hóa mạng lưới liên kết giữa các cuốn sách, ghi chú và khái niệm chuẩn Obsidian.</p>
+        </div>
+        <div class="flex items-center space-x-3 text-xs">
+            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span><span class="text-slate-300">Sách (Book)</span></span>
+            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-indigo-500"></span><span class="text-slate-300">Ghi chú (Note)</span></span>
+            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span><span class="text-slate-300">Khái niệm (Concept)</span></span>
+        </div>
+    </div>
+
+    <!-- 3D Graph Container -->
+    <div class="w-full h-[650px] bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden relative shadow-2xl" id="3d-graph">
+        <!-- Overlay Loading & Controls -->
+        <div id="graph-loading" class="absolute inset-0 bg-slate-950 flex items-center justify-center z-10">
+            <div class="text-center space-y-3">
+                <div class="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p class="text-xs text-slate-400">Đang khởi tạo mạng lưới 3D Graph...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3D Force Graph Library -->
+<script src="https://unpkg.com/3d-force-graph"></script>
+<script>
+    fetch('/v1/vault/graph')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('graph-loading').style.display = 'none';
+
+            const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
+                .graphData(data)
+                .nodeId('id')
+                .nodeLabel(node => `${node.name} (${node.group || 'Concept'})`)
+                .nodeVal(node => node.val || 4)
+                .nodeColor(node => {
+                    if (node.group === 'Book') return '#10b981'; // Emerald
+                    if (node.group === 'Concept') return '#f59e0b'; // Amber
+                    return '#6366f1'; // Indigo for Notes
+                })
+                .linkColor(() => 'rgba(148, 163, 184, 0.4)')
+                .linkWidth(1.5)
+                .linkOpacity(0.6)
+                .backgroundColor('#020617')
+                .onNodeClick(node => {
+                    // Zoom camera to clicked node
+                    const distance = 40;
+                    const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+                    Graph.cameraPosition(
+                        { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+                        node,
+                        3000
+                    );
+                });
+        })
+        .catch(err => {
+            console.error('Graph Load Error:', err);
+            document.getElementById('graph-loading').innerHTML = '<p class="text-rose-400 text-sm">Lỗi tải dữ liệu đồ thị.</p>';
+        });
+</script>
+{% endblock %}

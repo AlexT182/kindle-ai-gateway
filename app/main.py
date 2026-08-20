@@ -15,12 +15,15 @@ from app.vault import (
     get_all_notes_db,
     search_notes_fts
 )
+from app.routes.admin import router as admin_router
 
 app = FastAPI(
     title="Kindle AI Agent OS",
     description="Autonomous Personal Knowledge & Productivity Agent for Kindle Paperwhite",
     version="2.0.0"
 )
+
+app.include_router(admin_router)
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="blocks" class="w-6 h-6 text-indigo-400"></i>
+                <span>Hệ Sinh Thái MCP Tools (Model Context Protocol)</span>
+            </h2>
+            <p class="text-slate-400 text-sm mt-1">Quản lý và kích hoạt các công cụ mở rộng chuẩn MCP cho Alex Agent.</p>
+        </div>
+    </div>
+
+    <!-- Tools Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                    <i data-lucide="globe" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white text-sm">web_search_mcp</h4>
+                    <p class="text-xs text-slate-400 mt-1">Tìm kiếm tin tức và dữ liệu thời gian thực qua DuckDuckGo & Tavily.</p>
+                </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[11px] bg-emerald-500/10 text-emerald-400 font-medium">Bật</span>
+        </div>
+
+        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                    <i data-lucide="folder-git-2" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white text-sm">vault_filesystem_mcp</h4>
+                    <p class="text-xs text-slate-400 mt-1">Đọc, ghi, tìm kiếm và liên kết các file Markdown trong kho tri thức Vault.</p>
+                </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[11px] bg-emerald-500/10 text-emerald-400 font-medium">Bật</span>
+        </div>
+
+        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+                    <i data-lucide="cloud-sun" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white text-sm">weather_mcp</h4>
+                    <p class="text-xs text-slate-400 mt-1">Tra cứu dự báo thời tiết và nhiệt độ thời gian thực qua wttr.in API.</p>
+                </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[11px] bg-emerald-500/10 text-emerald-400 font-medium">Bật</span>
+        </div>
+
+        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-start justify-between">
+            <div class="flex items-start space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 shrink-0">
+                    <i data-lucide="coins" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white text-sm">finance_mcp</h4>
+                    <p class="text-xs text-slate-400 mt-1">Lấy giá Bitcoin, ETH, SOL, vàng và cổ phiếu theo USD & VNĐ.</p>
+                </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[11px] bg-emerald-500/10 text-emerald-400 font-medium">Bật</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

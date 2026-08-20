@@ -1,0 +1,126 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-white">Bảng Điều Khiển Trung Tâm (Overview)</h2>
+            <p class="text-slate-400 text-sm mt-1">Theo dõi hoạt động, kho tri thức và trạng thái hệ sinh thái Kindle AI Gateway.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="/admin/notes" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20 flex items-center space-x-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Tạo Ghi Chú Mới</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                <i data-lucide="file-text" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-medium">Tổng Ghi Chú (Vault)</span>
+                <h3 class="text-2xl font-bold text-white mt-0.5">{{ stats.notes_count }}</h3>
+            </div>
+        </div>
+
+        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <i data-lucide="network" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-medium">Liên Kết Đồ Thị (Edges)</span>
+                <h3 class="text-2xl font-bold text-white mt-0.5">{{ stats.edges_count }}</h3>
+            </div>
+        </div>
+
+        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+                <i data-lucide="tag" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-medium">Chủ Đề / Tags</span>
+                <h3 class="text-2xl font-bold text-white mt-0.5">{{ stats.tags_count }}</h3>
+            </div>
+        </div>
+
+        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <i data-lucide="cpu" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs text-slate-400 font-medium">AI Model Hoạt Động</span>
+                <h3 class="text-base font-bold text-white mt-1">DeepSeek V3 / R1</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Notes & Graph Quick Preview -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent Notes List -->
+        <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="clock" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Ghi Chú & Trích Dẫn Gần Đây</span>
+                </h3>
+                <a href="/admin/notes" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">Xem tất cả →</a>
+            </div>
+            <div class="space-y-3">
+                {% for note in recent_notes %}
+                <div class="p-4 bg-slate-950/60 border border-slate-800/80 rounded-xl hover:border-indigo-500/40 transition">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h4 class="font-semibold text-white text-sm">[[{{ note.title }}]]</h4>
+                            <p class="text-xs text-slate-400 mt-1 line-clamp-2">{{ note.content_raw }}</p>
+                        </div>
+                        <span class="text-[11px] text-slate-500 font-mono whitespace-nowrap ml-3">{{ note.created_at[:10] }}</span>
+                    </div>
+                    {% if note.source_book %}
+                    <div class="mt-2.5 flex items-center space-x-2 text-[11px] text-indigo-400 font-medium">
+                        <i data-lucide="book" class="w-3.5 h-3.5"></i>
+                        <span>{{ note.source_book }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-slate-500 text-sm">
+                    Chưa có ghi chú nào. Hãy dùng lệnh <code class="text-indigo-400">#note</code> trên Kindle để ghi chép!
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quick Knowledge Graph Summary -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-white flex items-center space-x-2 mb-4">
+                    <i data-lucide="network" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Đồ Thị Tri Thức 3D</span>
+                </h3>
+                <p class="text-xs text-slate-400 leading-relaxed mb-6">
+                    Xem toàn bộ mạng lưới liên kết giữa các ghi chú, sách đọc và khái niệm cốt lõi dạng 3D Force-Directed Graph tương tác như Obsidian.
+                </p>
+                <div class="p-4 bg-slate-950/80 border border-slate-800 rounded-xl space-y-2 text-xs">
+                    <div class="flex justify-between text-slate-300">
+                        <span>Số cụm tri thức:</span>
+                        <span class="font-semibold text-indigo-400">{{ stats.tags_count }} clusters</span>
+                    </div>
+                    <div class="flex justify-between text-slate-300">
+                        <span>Độ kết nối trung bình:</span>
+                        <span class="font-semibold text-emerald-400">{{ "%.1f"|format(stats.edges_count / (stats.notes_count or 1)) }} links/note</span>
+                    </div>
+                </div>
+            </div>
+            <a href="/admin/graph" class="w-full mt-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold text-center transition flex items-center justify-center space-x-2">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
+                <span>Mở 3D Graph View</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

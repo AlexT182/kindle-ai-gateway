@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or "Kindle AI Agent Dashboard" }}</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 900: '#1e1b4b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0">
+        <div>
+            <!-- Logo / Brand -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <i data-lucide="book-open-check" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base tracking-wide text-white">Alex Agent OS</h1>
+                        <span class="text-xs text-indigo-400 font-mono">Kindle Gateway v2.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-3 space-y-1">
+                <a href="/admin" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if active_tab == 'dashboard' else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Tổng quan (Overview)</span>
+                </a>
+                <a href="/admin/notes" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if active_tab == 'notes' else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>Sổ tay Tri thức (Vault)</span>
+                </a>
+                <a href="/admin/graph" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if active_tab == 'graph' else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <i data-lucide="network" class="w-4 h-4"></i>
+                    <span>Đồ thị Tri thức (Graph)</span>
+                </a>
+                <a href="/admin/persona" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if active_tab == 'persona' else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+                    <span>Cá tính & Trí nhớ (Persona)</span>
+                </a>
+                <a href="/admin/scheduler" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if active_tab == 'scheduler' else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <i data-lucide="clock" class="w-4 h-4"></i>
+                    <span>Lập lịch (Cron Jobs)</span>
+                </a>
+                <a href="/admin/mcp" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if active_tab == 'mcp' else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <i data-lucide="blocks" class="w-4 h-4"></i>
+                    <span>Hệ sinh thái MCP Tools</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Footer / Status -->
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+                <span class="flex items-center space-x-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Kindle PW4 Connected</span>
+                </span>
+                <a href="/admin/logout" class="text-rose-400 hover:text-rose-300 font-medium">Đăng xuất</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-6 md:p-8 overflow-y-auto max-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl mx-auto">
+    <!-- Header -->
+    <div>
+        <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+            <i data-lucide="brain-circuit" class="w-6 h-6 text-indigo-400"></i>
+            <span>Cá Tính AI & Bộ Nhớ Tiến Hóa (Persona Engine)</span>
+        </h2>
+        <p class="text-slate-400 text-sm mt-1">Cấu hình hồ sơ tư duy gốc và theo dõi hiểu biết tự tích lũy của Alex Agent qua các phiên đàm đạo.</p>
+    </div>
+
+    {% if message %}
+    <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs">
+        {{ message }}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Baseline Profile Form -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h3 class="font-bold text-white text-base mb-4 flex items-center space-x-2">
+                <i data-lucide="user-cog" class="w-4 h-4 text-indigo-400"></i>
+                <span>Tầng 1: Hồ Sơ Cá Tính Gốc (Baseline Profile)</span>
+            </h3>
+            
+            <form method="POST" action="/admin/persona/save" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tên Người Dùng</label>
+                    <input type="text" name="user_name" value="{{ profile.user_name }}" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Vai Trò & Chuyên Môn Của Bạn</label>
+                    <input type="text" name="user_role" value="{{ profile.user_role }}" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Các Khung Tư Duy Ưa Thích (Mỗi dòng 1 mục)</label>
+                    <textarea name="thinking_models" rows="3" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">{{ profile.thinking_models | join('\n') }}</textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Quy Tắc Giao Tiếp Cho AI (Mỗi dòng 1 mục)</label>
+                    <textarea name="communication_rules" rows="3" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">{{ profile.communication_rules | join('\n') }}</textarea>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition">
+                    Lưu Cấu Hình Cá Tính
+                </button>
+            </form>
+        </div>
+
+        <!-- Dynamic Evolving Memory Log -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-white text-base mb-4 flex items-center space-x-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Tầng 2: Trí Nhớ Tự Tiến Hóa (Evolving Memory)</span>
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">AI tự động ghi nhận các thói quen, chủ đề quan tâm và insight sâu sắc sau mỗi buổi đọc sách.</p>
+                
+                <div class="space-y-3">
+                    <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
+                        <span class="text-[10px] text-indigo-400 font-mono">Insight #1 • Product Management</span>
+                        <p class="text-xs text-slate-300 mt-1">Người dùng rất chú trọng đến nguyên lý Lean MVP và Product-Market Fit cho ứng dụng B2B.</p>
+                    </div>
+                    <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
+                        <span class="text-[10px] text-indigo-400 font-mono">Insight #2 • Communication Style</span>
+                        <p class="text-xs text-slate-300 mt-1">Ưa chuộng phong cách lập luận thẳng thắn, phản biện sắc bén và dùng ví dụ thực tế từ các tập đoàn lớn.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800 text-xs text-slate-500 flex justify-between">
+                <span>Tổng phiên tương tác: 42 sessions</span>
+                <span>Cập nhật gần nhất: Hôm nay</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
