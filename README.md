@@ -1,45 +1,65 @@
-# Kindle AI Gateway (Dokploy & KOAssistant)
+# Kindle AI Gateway
 
-Gateway trung gian chuẩn hóa OpenAI API cho thiết bị **Amazon Kindle** (chạy **KOReader + KOAssistant**), tích hợp:
-- **Tự động Web Search** (DuckDuckGo / Tavily) giúp AI cập nhật dữ liệu thời gian thực.
-- **Bộ lọc chuyên dụng cho E-ink**: Tự động loại bỏ Emoji, tối ưu hóa ngắt đoạn, căn chỉnh tiếng Việt cho Kindle Paperwhite.
-- **Xác thực bảo mật**: Quản lý bằng Bearer Token bảo vệ API.
-- **Hỗ trợ Streaming SSE**: Phản hồi theo thời gian thực cực kỳ mượt mà.
+Gateway OpenAI-compatible dành cho Kindle chạy KOReader + KOAssistant. `alex-agent` có thể tự chọn các công cụ chỉ-đọc (web, thời tiết, Wikipedia, crypto và Kindle Vault), nhưng bị giới hạn số bước và không được chạy shell hay tự ý ghi dữ liệu.
 
----
+## Cấu hình bắt buộc
 
-## 1. Cài đặt biến môi trường trên Dokploy
+Yêu cầu Python 3.11 trở lên. Sao chép `.env.example` thành `.env` và đặt các biến sau:
 
-Khi tạo ứng dụng trên **Dokploy** (chọn Docker hoặc Git repository), cấu hình các biến môi trường (Environment Variables):
+| Biến | Mục đích |
+|---|---|
+| `DEEPSEEK_API_KEY` | Khóa API của nhà cung cấp AI |
+| `AUTH_TOKEN` | Token máy ngẫu nhiên, tối thiểu 32 ký tự; nhập token này vào KOAssistant |
+| `ADMIN_PASSWORD` | Mật khẩu riêng để đăng nhập `/admin`, tối thiểu 12 ký tự |
+| `SESSION_SECRET` | Khóa ký cookie ngẫu nhiên và độc lập, tối thiểu 32 ký tự |
 
-| Tên biến | Bắt buộc | Mô tả |
-|---|---|---|
-| `DEEPSEEK_API_KEY` | **Có** | API Key lấy từ [platform.deepseek.com](https://platform.deepseek.com) |
-| `AUTH_TOKEN` | **Có** | Mã bí mật do bạn tự đặt (dùng để điền vào Kindle) |
-| `ENABLE_WEB_SEARCH` | Không | `true` (mặc định bật tự động tìm kiếm web) |
-| `TAVILY_API_KEY` | Không | API Key từ Tavily (nếu muốn tăng tốc độ tìm kiếm) |
+Không dùng cùng một giá trị cho ba secret. Không truyền secret trên URL. Ứng dụng sẽ từ chối khởi động nếu cấu hình yếu hoặc còn giá trị mặc định cũ.
 
----
+Có thể tạo hai giá trị ngẫu nhiên bằng Python:
 
-## 2. Cấu hình Domain & SSL trên Dokploy
-1. Trong Dokploy, thêm Domain: `kindle.alphatech.ai.vn`.
-2. Trỏ port container vào `8000`.
-3. Bật tự động cấp phát SSL / HTTPS (Let's Encrypt / Traefik).
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
 
----
+Chạy lệnh hai lần: một lần cho `AUTH_TOKEN`, một lần cho `SESSION_SECRET`.
 
-## 3. Cấu hình trên Kindle (KOReader + KOAssistant)
-1. Mở **KOReader** trên Kindle.
-2. Mở menu trên cùng → Chọn **Tools (Cờ lê)** → **Trang 2** → **KOAssistant** → **API Keys**.
-3. Chọn Provider: **Custom OpenAI Compatible** (hoặc `OpenAI Compatible`).
-4. Điền các thông số:
-   - **Base URL**: `https://kindle.alphatech.ai.vn/v1`
-   - **API Key**: Mã `AUTH_TOKEN` bạn đã đặt ở trên.
-   - **Model**: `deepseek-chat` hoặc `alex-agent`.
-5. Vào **Settings** → **AI Language Settings** → Chọn **Vietnamese**.
+## Chạy và kiểm thử
 
----
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
 
-## 4. Kiểm tra hoạt động
-1. Thử chat một câu hỏi thời sự (ví dụ: *"Tin tức công nghệ mới nhất hôm nay là gì?"*).
-2. Server sẽ tự động kích hoạt **Web Search** → gom dữ liệu gửi DeepSeek → làm sạch Emoji → trả kết quả tiếng Việt mượt mà về Kindle!
+Hoặc dùng Docker Compose:
+
+```bash
+docker compose up --build -d
+```
+
+Compose gắn volume `kindle_ai_data` vào `/data`, chạy container bằng user không phải root, bật read-only root filesystem và bỏ Linux capabilities.
+Image production dùng `requirements.lock` để khóa cả dependency trực tiếp và bắc cầu; cập nhật lock cùng lúc khi nâng dependency.
+
+## Cấu hình KOAssistant
+
+- Base URL: `https://kindle.alphatech.ai.vn/v1`
+- API Key: giá trị `AUTH_TOKEN` (không phải mật khẩu admin)
+- Model: `alex-agent`
+- Language: Vietnamese
+
+Gateway chấp nhận `Authorization: Bearer`, `X-API-Key` hoặc `api-key` header để tương thích client. Token trong query string bị từ chối.
+
+## Triển khai Dokploy
+
+1. Cấu hình bốn biến bắt buộc trong Environment của Dokploy; không commit `.env`.
+2. Gắn persistent volume vào `/data` trước lần deploy đầu tiên.
+3. Trỏ domain HTTPS vào port container `8000`.
+4. Deploy rồi kiểm tra `/health` trả `200`.
+5. Xác nhận `/v1/models` trả `401` khi không có token và `200` khi có Bearer token đúng.
+6. Cập nhật token mới trong KOAssistant sau khi production đã khỏe.
+
+`ALLOWED_ORIGINS` mặc định rỗng vì Kindle/native client không cần CORS. Chỉ thêm các origin HTTPS cụ thể nếu có frontend web khác domain; không dùng `*`.
+
+## Lưu ý dữ liệu và lịch sử Git
+
+Thư mục `data/` là dữ liệu runtime và đã bị loại khỏi Git. Việc xóa các file cũ khỏi commit mới không xóa chúng khỏi lịch sử repository; nếu dữ liệu từng công khai là nhạy cảm, cần rotate secret trước rồi thực hiện một đợt rewrite history riêng có sao lưu và phê duyệt.

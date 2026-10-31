@@ -2,9 +2,11 @@ import os
 import asyncio
 from datetime import datetime
 from typing import Dict, Any, List
+from app.search import web_search, format_search_results
+from app.vault import save_note_to_vault, get_all_notes_db
 try:
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
-    scheduler = AsyncIOScheduler()
+    scheduler = AsyncIOScheduler(timezone="Asia/Ho_Chi_Minh")
     HAS_APSCHEDULER = True
 except ImportError:
     scheduler = None
@@ -106,6 +108,10 @@ def start_scheduler():
         print("[Scheduler] APScheduler started successfully!")
     else:
         print("[Scheduler] Running in standalone mode without APScheduler background loop.")
+
+def shutdown_scheduler():
+    if scheduler and scheduler.running:
+        scheduler.shutdown(wait=False)
 
 async def trigger_job_manual(job_name: str) -> str:
     if job_name == "daily_morning_intel":

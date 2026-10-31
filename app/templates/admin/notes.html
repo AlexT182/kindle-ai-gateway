@@ -38,6 +38,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-dim);">
                     <span>{{ note.created_at[:10] }}</span>
                     <form method="POST" action="/admin/notes/delete/{{ note.id }}" onsubmit="return confirm('Bạn có chắc muốn xóa ghi chú này?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <button type="submit" class="btn btn-danger" style="padding: 0; font-size: 11.5px;">Xóa</button>
                     </form>
                 </div>
@@ -58,6 +59,7 @@
                 <button onclick="document.getElementById('noteModal').style.display='none'" style="background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer;">✕</button>
             </div>
             <form method="POST" action="/admin/notes/create" style="display: flex; flex-direction: column; gap: 14px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <div>
                     <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Tiêu đề ghi chú</label>
                     <input type="text" name="title" required placeholder="VD: Nguyên lý Lean MVP">

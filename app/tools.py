@@ -7,7 +7,7 @@ from typing import List, Dict, Any, Optional
 import httpx
 from app.config import settings
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+DATA_DIR = str(settings.DATA_DIR)
 os.makedirs(DATA_DIR, exist_ok=True)
 NOTES_FILE = os.path.join(DATA_DIR, "notes.json")
 TODOS_FILE = os.path.join(DATA_DIR, "todos.json")

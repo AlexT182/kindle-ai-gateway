@@ -1,256 +1,154 @@
 import os
-import json
 from typing import Optional
-from fastapi import APIRouter, Request, Depends, HTTPException, Response
+
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
+from app.auth import clear_login_failures, create_admin_session, csrf_token, is_admin_session_valid, login_allowed, record_failed_login, validate_csrf, verify_admin_password
 from app.config import settings
-from app.vault import (
-    save_note_to_vault,
-    get_all_notes_db,
-    search_notes_fts,
-    get_all_tags,
-    get_graph_edges,
-    delete_note_index
-)
-from app.persona import (
-    get_baseline_profile,
-    save_baseline_profile,
-    get_evolving_memory
-)
+from app.persona import get_baseline_profile, get_evolving_memory, save_baseline_profile
 from app.scheduler import trigger_job_manual
+from app.vault import delete_note_index, get_all_notes_db, get_all_tags, get_graph_edges, save_note_to_vault, search_notes_fts
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
-
 router = APIRouter(prefix="/admin", tags=["Admin Dashboard"])
 
+
 def is_authenticated(request: Request) -> bool:
-    session_token = request.cookies.get("admin_session")
-    if not settings.AUTH_TOKEN:
-        return True
-    if session_token and session_token.strip().lower() == settings.AUTH_TOKEN.strip().lower():
-        return True
-    q_token = request.query_params.get("token", "")
-    if q_token and q_token.strip().lower() == settings.AUTH_TOKEN.strip().lower():
-        return True
-    return False
+    return is_admin_session_valid(request.cookies.get("admin_session"))
+
+
+def page_context(request: Request, **values):
+    session = request.cookies.get("admin_session", "")
+    return {**values, "csrf_token": csrf_token(session) if session else ""}
+
+
+def require_admin(request: Request):
+    if not is_authenticated(request):
+        return RedirectResponse(url="/admin/login", status_code=303)
+    return None
+
 
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/login.html",
-        context={"error": None}
-    )
+    return templates.TemplateResponse(request=request, name="admin/login.html", context={"error": None})
+
 
 @router.post("/login")
-async def process_login(request: Request, response: Response):
-    token = ""
-    try:
-        form = await request.form()
-        token = form.get("token", "")
-    except Exception:
-        pass
-        
-    if not token:
-        token = request.query_params.get("token", "")
+async def process_login(request: Request):
+    client_ip = request.client.host if request.client else "unknown"
+    if not login_allowed(client_ip):
+        raise HTTPException(429, "Too many login attempts; retry later")
+    form = await request.form()
+    if verify_admin_password(str(form.get("password", ""))):
+        clear_login_failures(client_ip)
+        response = RedirectResponse(url="/admin", status_code=303)
+        response.set_cookie("admin_session", create_admin_session(), max_age=settings.SESSION_MAX_AGE,
+                            httponly=True, secure=True, samesite="strict", path="/admin")
+        return response
+    record_failed_login(client_ip)
+    return templates.TemplateResponse(request=request, name="admin/login.html",
+                                      context={"error": "Mật khẩu không chính xác."}, status_code=401)
 
-    expected = settings.AUTH_TOKEN.strip().lower() if settings.AUTH_TOKEN else ""
-    if not expected or token.strip().lower() == expected:
-        resp = RedirectResponse(url="/admin", status_code=303)
-        resp.set_cookie("admin_session", settings.AUTH_TOKEN, max_age=86400 * 30, httponly=True)
-        return resp
-        
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/login.html",
-        context={"error": "Auth Secret Key không chính xác. Vui lòng thử lại!"}
-    )
 
 @router.get("/logout")
 def logout():
-    resp = RedirectResponse(url="/admin/login", status_code=303)
-    resp.delete_cookie("admin_session")
-    return resp
+    response = RedirectResponse(url="/admin/login", status_code=303)
+    response.delete_cookie("admin_session", path="/admin")
+    return response
+
 
 @router.get("", response_class=HTMLResponse)
 @router.get("/", response_class=HTMLResponse)
 @router.get("/dashboard", response_class=HTMLResponse)
 def dashboard_view(request: Request):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
-        
-    notes = get_all_notes_db(limit=5)
-    tags = get_all_tags()
-    edges = get_graph_edges()
-    
-    stats = {
-        "notes_count": len(get_all_notes_db(limit=500)),
-        "edges_count": len(edges),
-        "tags_count": len(tags)
-    }
-    
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/dashboard.html",
-        context={
-            "active_tab": "dashboard",
-            "title": "Bảng Điều Khiển - Kindle AI Agent",
-            "stats": stats,
-            "recent_notes": notes
-        }
-    )
+    if redirect := require_admin(request): return redirect
+    notes, tags, edges = get_all_notes_db(limit=5), get_all_tags(), get_graph_edges()
+    context = page_context(request, active_tab="dashboard", title="Bảng điều khiển - Kindle AI Agent",
+                           stats={"notes_count": len(get_all_notes_db(limit=500)), "edges_count": len(edges), "tags_count": len(tags)},
+                           recent_notes=notes)
+    return templates.TemplateResponse(request=request, name="admin/dashboard.html", context=context)
+
 
 @router.get("/notes", response_class=HTMLResponse)
 def notes_view(request: Request, q: Optional[str] = None, tag: Optional[str] = None):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
-        
-    if q and q.strip():
-        notes = search_notes_fts(q.strip(), limit=50)
-    else:
-        notes = get_all_notes_db(limit=50)
-        
-    tags = get_all_tags()
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/notes.html",
-        context={
-            "active_tab": "notes",
-            "title": "Sổ Tay Tri Thức - Kindle AI Agent",
-            "notes": notes,
-            "tags": tags,
-            "search_q": q or "",
-            "tag_q": tag or ""
-        }
-    )
+    if redirect := require_admin(request): return redirect
+    notes = search_notes_fts(q.strip(), limit=50) if q and q.strip() else get_all_notes_db(limit=50)
+    context = page_context(request, active_tab="notes", title="Sổ tay tri thức - Kindle AI Agent",
+                           notes=notes, tags=get_all_tags(), search_q=q or "", tag_q=tag or "")
+    return templates.TemplateResponse(request=request, name="admin/notes.html", context=context)
+
 
 @router.post("/notes/create")
 async def create_note_admin(request: Request):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
-    try:
-        form = await request.form()
-        title = form.get("title", "")
-        content = form.get("content", "")
-        source_book = form.get("source_book", "")
-        category = form.get("category", "General")
-        save_note_to_vault(content=content, title=title, source_book=source_book, category=category)
-    except Exception as e:
-        print(f"[Admin Note Create Error]: {e}")
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
+    save_note_to_vault(content=str(form.get("content", "")), title=str(form.get("title", "")),
+                       source_book=str(form.get("source_book", "")), category=str(form.get("category", "General")))
     return RedirectResponse(url="/admin/notes", status_code=303)
 
+
 @router.post("/notes/delete/{note_id}")
-def delete_note_admin(request: Request, note_id: str):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
+async def delete_note_admin(request: Request, note_id: str):
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
     delete_note_index(note_id)
     return RedirectResponse(url="/admin/notes", status_code=303)
 
+
 @router.get("/graph", response_class=HTMLResponse)
 def graph_view(request: Request):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/graph.html",
-        context={
-            "active_tab": "graph",
-            "title": "3D Knowledge Graph View - Kindle AI Agent"
-        }
-    )
+    if redirect := require_admin(request): return redirect
+    return templates.TemplateResponse(request=request, name="admin/graph.html",
+                                      context=page_context(request, active_tab="graph", title="Knowledge Graph - Kindle AI Agent"))
+
 
 @router.get("/persona", response_class=HTMLResponse)
 def persona_view(request: Request):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
-        
-    profile = get_baseline_profile()
-    memory = get_evolving_memory()
-    
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/persona.html",
-        context={
-            "active_tab": "persona",
-            "title": "Cá Tính AI - Kindle AI Agent",
-            "profile": profile,
-            "memory": memory,
-            "message": None
-        }
-    )
+    if redirect := require_admin(request): return redirect
+    return templates.TemplateResponse(request=request, name="admin/persona.html",
+        context=page_context(request, active_tab="persona", title="Cá tính AI - Kindle AI Agent",
+                             profile=get_baseline_profile(), memory=get_evolving_memory(), message=None))
+
 
 @router.post("/persona/save")
 async def save_persona_admin(request: Request):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
-        
-    try:
-        form = await request.form()
-        user_name = form.get("user_name", "Alex")
-        user_role = form.get("user_role", "Product Manager")
-        thinking_models = form.get("thinking_models", "")
-        communication_rules = form.get("communication_rules", "")
-        
-        models_list = [m.strip() for m in thinking_models.splitlines() if m.strip()]
-        rules_list = [r.strip() for r in communication_rules.splitlines() if r.strip()]
-        
-        profile_data = {
-            "user_name": user_name.strip(),
-            "user_role": user_role.strip(),
-            "thinking_models": models_list,
-            "communication_rules": rules_list,
-            "favorite_authors": ["Don Norman", "Dan Olsen", "Peter Thiel", "Nassim Taleb"]
-        }
-        save_baseline_profile(profile_data)
-        memory = get_evolving_memory()
-        return templates.TemplateResponse(
-            request=request,
-            name="admin/persona.html",
-            context={
-                "active_tab": "persona",
-                "title": "Cá Tính AI - Kindle AI Agent",
-                "profile": profile_data,
-                "memory": memory,
-                "message": "Đã lưu cấu hình cá tính Persona thành công!"
-            }
-        )
-    except Exception as e:
-        print(f"[Admin Persona Save Error]: {e}")
-        return RedirectResponse(url="/admin/persona", status_code=303)
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
+    profile = {
+        "user_name": str(form.get("user_name", "Alex")).strip()[:100],
+        "user_role": str(form.get("user_role", "Product Manager")).strip()[:100],
+        "thinking_models": [v.strip() for v in str(form.get("thinking_models", "")).splitlines() if v.strip()][:30],
+        "communication_rules": [v.strip() for v in str(form.get("communication_rules", "")).splitlines() if v.strip()][:30],
+        "favorite_authors": ["Don Norman", "Dan Olsen", "Peter Thiel", "Nassim Taleb"],
+    }
+    save_baseline_profile(profile)
+    return RedirectResponse(url="/admin/persona", status_code=303)
+
 
 @router.get("/scheduler", response_class=HTMLResponse)
 def scheduler_view(request: Request, msg: Optional[str] = None):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/scheduler.html",
-        context={
-            "active_tab": "scheduler",
-            "title": "Bộ Lập Lịch - Kindle AI Agent",
-            "message": msg
-        }
-    )
+    if redirect := require_admin(request): return redirect
+    return templates.TemplateResponse(request=request, name="admin/scheduler.html",
+        context=page_context(request, active_tab="scheduler", title="Bộ lập lịch - Kindle AI Agent", message=msg))
+
 
 @router.post("/scheduler/run/{job_name}")
 async def run_scheduler_job_manual(request: Request, job_name: str):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
-    res = await trigger_job_manual(job_name)
-    return RedirectResponse(url=f"/admin/scheduler?msg={res}", status_code=303)
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
+    result = await trigger_job_manual(job_name)
+    return RedirectResponse(url=f"/admin/scheduler?msg={result}", status_code=303)
+
 
 @router.get("/mcp", response_class=HTMLResponse)
 def mcp_view(request: Request):
-    if not is_authenticated(request):
-        return RedirectResponse(url="/admin/login")
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/mcp.html",
-        context={
-            "active_tab": "mcp",
-            "title": "Hệ Sinh Thái MCP Tools - Kindle AI Agent"
-        }
-    )
+    if redirect := require_admin(request): return redirect
+    return templates.TemplateResponse(request=request, name="admin/mcp.html",
+        context=page_context(request, active_tab="mcp", title="Công cụ tích hợp - Kindle AI Agent"))

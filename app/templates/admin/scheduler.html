@@ -30,6 +30,7 @@
                     <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">Tự động quét tin tức công nghệ, kinh tế, thị trường AI mới nhất và xuất báo cáo vào Vault.</p>
                 </div>
                 <form method="POST" action="/admin/scheduler/run/daily_morning_intel">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <button type="submit" class="btn btn-secondary">▶ Chạy Ngay</button>
                 </form>
             </div>
@@ -44,6 +45,7 @@
                     <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">Đọc toàn bộ ghi chú và trích dẫn sách trong tuần, xuất bài phân tích xu hướng tư duy.</p>
                 </div>
                 <form method="POST" action="/admin/scheduler/run/weekly_reading_retro">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <button type="submit" class="btn btn-secondary">▶ Chạy Ngay</button>
                 </form>
             </div>

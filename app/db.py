@@ -3,8 +3,9 @@ import os
 import json
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+from app.config import settings
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+DATA_DIR = str(settings.DATA_DIR)
 os.makedirs(DATA_DIR, exist_ok=True)
 DB_PATH = os.path.join(DATA_DIR, "vault.db")
 

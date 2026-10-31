@@ -1,205 +1,145 @@
 import time
-import json
-from typing import List, Optional, Dict, Any
-from fastapi import FastAPI, HTTPException, Header, Depends, Query
+from contextlib import asynccontextmanager
+from typing import List, Literal, Optional
+
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse, Response, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
-from app.config import settings
 from app.agent import call_deepseek_non_stream, call_deepseek_stream
-from app.vault import (
-    save_note_to_vault,
-    get_graph_data,
-    get_all_tags,
-    get_all_notes_db,
-    search_notes_fts,
-    generate_kindle_graph_image
-)
+from app.agent_runtime import run_agent_completion, run_agent_stream
+from app.auth import require_api_token
+from app.config import settings
 from app.routes.admin import router as admin_router
-from app.scheduler import start_scheduler
+from app.scheduler import shutdown_scheduler, start_scheduler
+from app.vault import generate_kindle_graph_image, get_all_notes_db, get_all_tags, get_graph_data, save_note_to_vault, search_notes_fts
 
-app = FastAPI(
-    title="Kindle AI Agent OS",
-    description="Autonomous Personal Knowledge & Productivity Agent for Kindle Paperwhite",
-    version="2.0.0"
-)
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    settings.validate_security()
+    if settings.ENABLE_SCHEDULER:
+        start_scheduler()
+    yield
+    shutdown_scheduler()
+
+
+app = FastAPI(title="Kindle AI Agent OS", version="2.1.0", lifespan=lifespan,
+              docs_url="/docs" if settings.ENABLE_DOCS else None,
+              redoc_url="/redoc" if settings.ENABLE_DOCS else None,
+              openapi_url="/openapi.json" if settings.ENABLE_DOCS else None)
 app.include_router(admin_router)
 
-@app.on_event("startup")
-def on_startup():
-    start_scheduler()
+if settings.ALLOWED_ORIGINS:
+    app.add_middleware(CORSMiddleware, allow_origins=settings.ALLOWED_ORIGINS, allow_credentials=False,
+                       allow_methods=["GET", "POST"],
+                       allow_headers=["Authorization", "Content-Type", "X-API-Key", "api-key"])
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-def verify_token(
-    authorization: Optional[str] = Header(None),
-    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
-    api_key: Optional[str] = Header(None, alias="api-key"),
-    token_query: Optional[str] = Query(None, alias="token"),
-    auth_query: Optional[str] = Query(None, alias="auth")
-):
-    if not settings.AUTH_TOKEN:
-        return True
-
-    expected = settings.AUTH_TOKEN.strip().lower().strip("'\\\"")
-
-    candidates = []
-    if authorization:
-        val = authorization.strip()
-        if val.lower().startswith("bearer "):
-            val = val[7:].strip()
-        candidates.append(val)
-    if x_api_key:
-        candidates.append(x_api_key.strip())
-    if api_key:
-        candidates.append(api_key.strip())
-    if token_query:
-        candidates.append(token_query.strip())
-    if auth_query:
-        candidates.append(auth_query.strip())
-
-    for c in candidates:
-        cleaned = c.lower().strip("'\\\"")
-        if cleaned == expected:
-            return True
-
-    return True
 
 class ChatMessage(BaseModel):
-    role: str
-    content: str
+    role: Literal["system", "user", "assistant"]
+    content: str = Field(min_length=1, max_length=20_000)
+
 
 class ChatCompletionRequest(BaseModel):
-    model: Optional[str] = "deepseek-chat"
-    messages: List[ChatMessage]
-    temperature: Optional[float] = 0.7
-    max_tokens: Optional[int] = 2048
-    stream: Optional[bool] = False
+    model: Literal["alex-agent", "deepseek-flash", "deepseek-v4-pro", "deepseek-chat", "deepseek-reasoner"] = "alex-agent"
+    messages: List[ChatMessage] = Field(min_length=1, max_length=40)
+    temperature: float = Field(default=0.7, ge=0, le=2)
+    max_tokens: int = Field(default=2048, ge=1)
+    stream: bool = False
+
 
 class NoteCreateRequest(BaseModel):
-    content: str
-    title: Optional[str] = None
-    source_book: Optional[str] = ""
-    category: Optional[str] = "General"
-    tags: Optional[List[str]] = None
+    content: str = Field(min_length=1, max_length=100_000)
+    title: Optional[str] = Field(default=None, max_length=200)
+    source_book: str = Field(default="", max_length=300)
+    category: str = Field(default="General", max_length=100)
+    tags: Optional[List[str]] = Field(default=None, max_length=30)
+
 
 @app.get("/health")
 def health_check():
-    return {
-        "status": "healthy",
-        "timestamp": int(time.time()),
-        "agent": "alex-agent-v2",
-        "system": "Kindle AI Agent OS"
-    }
+    return {"status": "healthy", "timestamp": int(time.time()), "agent": "alex-agent-v2.1"}
+
 
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
     return Response(status_code=204)
 
-@app.get("/v1/models")
-@app.get("/models")
-def list_models(auth: bool = Depends(verify_token)):
-    return {
-        "object": "list",
-        "data": [
-            {"id": "alex-agent", "object": "model", "owned_by": "alex"},
-            {"id": "deepseek-chat", "object": "model", "owned_by": "deepseek"},
-            {"id": "deepseek-reasoner", "object": "model", "owned_by": "deepseek"}
-        ]
-    }
-
-async def handle_chat_completion(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
-    if not settings.DEEPSEEK_API_KEY:
-        raise HTTPException(status_code=500, detail="Server chưa cấu hình DEEPSEEK_API_KEY")
-
-    target_model = req.model or "deepseek-chat"
-    if target_model == "alex-agent":
-        target_model = "deepseek-chat"
-
-    if req.stream:
-        return StreamingResponse(
-            call_deepseek_stream(
-                messages=[m.dict() for m in req.messages],
-                model=target_model,
-                temperature=req.temperature or 0.7,
-                max_tokens=req.max_tokens or 2048
-            ),
-            media_type="text/event-stream"
-        )
-    else:
-        resp = await call_deepseek_non_stream(
-            messages=[m.dict() for m in req.messages],
-            model=target_model,
-            temperature=req.temperature or 0.7,
-            max_tokens=req.max_tokens or 2048
-        )
-        return JSONResponse(content=resp)
 
 @app.get("/")
 @app.get("/v1")
 def root_redirect():
     return RedirectResponse(url="/admin")
 
+
+@app.get("/v1/models")
+@app.get("/models")
+def list_models(_: bool = Depends(require_api_token)):
+    return {"object": "list", "data": [
+        {"id": "alex-agent", "object": "model", "owned_by": "alex"},
+        {"id": "deepseek-flash", "object": "model", "owned_by": "deepseek"},
+        {"id": "deepseek-v4-pro", "object": "model", "owned_by": "deepseek"},
+        {"id": "deepseek-chat", "object": "model", "owned_by": "deepseek"},
+        {"id": "deepseek-reasoner", "object": "model", "owned_by": "deepseek"},
+    ]}
+
+
+async def handle_chat_completion(req: ChatCompletionRequest):
+    if not settings.DEEPSEEK_API_KEY:
+        raise HTTPException(503, "AI provider is not configured")
+    if sum(len(message.content) for message in req.messages) > settings.MAX_INPUT_CHARS:
+        raise HTTPException(413, "Conversation is too large")
+    if req.max_tokens > settings.MAX_OUTPUT_TOKENS:
+        raise HTTPException(422, f"max_tokens cannot exceed {settings.MAX_OUTPUT_TOKENS}")
+    messages = [message.model_dump() for message in req.messages]
+    if req.model == "alex-agent":
+        if req.stream:
+            return StreamingResponse(run_agent_stream(messages, req.max_tokens), media_type="text/event-stream",
+                                     headers={"Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff"})
+        return JSONResponse(content=await run_agent_completion(messages, req.max_tokens))
+    model = req.model
+    if req.stream:
+        return StreamingResponse(call_deepseek_stream(messages, model, req.temperature, req.max_tokens),
+                                 media_type="text/event-stream",
+                                 headers={"Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff"})
+    return JSONResponse(content=await call_deepseek_non_stream(messages, model, req.temperature, req.max_tokens))
+
+
 @app.post("/v1/chat/completions")
-async def chat_completions_v1(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
-    return await handle_chat_completion(req, auth)
-
 @app.post("/chat/completions")
-async def chat_completions_no_v1(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
-    return await handle_chat_completion(req, auth)
-
 @app.post("/v1")
-async def chat_completions_root_v1(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
-    return await handle_chat_completion(req, auth)
-
 @app.post("/")
-async def chat_completions_root(req: ChatCompletionRequest, auth: bool = Depends(verify_token)):
-    return await handle_chat_completion(req, auth)
+async def chat_completions(req: ChatCompletionRequest, _: bool = Depends(require_api_token)):
+    return await handle_chat_completion(req)
 
-# === VAULT & GRAPH APIS ===
 
 @app.get("/v1/vault/notes")
 @app.get("/vault/notes")
-def get_vault_notes(q: Optional[str] = None, limit: int = 50, auth: bool = Depends(verify_token)):
-    if q and q.strip():
-        return search_notes_fts(q.strip(), limit=limit)
-    return get_all_notes_db(limit=limit)
+def get_vault_notes(q: Optional[str] = None, limit: int = Query(50, ge=1, le=200), _: bool = Depends(require_api_token)):
+    return search_notes_fts(q.strip(), limit=limit) if q and q.strip() else get_all_notes_db(limit=limit)
+
 
 @app.post("/v1/vault/notes")
 @app.post("/vault/notes")
-def create_vault_note(req: NoteCreateRequest, auth: bool = Depends(verify_token)):
-    return save_note_to_vault(
-        content=req.content,
-        title=req.title,
-        source_book=req.source_book or "",
-        category=req.category or "General",
-        tags=req.tags
-    )
+def create_vault_note(req: NoteCreateRequest, _: bool = Depends(require_api_token)):
+    return save_note_to_vault(req.content, req.title, req.source_book, req.category, req.tags)
+
 
 @app.get("/v1/vault/graph")
 @app.get("/vault/graph")
-def get_vault_graph(auth: bool = Depends(verify_token)):
+def get_vault_graph(_: bool = Depends(require_api_token)):
     return get_graph_data()
+
 
 @app.get("/v1/vault/graph/image")
 @app.get("/vault/graph/image")
-def get_vault_graph_image():
-    img_bytes = generate_kindle_graph_image()
-    return Response(content=img_bytes, media_type="image/png")
+def get_vault_graph_image(_: bool = Depends(require_api_token)):
+    return Response(content=generate_kindle_graph_image(), media_type="image/png")
+
 
 @app.get("/v1/vault/tags")
 @app.get("/vault/tags")
-def get_vault_tags(auth: bool = Depends(verify_token)):
+def get_vault_tags(_: bool = Depends(require_api_token)):
     return get_all_tags()
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

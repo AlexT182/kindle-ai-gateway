@@ -5,6 +5,7 @@ import io
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
 from PIL import Image, ImageDraw, ImageFont
+from app.config import settings
 
 from app.db import (
     upsert_note_index,
@@ -15,7 +16,7 @@ from app.db import (
     get_all_tags
 )
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+DATA_DIR = str(settings.DATA_DIR)
 VAULT_DIR = os.path.join(DATA_DIR, "vault")
 NOTES_DIR = os.path.join(VAULT_DIR, "notes")
 BOOKS_DIR = os.path.join(VAULT_DIR, "books")

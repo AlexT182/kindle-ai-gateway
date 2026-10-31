@@ -1,8 +1,9 @@
 import os
 import json
 from typing import Dict, Any, List
+from app.config import settings
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+DATA_DIR = str(settings.DATA_DIR)
 CONFIG_DIR = os.path.join(DATA_DIR, "config")
 os.makedirs(CONFIG_DIR, exist_ok=True)
 MCP_REGISTRY_FILE = os.path.join(CONFIG_DIR, "mcp_registry.json")

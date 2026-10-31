@@ -3,6 +3,7 @@ import time
 import re
 from typing import List, Dict, Any, AsyncGenerator, Optional, Tuple
 import httpx
+from fastapi import HTTPException
 from app.config import settings
 from app.search import web_search, format_search_results
 from app.tools import (
@@ -416,6 +417,7 @@ async def call_deepseek_non_stream(
             json=payload
         )
         if resp.status_code != 200:
+            raise HTTPException(status_code=502, detail=f"AI provider returned HTTP {resp.status_code}")
             return {
                 "id": f"chatcmpl-err-{int(time.time())}",
                 "object": "chat.completion",
@@ -498,6 +500,12 @@ async def call_deepseek_stream(
             headers=headers,
             json=payload
         ) as response:
+            if response.status_code != 200:
+                error = {"error": {"message": f"AI provider returned HTTP {response.status_code}", "type": "upstream_error"}}
+                yield f"data: {json.dumps(error)}\n\n"
+                yield "data: [DONE]\n\n"
+                return
+            sent_done = False
             async for line in response.aiter_lines():
                 if not line:
                     continue
@@ -505,6 +513,7 @@ async def call_deepseek_stream(
                     raw_data = line[6:].strip()
                     if raw_data == "[DONE]":
                         yield "data: [DONE]\n\n"
+                        sent_done = True
                         break
                     try:
                         chunk_json = json.loads(raw_data)
@@ -517,3 +526,5 @@ async def call_deepseek_stream(
                         yield f"{line}\n\n"
                 else:
                     yield f"{line}\n\n"
+            if not sent_done:
+                yield "data: [DONE]\n\n"
