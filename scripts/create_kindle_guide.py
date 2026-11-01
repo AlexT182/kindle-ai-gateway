@@ -92,18 +92,23 @@ Trong cùng ô nhập tin nhắn của KOAssistant, bạn có thể dùng các l
 
 Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng cho màn hình mực điện tử E-ink (không giật lag, không chớp nháy):
 
-### Nhóm 1: Game Cờ Vây (Go / Weiqi) — MỚI BỔ SUNG!
+### Nhóm 1: Game Cờ Vây (Go / Weiqi) — MỚI BỔ SUNG & ĐÃ NÂNG CẤP BOT!
 
 - Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Go].
+- Cách đổi độ khó của Bot & Cài đặt bàn cờ:
+  Chạm vào biểu tượng Menu 3 gạch ở góc trên cùng bên trái thanh tiêu đề:
+  + [Bot: Beginner / Medium / Advanced]: Chạm vào dòng này để đổi 3 mức độ của máy tính:
+    * Beginner (Tập sự): Máy đi ngẫu nhiên đơn giản, phù hợp làm quen luật cờ.
+    * Medium (Tiêu chuẩn): Biết khai cuộc chiếm góc, mở biên đường 3-4, cứu quân và bắt quân atari.
+    * Advanced (Nâng cao): Áp dụng chiến thuật cờ vây toàn diện, nối quân Keima/Kosumi, phạt nặng sai lầm.
+  + [Size]: Đổi kích thước bàn cờ (9x9, 13x13, 19x19).
+    * Mẹo: Nên chơi bàn 9x9 với bot để có trận đấu giáp lá cà kịch tính nhất!
+  + [Opponent]: Đổi giữa Computer (chơi với máy) hoặc Human (2 người chơi trên 1 máy Kindle).
 - Cách chơi & Luật cơ bản:
-  + Bạn đi quân Đen (đi trước), máy (bot AI) đi quân Trắng.
+  + Bạn đi quân Đen (đi trước), máy đi quân Trắng.
   + Chạm vào các giao điểm trên bàn cờ để đặt quân.
-  + Luật khí và bắt quân: Một quân cờ hoặc nhóm quân cờ sống nhờ các giao điểm trống liền kề (gọi là "khí"). Khi đối phương bao vây chặn hết mọi đường khí, quân đó sẽ bị bắt và nhấc ra khỏi bàn cờ.
-  + Mục tiêu: Vây chiếm các vùng đất trống trên bàn cờ. Bên nào kiểm soát diện tích đất và bắt được nhiều quân hơn sẽ chiến thắng.
-- Tùy chọn trong game: Vào menu cài đặt của Go để đổi kích thước bàn cờ:
-  + Bàn 9x9: Nhanh gọn, giải trí trong 5-10 phút.
-  + Bàn 13x13: Chiến thuật vừa phải.
-  + Bàn 19x19: Chuẩn thi đấu chuyên nghiệp.
+  + Luật khí và bắt quân: Nhóm quân cờ sống nhờ các giao điểm trống liền kề ("khí"). Khi bị đối phương chặn hết khí, quân sẽ bị bắt và nhấc ra khỏi bàn cờ.
+  + Mục tiêu: Vây chiếm các vùng đất trống. Bên nào kiểm soát diện tích đất và bắt được nhiều quân hơn sẽ chiến thắng.
 
 ---
 
