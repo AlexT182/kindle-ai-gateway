@@ -78,3 +78,17 @@ def test_rat_elephant_mechanics():
     # Elephant cannot eat Rat
     can_eat_back = (att_rank == 8 and def_rank == 1)
     assert can_eat_back is False
+
+
+def test_leopard_river_jump():
+    b = JungleBoard()
+    # Bottom Leopard is at row 7, col 5
+    # Top Wolf is at row 3, col 5
+    leopard = b.grid[6][4]
+    wolf = b.grid[2][4]
+    assert leopard["rank"] == 5 # Leopard
+    assert wolf["rank"] == 3    # Wolf
+    assert leopard["side"] == "bottom"
+    assert wolf["side"] == "top"
+    # Leopard can capture Wolf
+    assert leopard["rank"] >= wolf["rank"]
