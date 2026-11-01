@@ -1,5 +1,6 @@
 import time
 import uuid
+import logging
 from contextlib import asynccontextmanager
 from typing import List, Literal, Optional
 
@@ -16,6 +17,9 @@ from app.db import database_is_ready
 from app.routes.admin import router as admin_router
 from app.scheduler import shutdown_scheduler, start_scheduler
 from app.vault import generate_kindle_graph_image, get_all_notes_db, get_all_tags, get_graph_data, save_note_to_vault, search_notes_fts
+
+request_logger = logging.getLogger("kindle.gateway")
+request_logger.setLevel(logging.INFO)
 
 
 @asynccontextmanager
@@ -36,16 +40,26 @@ app.include_router(admin_router)
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
-    response = await call_next(request)
+    request_id = str(uuid.uuid4())
+    started = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        request_logger.exception("request_failed request_id=%s method=%s path=%s duration_ms=%.1f",
+                                 request_id, request.method, request.url.path,
+                                 (time.perf_counter() - started) * 1000)
+        raise
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "no-referrer")
     response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
-    response.headers.setdefault("X-Request-ID", str(uuid.uuid4()))
-    if request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https":
-        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    response.headers.setdefault("X-Request-ID", request_id)
+    response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
     if request.url.path.startswith(("/admin", "/v1/vault", "/vault")):
         response.headers.setdefault("Cache-Control", "no-store")
+    request_logger.info("request_complete request_id=%s method=%s path=%s status=%s duration_ms=%.1f",
+                        request_id, request.method, request.url.path, response.status_code,
+                        (time.perf_counter() - started) * 1000)
     return response
 
 if settings.ALLOWED_ORIGINS:

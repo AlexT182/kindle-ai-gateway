@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
+from starlette.concurrency import run_in_threadpool
 
 from app.auth import clear_login_failures, create_admin_session, csrf_token, is_admin_session_valid, login_allowed, record_failed_login, validate_csrf, verify_admin_password
 from app.backup import cleanup_backup, create_vault_backup
@@ -114,7 +115,7 @@ async def download_backup(request: Request):
     if redirect := require_admin(request): return redirect
     form = await request.form()
     validate_csrf(request, form.get("csrf_token"))
-    archive_path, temp_root = create_vault_backup()
+    archive_path, temp_root = await run_in_threadpool(create_vault_backup)
     return FileResponse(
         archive_path,
         media_type="application/zip",

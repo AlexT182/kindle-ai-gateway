@@ -21,6 +21,8 @@ def test_dockerfile_runs_as_non_root_and_uses_lockfile():
     assert "USER app" in dockerfile
     assert "requirements.lock" in dockerfile
     assert "COPY . ." not in dockerfile
+    assert "--forwarded-allow-ips=*" not in dockerfile
+    assert "--no-access-log" in dockerfile
 
 
 def test_runtime_data_and_secrets_are_ignored():

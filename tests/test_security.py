@@ -1,4 +1,5 @@
 import re
+import logging
 
 import pytest
 from fastapi.testclient import TestClient
@@ -65,6 +66,14 @@ def test_security_headers_and_request_id(client):
     assert response.headers["cache-control"] == "no-store"
     assert response.headers["strict-transport-security"].startswith("max-age=")
     assert response.headers["x-request-id"]
+
+
+def test_sanitized_request_log_omits_query_string(client, caplog):
+    caplog.set_level(logging.INFO, logger="kindle.gateway")
+    client.get("/health?token=must-not-appear-in-logs")
+    messages = "\n".join(record.getMessage() for record in caplog.records if record.name == "kindle.gateway")
+    assert "path=/health" in messages
+    assert "must-not-appear-in-logs" not in messages
 
 
 def test_health_reports_vault_failure(client, monkeypatch):

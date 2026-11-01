@@ -26,6 +26,7 @@ def test_backup_contains_consistent_database_and_vault_files(tmp_path, monkeypat
             assert "vault.db" in names
             assert "manifest.json" in names
             assert "config/persona.json" in names
+            assert not any(name.startswith(".tmp/") for name in names)
             relative_note = Path(note["file_path"]).relative_to(data_dir).as_posix()
             assert relative_note in names
             assert json.loads(archive.read("manifest.json"))["version"] == 1
@@ -39,3 +40,22 @@ def test_backup_contains_consistent_database_and_vault_files(tmp_path, monkeypat
     finally:
         backup.cleanup_backup(temp_root)
     assert not temp_root.exists()
+
+
+def test_stale_backup_cleanup_only_removes_old_backup_directories(tmp_path, monkeypatch):
+    stale = tmp_path / "kindle-vault-backup-stale"
+    fresh = tmp_path / "kindle-vault-backup-fresh"
+    unrelated = tmp_path / "keep-me"
+    for directory in (stale, fresh, unrelated):
+        directory.mkdir()
+    monkeypatch.setattr(backup, "STALE_BACKUP_SECONDS", 50)
+    monkeypatch.setattr(backup.time, "time", lambda: 100)
+    # Explicit mtimes make the boundary deterministic.
+    import os
+    os.utime(stale, (0, 0))
+    os.utime(fresh, (100, 100))
+
+    backup.cleanup_stale_backups(tmp_path)
+    assert not stale.exists()
+    assert fresh.exists()
+    assert unrelated.exists()

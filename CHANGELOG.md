@@ -2,6 +2,19 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
+## [2.1.4] - 2026-11-01
+
+### Changed
+
+- Backup lớn dùng vùng `.tmp` trên persistent volume thay vì tmpfs 64 MB và tự dọn thư mục backup cũ.
+- Tác vụ tạo archive chạy trong threadpool để không chặn event loop phục vụ Kindle.
+- Thay Uvicorn access log thô bằng log request đã lược bỏ query string, header và body.
+
+### Security
+
+- Bỏ cấu hình tin cậy mọi forwarded IP; proxy header chỉ được chấp nhận theo allowlist mặc định của Uvicorn.
+- Ngăn token cũ trong query string vô tình xuất hiện trong access log.
+
 ## [2.1.3] - 2026-11-01
 
 ### Added

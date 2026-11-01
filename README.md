@@ -72,6 +72,8 @@ Endpoint `/health` cũng kiểm tra khả năng truy cập SQLite Vault; nếu v
 
 Trong Dashboard, nút **Tải backup Vault** tạo một ZIP nhất quán gồm SQLite snapshot, ghi chú Markdown và cấu hình trong `/data`. Backup yêu cầu đăng nhập admin và CSRF token; archive tạm được xóa ngay sau khi gửi xong.
 
+Gateway tắt access-log thô của Uvicorn và phát log vận hành dạng tối giản gồm request ID, method, path, status và latency. Query string, token, header và nội dung request không được ghi vào log.
+
 `ALLOWED_ORIGINS` mặc định rỗng vì Kindle/native client không cần CORS. Chỉ thêm các origin HTTPS cụ thể nếu có frontend web khác domain; không dùng `*`.
 
 ## Lưu ý dữ liệu và lịch sử Git
