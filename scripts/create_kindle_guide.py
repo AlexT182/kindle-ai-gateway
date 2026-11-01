@@ -8,7 +8,7 @@ target_dir = Path("E:/documents/Books")
 target_dir.mkdir(parents=True, exist_ok=True)
 
 md_content = """# SỔ TAY HƯỚNG DẪN SỬ DỤNG KINDLE PAPERWHITE 4
-## Hệ sinh thái Đọc Sách Thông Minh, Game E-ink & Trạm Tri Thức AI
+## Trạm Tri Thức AI, Hướng Dẫn Tra Cứu Web & Bộ 7 Game E-ink
 
 ---
 
@@ -16,140 +16,173 @@ md_content = """# SỔ TAY HƯỚNG DẪN SỬ DỤNG KINDLE PAPERWHITE 4
 
 Chiếc Kindle Paperwhite 4 của bạn đã được nâng cấp toàn diện:
 - Phần cứng: Màn hình 6-inch E-ink Carta 300 DPI chống lóa, đèn nền tích hợp.
-- Hệ thống đọc sách: KOReader v2026.07.2 — hỗ trợ tùy biến mạnh mẽ, hiển thị đẹp và tiết kiệm pin.
-- Trợ lý AI & Kho tri thức: KOAssistant kết nối trực tiếp với Kindle AI Gateway (chạy model alex-agent, DeepSeek, SQLite Vault và Bộ nhớ cá nhân hóa).
-- Bộ công cụ mở rộng: Đã cài sẵn gói Game cờ (Board Games) và Ứng dụng phác thảo tư duy (Ink Away).
+- Hệ thống đọc sách: KOReader v2026.07.2 — hiển thị đẹp, tiết kiệm pin, lật trang nhanh.
+- Trợ lý AI & Kho tri thức: KOAssistant kết nối trực tiếp với Kindle AI Gateway (chạy model alex-agent, DeepSeek, SQLite Vault, tìm kiếm Web thời gian thực và Bộ nhớ cá nhân).
+- Bộ công cụ giải trí & tư duy:
+  + Bộ 6 Board Games kinh điển (Cờ vua, Cờ đam, Connect 4, Tic Tac Toe, Dò mìn, Thủy chiến).
+  + Game Cờ vây (Go / Weiqi) hỗ trợ bàn 9x9, 13x13, 19x19 đấu với bot AI.
+  + Ứng dụng phác thảo tư duy & Wireframe (Ink Away).
 
 ---
 
-## 2. TRỢ LÝ ĐỌC SÁCH THÔNG MINH 1-CHẠM (KOASSISTANT)
+## 2. HƯỚNG DẪN CHI TIẾT: GÕ LỆNH #SEARCH Ở ĐÂU VÀ NHƯ THẾ NÀO?
 
-Không cần gõ bàn phím ảo chậm chạp trên màn hình E-ink, bạn chỉ cần chạm và chọn:
+Nhiều bạn thắc mắc: "Làm sao để gõ được lệnh #search trên máy đọc sách? Gõ ở chỗ nào?". Dưới đây là hướng dẫn cụ thể từng bước:
 
-### Cách sử dụng:
-1. Mở một cuốn sách bất kỳ trong KOReader.
-2. Dùng ngón tay bôi đen (highlight) một đoạn văn bản hoặc từ ngữ bạn quan tâm.
-3. Trong menu chọn hiện ra, chọn biểu tượng KOAssistant.
-4. Các nút tác vụ nhanh định sẵn sẽ xuất hiện ngay trước mắt:
-   - Tra cứu Web (#search): Tự động tìm kiếm thông tin thời sự mới nhất trên Internet về từ khóa vừa chọn.
-   - Tra Wikipedia (#wiki): Tra cứu bách khoa toàn thư Wikipedia tiếng Việt.
-   - Tóm tắt cốt lõi: Trích xuất 3 luận điểm quan trọng nhất của đoạn trích, trình bày súc tích gạch đầu dòng.
-   - Giải thích sâu & Ví dụ: Diễn giải khái niệm trừu tượng thành ngôn ngữ gần gũi, kèm 1 ví dụ minh họa thực tế đời sống.
-   - Phản biện & Góc nhìn: Chỉ ra các điểm còn thiếu sót, góc nhìn trái chiều và 1 câu hỏi kích thích tư duy phản biện.
-   - Bài học thực hành: Rút ra 1-2 hành động cụ thể để áp dụng vào thực tế.
-   - Lưu Vault (#note): Tự động đẩy đoạn trích vào kho lưu trữ tri thức cá nhân trên server (kèm tên sách và thời gian).
-   - Lưu Việc (#todo): Đưa nội dung vào danh sách việc cần làm.
-   - Tổng quan sách (ở menu ngoài): Tóm lược giá trị và bối cảnh toàn bộ cuốn sách.
+### CÁCH 1: Gõ trực tiếp trong ô Chat của KOAssistant (Bất kỳ lúc nào)
 
----
-
-## 3. CÁCH ĐỂ AI AGENT TRA CỨU WEB / GOOGLE THEO YÊU CẦU
-
-Gateway AI tích hợp sẵn công cụ tìm kiếm mạng internet thời gian thực (Real-time Web Search) để trả lời các câu hỏi cập nhật mới nhất:
-
-### Cách 1: Sử dụng tiền tố lệnh `#search` (Khuyên dùng)
-Gõ lệnh theo cú pháp:
-  #search <câu hỏi cần tra cứu>
-Ví dụ:
-- #search giá vàng hôm nay tại Việt Nam
-- #search tin tức bầu cử mới nhất
-- #search ai là CEO hiện tại của OpenAI
-
-AI sẽ tự động kích hoạt bot tìm kiếm web, duyệt qua các bài báo mới nhất và tổng hợp câu trả lời chính xác, kèm trích dẫn nguồn.
-
-### Cách 2: Hỏi bằng ngôn ngữ tự nhiên
-Hệ thống có bộ lọc thông minh tự động kích hoạt tìm kiếm khi câu hỏi của bạn có chứa các từ khóa thời sự hoặc dữ liệu biến động:
-- Các từ khóa: "hôm nay", "mới nhất", "hiện nay", "thời sự", "tin tức", "giá bao nhiêu", "năm 2026", "ở đâu", "khi nào"...
-Ví dụ: "Hôm nay thời tiết Hà Nội thế nào?" hoặc "Giá Bitcoin hiện tại bao nhiêu?"
-
-### Cách 3: Tra cứu Wikipedia nhanh
-Nếu cần tra cứu kiến thức bách khoa, sự kiện lịch sử hoặc tiểu sử danh nhân:
-  #wiki <tên nhân vật hoặc khái niệm>
-Ví dụ: #wiki Nikola Tesla
+1. Khi đang mở một cuốn sách trong KOReader:
+   - Dùng ngón tay chạm và giữ (hoặc quét ngang) để bôi đen (highlight) một từ hoặc một câu bất kỳ trên màn hình.
+   - Một thanh công cụ màu trắng hiện lên: Bạn tìm và chạm vào biểu tượng KOAssistant (hình robot hoặc biểu tượng trò chuyện).
+2. Khi hộp thoại KOAssistant xuất hiện:
+   - Nhìn xuống dưới đáy hộp thoại, bạn sẽ thấy một ô nhập liệu có dòng chữ gợi ý: `Type your message...` (hoặc `Nhập tin nhắn...`).
+   - Chạm ngón tay vào ô này: Bàn phím ảo của KOReader sẽ trượt lên từ cạnh dưới màn hình.
+3. Gõ lệnh và gửi:
+   - Gõ chính xác dấu `#` rồi đến chữ `search` và nội dung câu hỏi.
+     Ví dụ: `#search giá vàng hôm nay tại Việt Nam`
+     Ví dụ: `#search kết quả bóng đá ngoại hạng Anh mới nhất`
+     Ví dụ: `#search ai đang là tổng thống Mỹ`
+   - Nhấn nút Send (hoặc Enter) trên bàn phím ảo.
+   - Gateway sẽ lập tức điều khiển bot tìm kiếm Google/Web, đọc các bài báo mới nhất và trả về câu trả lời tổng hợp súc tích kèm nguồn tin!
 
 ---
 
-## 4. BỘ NHỚ VÀ QUẢN LÝ GHI CHÚ CÁ NHÂN VỚI AI
+### CÁCH 2: Dùng nút 1-Chạm "Tra cứu Web (#search)" (KHÔNG CẦN GÕ PHÍM)
+
+Bàn phím ảo trên màn hình E-ink gõ tương đối chậm. Vì vậy, hệ thống đã trang bị sẵn nút 1-chạm để bạn tra cứu tức thì:
+
+1. Khi đang đọc sách, gặp một nhân vật, sự kiện hoặc khái niệm thời sự chưa rõ:
+   - Bôi đen (highlight) cụm từ đó (ví dụ: bôi đen từ "Sam Altman" hoặc "Quantum Computing").
+2. Chạm vào biểu tượng KOAssistant trên thanh công cụ.
+3. Trong danh sách các nút tác vụ hiện ra, chạm ngay vào:
+   - [Tra cứu Web (#search)]: Hệ thống tự động lấy từ vừa bôi đen mang đi tìm kiếm trên Web và tóm lược ngay lập tức!
+   - [Tra Wikipedia (#wiki)]: Nếu muốn tra bách khoa toàn thư Wikipedia tiếng Việt.
+
+---
+
+### CÁCH 3: Mở khung Chat Tự Do (General Chat) khi không đọc sách
+
+Nếu bạn đang ở màn hình duyệt file (File Manager) hoặc muốn hỏi đáp độc lập mà không cần mở sách:
+1. Chạm vào mép trên cùng màn hình để hiện thanh menu chính của KOReader.
+2. Chọn tab Công cụ (Tools) (biểu tượng cờ lê / bánh răng).
+3. Chọn mục KOAssistant -> Chọn General Chat / Action.
+4. Hộp thoại chat mở ra -> Chạm vào ô nhập tin nhắn ở đáy -> Gõ `#search <nội dung>` và nhấn Gửi.
+
+---
+
+## 3. BỘ NHỚ VÀ QUẢN LÝ GHI CHÚ CÁ NHÂN VỚI AI
+
+Trong cùng ô nhập tin nhắn của KOAssistant, bạn có thể dùng các lệnh sau:
 
 - #remember [chủ đề] <nội dung>
-  Mục đích: Dạy cho AI hiểu bạn hơn.
-  Ví dụ: #remember [học tập] Tôi là lập trình viên, hãy ưu tiên giải thích các vấn đề bằng tư duy logic và ví dụ code.
+  Mục đích: Dạy AI hiểu bối cảnh và sở thích của bạn để câu trả lời sau này luôn đúng ý.
+  Ví dụ: `#remember [chuyên môn] Tôi là lập trình viên backend, hãy giải thích bằng tư duy logic và code minh họa.`
 - #memory
-  Mục đích: Hiển thị tối đa 10 mục ghi nhớ gần nhất mà trợ lý đang lưu giữ về bạn.
+  Mục đích: Hiển thị 10 điều ghi nhớ gần nhất mà AI đang lưu giữ về bạn.
 - #note [tiêu đề] <nội dung>
-  Mục đích: Tạo một ghi chú độc lập vào SQLite Vault.
-- #todo <nội dung>
-  Mục đích: Tạo một đầu việc cần làm.
+  Mục đích: Lưu một ý tưởng hay vào kho ghi chú cá nhân (SQLite Vault).
+- #todo <công việc>
+  Mục đích: Thêm một việc cần làm vào danh sách task.
 - #help
-  Mục đích: Xem danh sách các cú pháp hỗ trợ trên màn hình Kindle.
+  Mục đích: Xem nhanh danh sách các lệnh trợ giúp ngay trên Kindle.
 
 ---
 
-## 5. HƯỚNG DẪN BỘ GAME E-INK (BOARD GAMES)
+## 4. HƯỚNG DẪN CHI TIẾT BỘ 7 GAME E-INK & CÁCH CHƠI
 
-Khi cần thư giãn sau những giờ đọc sách tập trung:
+Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng cho màn hình mực điện tử E-ink (không giật lag, không chớp nháy):
 
-- Cách mở:
-  1. Chạm vào mép trên cùng màn hình để hiện thanh menu KOReader.
-  2. Chọn tab Công cụ (Tools) (biểu tượng bánh răng/cờ lê).
-  3. Chọn mục Board Games.
+### Nhóm 1: Game Cờ Vây (Go / Weiqi) — MỚI BỔ SUNG!
 
-- Cách chuyển đổi giữa 6 trò chơi & cài đặt tùy chọn:
-  Ở cạnh dưới cùng của màn hình bàn cờ luôn có 4 nút điều khiển:
+- Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Go].
+- Cách chơi & Luật cơ bản:
+  + Bạn đi quân Đen (đi trước), máy (bot AI) đi quân Trắng.
+  + Chạm vào các giao điểm trên bàn cờ để đặt quân.
+  + Luật khí và bắt quân: Một quân cờ hoặc nhóm quân cờ sống nhờ các giao điểm trống liền kề (gọi là "khí"). Khi đối phương bao vây chặn hết mọi đường khí, quân đó sẽ bị bắt và nhấc ra khỏi bàn cờ.
+  + Mục tiêu: Vây chiếm các vùng đất trống trên bàn cờ. Bên nào kiểm soát diện tích đất và bắt được nhiều quân hơn sẽ chiến thắng.
+- Tùy chọn trong game: Vào menu cài đặt của Go để đổi kích thước bàn cờ:
+  + Bàn 9x9: Nhanh gọn, giải trí trong 5-10 phút.
+  + Bàn 13x13: Chiến thuật vừa phải.
+  + Bàn 19x19: Chuẩn thi đấu chuyên nghiệp.
+
+---
+
+### Nhóm 2: Gói Board Games 6-trong-1
+
+- Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Board Games].
+- Điều khiển chung: Ở chân màn hình luôn có 4 nút:
   [Settings]      [Undo]      [Draw / Flag]      [Close]
-  
-  1. Đổi Game: Chạm vào nút [Settings] -> Chọn [Choose Game] -> Danh sách 6 trò chơi sẽ hiện ra:
-     - Checkers (Cờ đam)
-     - Chess (Cờ vua: chơi với bot hoặc 2 người)
-     - Connect 4 (Xếp 4 quân thẳng hàng)
-     - Tic Tac Toe (Cờ ca-rô 3x3)
-     - Minesweeper (Dò mìn)
-     - Battleship (Thủy chiến)
-  2. Chỉnh độ khó & Chế độ: Trong menu [Settings], chạm vào nút [Mode] để chọn Solo/2 người, hoặc nút [Bot Level] để đổi độ khó (Easy / Medium / Hard).
-  3. Thoát Game về lại sách: Chạm vào nút [Close] ở góc dưới bên phải màn hình (hoặc vào [Settings] -> [Exit Game]). Trò chơi sẽ đóng lại êm ả và đưa bạn về lại trang sách đang đọc.
+  + Để đổi game: Chạm [Settings] -> [Choose Game] -> Chọn 1 trong 6 game bên dưới.
+  + Để đổi độ khó / người chơi: Chạm [Settings] -> Chạm [Mode] (Solo/2 người) hoặc [Bot Level] (Dễ/Vừa/Khó).
+  + Để thoát về sách: Chạm [Close] (góc dưới bên phải).
+
+#### 1. Hướng dẫn chi tiết Game Thủy Chiến (Battleship):
+Game mô phỏng cuộc chiến hải quân bắn hạ hạm đội đối phương, gồm 2 giai đoạn rõ ràng:
+- Giai đoạn 1: Bố trí đội tàu (Setup Phase)
+  + Bạn sở hữu 5 chiến hạm có độ dài khác nhau: Tàu sân bay (5 ô), Thiết giáp hạm (4 ô), Tuần dương hạm (3 ô), Tàu ngầm (3 ô), Tàu khu trục (2 ô).
+  + Các nút ở thanh điều khiển dưới đáy:
+    * [Rotate: H / V]: Đổi chiều xoay tàu (Ngang hoặc Dọc). Sau đó chạm lên ô bàn cờ để đặt tàu.
+    * [Random Fleet]: NÚT QUAN TRỌNG NHẤT — Nếu lười xếp tay, hãy bấm nút này để máy tự động xếp ngẫu nhiên 5 tàu vào vị trí tối ưu trong 1 giây!
+  + Sau khi đủ 5 tàu, trận chiến khai hỏa!
+- Giai đoạn 2: Tác chiến bắn tàu (Battle Phase)
+  + Dưới đáy màn hình có 2 nút chuyển đổi góc nhìn:
+    * [Enemy Waters] (Vùng biển địch): Mặc định bạn sẽ ở góc nhìn này. Chạm ngón tay vào ô tọa độ bất kỳ để nã pháo!
+      - Ký hiệu `X`: Bắn TRÚNG (Hit) vào thân tàu địch! Tiếp tục bắn các ô liền kề để đánh chìm hẳn con tàu.
+      - Ký hiệu `o`: Bắn TRƯỢT (Miss) xuống nước.
+    * [Your Fleet] (Hạm đội của bạn): Chạm nút này để xem bot đã bắn vào đâu trên đội tàu của mình.
+  + Mục tiêu: Bắn chìm toàn bộ 5 tàu của bot trước khi hạm đội của bạn bị xóa sổ!
+
+#### 2. Dò Mìn (Minesweeper):
+- Bàn cờ 9x9 với 10 quả mìn ẩn giấu.
+- Chạm vào ô để mở. Ô mở ra sẽ hiện số (số lượng mìn xung quanh ô đó).
+- Nút [Flag] / [Reveal] ở đáy: Chạm để chuyển đổi giữa chế độ Mở ô và chế độ Cắm cờ đánh dấu ô có mìn.
+
+#### 3. Cờ Vua (Chess):
+- Chơi với máy hoặc 2 người.
+- Chạm vào quân cờ của bạn -> Các ô nước đi hợp lệ sẽ sáng lên -> Chạm vào ô đích để di chuyển.
+- Có hỗ trợ nhập thành (Castling), bắt tốt qua đường (En passant) và phong cấp (Promotion) trong menu Settings.
+
+#### 4. Cờ Đam (Checkers):
+- Quân cờ đi chéo trên các ô màu tối. Nhảy qua đầu quân địch để ăn.
+- Sang được hàng cuối của đối phương sẽ hóa thành Vua (King) và có thể đi tiến/lùi tự do.
+
+#### 5. Connect 4:
+- Chạm vào cột bất kỳ để thả quân cờ xuống. Người đầu tiên nối được 4 quân liên tiếp (ngang, dọc hoặc chéo) sẽ thắng.
+
+#### 6. Tic Tac Toe (Cờ ca-rô 3x3):
+- Chạm vào ô trống để đánh dấu X/O. Nối 3 ô thẳng hàng để chiến thắng.
 
 ---
 
-## 6. PHÁC THẢO SƠ ĐỒ TƯ DUY & WIREFRAME (INK AWAY)
+## 5. PHÁC THẢO SƠ ĐỒ TƯ DUY & WIREFRAME (INK AWAY)
 
-Ứng dụng giúp bạn ghi chép, phác thảo ý tưởng bất chợt:
-
-- Cách mở:
-  - Cách 1: Vào menu Công cụ (Tools) -> Chọn Ink Away (drawing canvas).
-  - Cách 2: Khi ở màn hình duyệt file, dùng ngón tay vuốt từ cạnh phải màn hình lên phía trên.
-- Mẹo phác thảo Mindmap & Wireframe đẹp trên màn hình cảm ứng điện dung:
-  - Hạn chế viết chữ tự do nét dài bằng tay (dễ bị méo).
-  - Sử dụng công cụ Shape (Hình khối chữ nhật/oval) để tạo các nút ý tưởng.
-  - Sử dụng công cụ Arrow / Line (Mũi tên/Đường kẻ) để nối các nhánh liên kết.
-  - Sử dụng công cụ Text box để gõ chữ in ngay ngắn.
-- Xuất file:
-  - Hỗ trợ lưu thành sổ tay nhiều trang.
-  - Xuất file ảnh PNG làm hình nền chờ (Screensaver) hoặc xuất PDF chuyển sang máy tính.
+- Cách mở: Menu Công cụ (Tools) -> Ink Away (hoặc vuốt từ cạnh phải màn hình lên trên).
+- Mẹo phác thảo Mindmap:
+  + Dùng công cụ Shape (Hình chữ nhật/Oval) để tạo các nhánh ý tưởng.
+  + Dùng công cụ Line / Arrow để nối các nhánh.
+  + Dùng Text box để chèn chữ in thẳng hàng.
+  + Xuất file ảnh PNG làm hình nền chờ (Sleep screen) hoặc xuất PDF gửi về PC.
 
 ---
 
-## 7. ĐỒNG BỘ GHI CHÚ VỀ MÁY TÍNH (OBSIDIAN / NOTION)
+## 6. ĐỒNG BỘ GHI CHÚ VỀ MÁY TÍNH (OBSIDIAN / NOTION)
 
-Mọi ghi chú bạn lưu bằng #note trên Kindle đều nằm an toàn trên máy chủ đám mây.
-
-- Khi về bàn làm việc, mở máy tính và chạy script:
-  python scripts/sync_vault_notes.py
-- Toàn bộ ghi chú sẽ được kéo về thư mục vault_notes trên máy tính:
-  - Tự động định dạng Markdown chuẩn với YAML frontmatter, tags và wikilinks.
-  - Tự động gom nhóm vào thư mục con theo tên từng cuốn sách.
-  - Mở trực tiếp bằng Obsidian, Logseq, VS Code hoặc import vào Notion.
+Mọi ghi chú bạn lưu bằng `#note` trên Kindle đều nằm an toàn trên server đám mây.
+- Khi về bàn làm việc, mở máy tính và chạy lệnh:
+  `python scripts/sync_vault_notes.py`
+- Toàn bộ ghi chú đọc sách ban đêm sẽ tự động được kéo về thư mục `vault_notes` trên máy tính dưới dạng Markdown hoàn chỉnh, có phân loại theo tên sách.
 
 ---
 
-## 8. CÁC PHÍM TẮT & CỬ CHỈ CẦN NHỚ TRÊN KOREADER
+## 7. CÁC PHÍM TẮT & CỬ CHỈ CẦN NHỚ TRÊN KOREADER
 
 - Chỉnh độ sáng đèn nền: Vuốt ngón tay lên/xuống ở mép trái màn hình.
 - Chỉnh nhiệt độ màu đèn nền: Vuốt ngón tay lên/xuống ở mép phải màn hình.
 - Đánh dấu trang (Bookmark): Chạm nhanh vào góc trên cùng bên phải trang sách.
 - Mở mục lục & Tiến độ: Chạm mép dưới cùng màn hình.
-- Bật/Tắt Wi-Fi nhanh: Chạm menu trên cùng -> tab Bánh răng -> Cài đặt mạng. Nên tắt Wi-Fi khi đọc thuần túy để pin kéo dài cả tháng!
+- Tiết kiệm pin: Nên tắt Wi-Fi khi đọc sách thuần túy; chỉ bật Wi-Fi khi cần tra cứu AI hoặc tải sách.
 
-Chúc bạn có những giờ phút đọc sách, tư duy và sáng tạo tuyệt vời trên chiếc Kindle!
+Chúc bạn có những trải nghiệm đọc sách, học tập và thư giãn đỉnh cao trên chiếc Kindle!
 """
 
 # 1. Write Markdown file
@@ -184,7 +217,11 @@ with zipfile.ZipFile(epub_path, "w") as zf:
             paragraphs.append(f"<h2>{html.escape(line[3:])}</h2>")
         elif line.startswith("### "):
             paragraphs.append(f"<h3>{html.escape(line[4:])}</h3>")
+        elif line.startswith("#### "):
+            paragraphs.append(f"<h4>{html.escape(line[5:])}</h4>")
         elif line.startswith("- "):
+            paragraphs.append(f"<li>{html.escape(line[2:])}</li>")
+        elif line.startswith("+ "):
             paragraphs.append(f"<li>{html.escape(line[2:])}</li>")
         elif line == "---":
             paragraphs.append("<hr/>")
@@ -201,7 +238,8 @@ with zipfile.ZipFile(epub_path, "w") as zf:
     body {{ font-family: serif; margin: 4%; line-height: 1.5; }}
     h1 {{ text-align: center; font-size: 1.5em; margin-bottom: 0.5em; }}
     h2 {{ font-size: 1.25em; margin-top: 1.2em; border-bottom: 1px solid #444; padding-bottom: 4px; }}
-    h3 {{ font-size: 1.1em; margin-top: 1em; }}
+    h3 {{ font-size: 1.1em; margin-top: 1em; color: #222; }}
+    h4 {{ font-size: 1.0em; margin-top: 0.8em; font-style: italic; }}
     li {{ margin-bottom: 0.4em; }}
     p {{ text-indent: 1em; margin: 0.4em 0; }}
     hr {{ border: none; border-top: 1px dashed #777; margin: 1em 0; }}
@@ -219,7 +257,7 @@ with zipfile.ZipFile(epub_path, "w") as zf:
     <dc:title>Sổ Tay Hướng Dẫn Sử Dụng Kindle</dc:title>
     <dc:creator>Antigravity</dc:creator>
     <dc:language>vi</dc:language>
-    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-01</dc:identifier>
+    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-01-v2</dc:identifier>
   </metadata>
   <manifest>
     <item id="guide" href="guide.xhtml" media-type="application/xhtml+xml"/>
@@ -235,7 +273,7 @@ with zipfile.ZipFile(epub_path, "w") as zf:
 <!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
-    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-01"/>
+    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-01-v2"/>
   </head>
   <docTitle><text>Sổ Tay Hướng Dẫn Sử Dụng Kindle</text></docTitle>
   <navMap>
@@ -247,4 +285,4 @@ with zipfile.ZipFile(epub_path, "w") as zf:
 </ncx>"""
     zf.writestr("OEBPS/toc.ncx", toc_ncx, compress_type=zipfile.ZIP_DEFLATED)
 
-print(f"SUCCESS: Generated updated guide files in {target_dir}")
+print(f"SUCCESS: Generated detailed guide files in {target_dir}")
