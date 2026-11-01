@@ -92,27 +92,51 @@ Trong cùng ô nhập tin nhắn của KOAssistant, bạn có thể dùng các l
 
 Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng cho màn hình mực điện tử E-ink (không giật lag, không chớp nháy):
 
-### Nhóm 1: Game Cờ Vây (Go / Weiqi) — MỚI BỔ SUNG & ĐÃ NÂNG CẤP BOT!
+### Nhóm 1: Game Cờ Vây (Go / Weiqi) — ĐÃ TÍCH HỢP ALPHAGO CLOUD AI!
 
 - Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Go].
-- Cách đổi độ khó của Bot & Cài đặt bàn cờ:
+- Cách đổi chế độ đối thủ & Cài đặt bàn cờ:
   Chạm vào biểu tượng Menu 3 gạch ở góc trên cùng bên trái thanh tiêu đề:
-  + [Bot: Beginner / Medium / Advanced]: Chạm vào dòng này để đổi 3 mức độ của máy tính:
+  + [Opponent]: Chạm để chuyển đổi 3 chế độ đối thủ:
+    * Đối thủ: Bot Máy 🤖 (Offline): Đánh với Bot offline máy tính tích hợp sẵn, không cần Wi-Fi/Internet.
+    * Đối thủ: Cloud AI 🌐 (AlphaGo): Kết nối với Siêu trí tuệ nhân tạo AlphaGo qua Gateway. AI tính toán nước cờ kỳ thủ đỉnh cao, hiển thị tỷ lệ thắng % và phân tích chiến thuật (Yêu cầu kết nối Wi-Fi & Internet).
+    * Đối thủ: 2 Người 👥 (Chuyền tay): Hai người chơi đổi lượt trên cùng một chiếc Kindle.
+  + [Bot: Beginner / Medium / Advanced]: Chạm vào dòng này để đổi 3 mức độ của bot máy offline:
     * Beginner (Tập sự): Máy đi ngẫu nhiên đơn giản, phù hợp làm quen luật cờ.
-    * Medium (Tiêu chuẩn): Biết khai cuộc chiếm góc, mở biên đường 3-4, cứu quân và bắt quân atari.
-    * Advanced (Nâng cao): Áp dụng chiến thuật cờ vây toàn diện, nối quân Keima/Kosumi, phạt nặng sai lầm.
+    * Medium (Tiêu chuẩn): Khai cuộc chiếm góc Hoshi, mở biên đường 3-4, cứu quân và bắt quân atari.
+    * Advanced (Nâng cao): Áp dụng chiến thuật cờ vây toàn diện, nối quân Keima/Kosumi, bắt quân sát ván.
   + [Size]: Đổi kích thước bàn cờ (9x9, 13x13, 19x19).
-    * Mẹo: Nên chơi bàn 9x9 với bot để có trận đấu giáp lá cà kịch tính nhất!
-  + [Opponent]: Đổi giữa Computer (chơi với máy) hoặc Human (2 người chơi trên 1 máy Kindle).
 - Cách chơi & Luật cơ bản:
-  + Bạn đi quân Đen (đi trước), máy đi quân Trắng.
+  + Bạn đi quân Đen (đi trước), máy đi quân Trắng (Trắng được 6.5 điểm Komi).
   + Chạm vào các giao điểm trên bàn cờ để đặt quân.
   + Luật khí và bắt quân: Nhóm quân cờ sống nhờ các giao điểm trống liền kề ("khí"). Khi bị đối phương chặn hết khí, quân sẽ bị bắt và nhấc ra khỏi bàn cờ.
   + Mục tiêu: Vây chiếm các vùng đất trống. Bên nào kiểm soát diện tích đất và bắt được nhiều quân hơn sẽ chiến thắng.
 
 ---
 
-### Nhóm 2: Gói Board Games 6-trong-1
+### Nhóm 2: Game Cờ Thú (Animal Chess / Jungle) — LINH THÚ THỨC TỈNH
+
+- Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Cờ Thú (Jungle Game)].
+- Thiết kế riêng cho Kindle E-ink 300 DPI: Bàn cờ 7 cột x 9 hàng sắc nét, các ô sông nước, hang, bẫy và huy hiệu thú vẽ nổi bật.
+- Cấp bậc 8 loài thú (Từ mạnh đến yếu):
+  (8) Voi > (7) Sư Tử > (6) Hổ > (5) Báo > (4) Chó > (3) Sói > (2) Mèo > (1) Chuột.
+- Quy tắc đặc sắc:
+  + Chuột ăn Voi: Chuột (1) là loài duy nhất ăn được Voi (8) trên cạn! Ngược lại Voi không thể ăn Chuột.
+  + Sông nước: Chỉ có Chuột được lặn dưới sông. Sư Tử (7) và Hổ (6) có quyền NHẢY QUA SÔNG theo chiều dọc hoặc ngang (nếu không có Chuột bơi cản giữa sông).
+  + Ô Bẫy: Quân địch sập vào 3 ô Bẫy quanh hang bạn sẽ bị giảm sức mạnh về 0. Bất kỳ thú nào của bạn cũng có thể lao vào ăn nó!
+  + Mục tiêu: Tiến 1 quân vào Hang đối thủ hoặc tiêu diệt toàn bộ quân địch để chiến thắng.
+- Tùy chọn Chế độ & Cấp độ:
+  + Đấu với Máy (Dễ / Vừa / Khó với thuật toán Minimax Alpha-Beta tính trước 3-4 nước cờ) hoặc 2 Người chuyền tay.
+  + Nút [Đi Lại] (Undo) ngay ở thanh điều khiển đáy để rút lại nước cờ nhầm lẫn.
+  + Tùy chọn [Luật: Cổ Điển 📜] hoặc [Luật: Thức Tỉnh ✨]:
+    * Sói Bầy Đàn: Sói đi cạnh Chó/Báo đồng minh được +1 cấp sức mạnh (ăn được Chó).
+    * Báo Lao Nhanh: Báo có thể phi thẳng 2 ô một lượt trên cạn nếu đường thông thoáng.
+    * Mèo 9 Mạng: Lần đầu tiên bị ăn, Mèo tự động né đòn nhảy sang ô trống thoát chết.
+    * Thăng Cấp: Thú nào ăn được 2 quân địch sẽ được Thăng cấp (+1 sao sức mạnh vĩnh viễn).
+
+---
+
+### Nhóm 3: Gói Board Games 6-trong-1
 
 - Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Board Games].
 - Điều khiển chung: Ở chân màn hình luôn có 4 nút:
