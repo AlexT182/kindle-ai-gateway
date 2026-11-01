@@ -4,8 +4,15 @@ Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đ
 
 ## [Unreleased]
 
+### Added
+
+- Script đồng bộ ghi chú Vault từ Gateway về thư mục Markdown trên PC (`scripts/sync_vault_notes.py`) hỗ trợ định dạng Obsidian và cập nhật gia tăng (incremental).
+- Bộ kiểm thử hồi quy cho đồng bộ ghi chú (`tests/test_sync_vault_notes.py`).
+- Cấu hình các thao tác nhanh 1-chạm (Quick Context Actions) cho KOAssistant trên Kindle (`custom_actions.lua`).
+
 ### Documentation
 
+- Thêm kế hoạch tổng thể nâng cấp Kindle Paperwhite 4 (`docs/KINDLE_UPGRADE_MASTER_PLAN.md`) gồm 3 trụ cột: Game E-ink, Vẽ/Mindmap và Trạm tri thức AI 2 chiều.
 - Thêm kế hoạch cải thiện toàn diện theo từng giai đoạn, yêu cầu phê duyệt trước khi triển khai.
 - Ghi lại phiên làm việc ngày 2026-11-01, gồm các thay đổi từ 2.1.0 đến 2.1.6, kết quả kiểm thử, trạng thái production và các việc còn lại.
 
