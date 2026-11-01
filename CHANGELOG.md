@@ -2,24 +2,28 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
-## [Unreleased]
+## [2.1.8] - 2026-11-02
 
 ### Added
 
-- Script đồng bộ ghi chú Vault từ Gateway về thư mục Markdown trên PC (`scripts/sync_vault_notes.py`) hỗ trợ định dạng Obsidian và cập nhật gia tăng (incremental).
-- Bộ kiểm thử hồi quy cho đồng bộ ghi chú (`tests/test_sync_vault_notes.py`), nâng tổng số test suite lên 47/47 passed.
-- Cấu hình các thao tác nhanh 1-chạm (Quick Context Actions) cho KOAssistant trên Kindle (`custom_actions.lua`) gồm tra cứu Web thời gian thực `#search`, Wikipedia `#wiki`, tóm tắt, giải thích sâu và lưu Vault.
-- Tích hợp game Cờ Vây (`go.koplugin`) hỗ trợ bàn 9x9, 13x13, 19x19 và bot AI cho KOReader.
-- Script tự động sinh sổ tay hướng dẫn sử dụng đa định dạng (`scripts/create_kindle_guide.py` tạo `.epub`, `.md`, `.txt`) lưu trực tiếp vào `E:\documents\Books`.
+- Triển khai toàn diện trò chơi **Cờ Thú (Animal Chess / Jungle)** native cho KOReader trên Kindle Paperwhite 4 (`animalchess.koplugin`).
+- Bộ 16 icon minh họa động vật độ tương phản cao, tối ưu hiển thị sắc nét trên màn hình E-ink Carta 300 DPI.
+- Chế độ chơi nâng cao "Linh Thú Thức Tỉnh": Kỹ năng Sói bầy đàn, Báo phi nhanh 2 ô cạn, Mèo 9 mạng né đòn và Thăng cấp khi diệt 2 quân địch.
+- Thanh công cụ tra cứu cấp bậc nhanh `[Cấp Bậc]` và cử chỉ nhấn giữ (Long-Press / Hold) để hiển thị chi tiết chiến tích và kỹ năng linh thú.
+- Bộ kiểm thử tự động `tests/test_animal_chess.py` kiểm tra bàn cờ, cơ chế Chuột vs Voi và Báo nhảy qua sông.
 
 ### Fixed
 
-- Sửa lỗi crash văng KOReader trong `boardgames.koplugin`: gán mặc định màu nền `Blitbuffer.COLOR_WHITE` cho `button.lua` và `buttontable.lua` để tránh ngoại lệ nil khi bấm `Settings` hoặc `Close`.
+- Sửa lỗi màn hình E-ink không làm mới khi di chuyển quân bằng cách kết nối trực tiếp `screen` cấp cao nhất vào `BoardWidget:refresh()` và kích hoạt `UIManager:setDirty` trên toàn màn hình.
+- Sửa lỗi nhân bản quân Mèo khi thực hiện hoàn nước (Undo) sau khi kích hoạt kỹ năng né đòn.
+- Sửa lỗi căn giữa nhãn chữ Hang và Bẫy trên bàn cờ bằng cách tính toán chính xác kích thước utf-8 qua `RenderText:sizeUtf8Text`.
+- Sửa lỗi crash cử chỉ cảm ứng do nil-pointer trong `getGesturePos(arg, ges)`.
+- Sửa lỗi cửa sổ hướng dẫn luật chơi tiếng Việt hiển thị bằng `TextViewer` có thanh cuộn và nút đóng.
 
 ### Documentation
 
-- Thêm kế hoạch tổng thể nâng cấp Kindle Paperwhite 4 (`docs/KINDLE_UPGRADE_MASTER_PLAN.md`) gồm 3 trụ cột: Game E-ink, Vẽ/Mindmap và Trạm tri thức AI 2 chiều.
-- Cập nhật biên bản phiên làm việc ngày 2026-11-01 (`docs/sessions/SESSION-2026-11-01.md`) ghi nhận toàn bộ quá trình triển khai thực tế trên ổ `E:\`, xác nhận production 2.1.6, sửa lỗi game và hướng dẫn tra cứu web.
+- Cập nhật biên bản phiên làm việc `docs/sessions/SESSION-2026-11-02.md`.
+- Đồng bộ sổ tay hướng dẫn sử dụng Kindle (`HUONG_DAN_SU_DUNG_KINDLE.md`, `.epub`, `.txt`) với mục hướng dẫn chi tiết Cờ Thú.
 
 ## [2.1.7] - 2026-11-01
 
