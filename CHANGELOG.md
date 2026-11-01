@@ -7,14 +7,19 @@ Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đ
 ### Added
 
 - Script đồng bộ ghi chú Vault từ Gateway về thư mục Markdown trên PC (`scripts/sync_vault_notes.py`) hỗ trợ định dạng Obsidian và cập nhật gia tăng (incremental).
-- Bộ kiểm thử hồi quy cho đồng bộ ghi chú (`tests/test_sync_vault_notes.py`).
-- Cấu hình các thao tác nhanh 1-chạm (Quick Context Actions) cho KOAssistant trên Kindle (`custom_actions.lua`).
+- Bộ kiểm thử hồi quy cho đồng bộ ghi chú (`tests/test_sync_vault_notes.py`), nâng tổng số test suite lên 47/47 passed.
+- Cấu hình các thao tác nhanh 1-chạm (Quick Context Actions) cho KOAssistant trên Kindle (`custom_actions.lua`) gồm tra cứu Web thời gian thực `#search`, Wikipedia `#wiki`, tóm tắt, giải thích sâu và lưu Vault.
+- Tích hợp game Cờ Vây (`go.koplugin`) hỗ trợ bàn 9x9, 13x13, 19x19 và bot AI cho KOReader.
+- Script tự động sinh sổ tay hướng dẫn sử dụng đa định dạng (`scripts/create_kindle_guide.py` tạo `.epub`, `.md`, `.txt`) lưu trực tiếp vào `E:\documents\Books`.
+
+### Fixed
+
+- Sửa lỗi crash văng KOReader trong `boardgames.koplugin`: gán mặc định màu nền `Blitbuffer.COLOR_WHITE` cho `button.lua` và `buttontable.lua` để tránh ngoại lệ nil khi bấm `Settings` hoặc `Close`.
 
 ### Documentation
 
 - Thêm kế hoạch tổng thể nâng cấp Kindle Paperwhite 4 (`docs/KINDLE_UPGRADE_MASTER_PLAN.md`) gồm 3 trụ cột: Game E-ink, Vẽ/Mindmap và Trạm tri thức AI 2 chiều.
-- Thêm kế hoạch cải thiện toàn diện theo từng giai đoạn, yêu cầu phê duyệt trước khi triển khai.
-- Ghi lại phiên làm việc ngày 2026-11-01, gồm các thay đổi từ 2.1.0 đến 2.1.6, kết quả kiểm thử, trạng thái production và các việc còn lại.
+- Cập nhật biên bản phiên làm việc ngày 2026-11-01 (`docs/sessions/SESSION-2026-11-01.md`) ghi nhận toàn bộ quá trình triển khai thực tế trên ổ `E:\`, xác nhận production 2.1.6, sửa lỗi game và hướng dẫn tra cứu web.
 
 ## [2.1.6] - 2026-11-01
 
