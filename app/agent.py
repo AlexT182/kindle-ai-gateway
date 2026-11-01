@@ -13,7 +13,7 @@ from app.tools import (
     get_crypto_price,
     save_todo
 )
-from app.persona import get_unified_persona_prompt
+from app.persona import add_evolving_insight, get_evolving_memory, get_unified_persona_prompt
 from app.vault import (
     save_note_to_vault,
     render_ascii_graph,
@@ -183,6 +183,8 @@ HELP_MANUAL_TEXT = """=========================================
 - #graph [chu de]  : Xem so do Do thi tri thuc (Knowledge Graph).
 - #node <ten>      : Tra cuu chi tiet cac lien ket 2 chieu cua 1 Node.
 - #todo <cong viec>: Them task vao danh sach viec can lam.
+- #remember [chu de] <noi dung>: Ghi nho so thich, muc tieu hoac boi canh ca nhan.
+- #memory          : Xem cac dieu tro ly dang ghi nho gan day.
 
 --- [4] TRA CUU DU LIEU THOI GIAN THUC ---
 - #tech <cong nghe>: Danh gia xu huong & stack cong nghe moi 2026.
@@ -290,6 +292,35 @@ async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], 
             return "Vui lòng nhập nội dung công việc. Ví dụ: `#todo Đọc xong chương 5`", None, True
         res = save_todo(task)
         return res, None, True
+
+    # E. Explicit personal memory commands. Full-match prevents selected book
+    # text containing a command example from changing persistent memory.
+    m_remember = re.fullmatch(
+        r'\s*#(?:remember|ghinho)(?:\s+\[([^\]\n\r]{1,80})\])?(?:\s+([^\n\r]*))?\s*',
+        msg_clean,
+        re.IGNORECASE,
+    )
+    if m_remember:
+        topic = (m_remember.group(1) or "General").strip()
+        observation = (m_remember.group(2) or "").strip()
+        if not observation:
+            return "Vui lòng nhập điều cần ghi nhớ. Ví dụ: `#remember [Sở thích] Tôi thích câu trả lời ngắn gọn`", None, True
+        try:
+            insight = add_evolving_insight(topic, observation)
+        except ValueError as exc:
+            return f"Không thể ghi nhớ: {exc}", None, True
+        return f"Đã ghi nhớ [{insight['topic']}]: {insight['observation']}", None, True
+
+    if re.fullmatch(r'\s*#(?:memory|kyniem|bonho)\s*', msg_clean, re.IGNORECASE):
+        insights = get_evolving_memory().get("accumulated_insights", [])[:10]
+        if not insights:
+            return "Trợ lý chưa có ký ức cá nhân nào.", None, True
+        lines = ["=== BỘ NHỚ CÁ NHÂN GẦN ĐÂY ==="]
+        lines.extend(
+            f"{index}. [{item.get('topic', 'General')}] {item.get('observation', '')}"
+            for index, item in enumerate(insights, start=1)
+        )
+        return "\n".join(lines), None, True
 
     # 4. Real-time Tools:
     # A. Weather

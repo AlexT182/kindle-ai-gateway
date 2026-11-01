@@ -2,6 +2,23 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
+## [2.1.6] - 2026-11-01
+
+### Added
+
+- Lệnh `#remember [chủ đề] <nội dung>` để người dùng chủ động lưu sở thích, mục tiêu hoặc bối cảnh cá nhân.
+- Lệnh `#memory` để xem tối đa 10 mục ghi nhớ gần nhất ngay trên Kindle.
+
+### Security
+
+- Chỉ ghi bộ nhớ khi toàn bộ yêu cầu là lệnh `#remember`; nội dung sách chứa ví dụ lệnh không thể tự thay đổi persona.
+- Đánh dấu dữ liệu bộ nhớ là hồ sơ không tin cậy trong system prompt, giới hạn 1.000 ký tự mỗi mục và tối đa 100 mục.
+
+### Fixed
+
+- Ghi file persona/bộ nhớ theo cơ chế atomic replace để tránh file JSON dở dang khi request bị gián đoạn.
+- Trả về bản sao của dữ liệu mặc định, tránh bộ nhớ mặc định bị sửa trực tiếp trong tiến trình.
+
 ## [2.1.5] - 2026-11-01
 
 ### Added

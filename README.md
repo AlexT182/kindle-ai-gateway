@@ -2,6 +2,8 @@
 
 Gateway OpenAI-compatible dành cho Kindle chạy KOReader + KOAssistant. `alex-agent` có thể tự chọn các công cụ chỉ-đọc (web, thời tiết, Wikipedia, crypto và Kindle Vault), nhưng bị giới hạn số bước và không được chạy shell hay tự ý ghi dữ liệu.
 
+Trợ lý có bộ nhớ cá nhân chủ động: dùng `#remember [chủ đề] <nội dung>` để lưu một sở thích, mục tiêu hoặc bối cảnh, và `#memory` để xem 10 mục gần nhất. Chỉ lệnh chiếm toàn bộ request mới được ghi; nội dung được chọn trong sách chứa chuỗi `#remember` không thể tự thay đổi bộ nhớ.
+
 ## Cấu hình bắt buộc
 
 Yêu cầu Python 3.11 trở lên. Sao chép `.env.example` thành `.env` và đặt các biến sau:
