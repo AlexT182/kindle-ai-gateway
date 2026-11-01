@@ -2,6 +2,13 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
+## [Unreleased]
+
+### Documentation
+
+- Thêm kế hoạch cải thiện toàn diện theo từng giai đoạn, yêu cầu phê duyệt trước khi triển khai.
+- Ghi lại phiên làm việc ngày 2026-11-01, gồm các thay đổi từ 2.1.0 đến 2.1.6, kết quả kiểm thử, trạng thái production và các việc còn lại.
+
 ## [2.1.6] - 2026-11-01
 
 ### Added
