@@ -1,7 +1,10 @@
+import re
+
 import pytest
 from fastapi.testclient import TestClient
 
 import app.main as main_module
+import app.routes.admin as admin_routes
 from app.config import settings
 from app.main import app
 from app.auth import clear_login_failures, login_allowed, record_failed_login
@@ -54,6 +57,16 @@ def test_arbitrary_origin_is_not_allowed(client):
     assert response.headers.get("access-control-allow-origin") is None
 
 
+def test_security_headers_and_request_id(client):
+    response = client.get("/admin/login")
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    assert response.headers["referrer-policy"] == "no-referrer"
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["strict-transport-security"].startswith("max-age=")
+    assert response.headers["x-request-id"]
+
+
 def test_health_reports_vault_failure(client, monkeypatch):
     monkeypatch.setattr(main_module, "database_is_ready", lambda: False)
     response = client.get("/health")
@@ -83,6 +96,27 @@ def test_admin_write_requires_csrf(client):
     assert login.status_code == 303
     response = client.post("/admin/notes/create", data={"title": "x", "content": "y"})
     assert response.status_code == 403
+
+
+def test_admin_backup_requires_session_and_csrf(client, monkeypatch, tmp_path):
+    assert client.post("/admin/backup", follow_redirects=False).status_code == 303
+    login = client.post("/admin/login", data={"password": ADMIN_PASSWORD}, follow_redirects=False)
+    assert login.status_code == 303
+    dashboard = client.get("/admin")
+    csrf = re.search(r'name="csrf_token" value="([^"]+)"', dashboard.text).group(1)
+    temp_root = tmp_path / "backup-temp"
+    temp_root.mkdir()
+    archive = temp_root / "vault.zip"
+    archive.write_bytes(b"PK-backup")
+    monkeypatch.setattr(admin_routes, "create_vault_backup", lambda: (archive, temp_root))
+
+    denied = client.post("/admin/backup")
+    allowed = client.post("/admin/backup", data={"csrf_token": csrf})
+    assert denied.status_code == 403
+    assert allowed.status_code == 200
+    assert allowed.content == b"PK-backup"
+    assert "attachment" in allowed.headers["content-disposition"]
+    assert not temp_root.exists()
 
 
 def test_request_bounds_are_enforced_before_provider_call(client, monkeypatch):

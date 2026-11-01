@@ -2,6 +2,19 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
+## [2.1.3] - 2026-11-01
+
+### Added
+
+- Nút tải backup Vault trong Dashboard; archive dùng SQLite online backup và kèm Markdown/configuration.
+- Security headers, HSTS và request ID cho mọi response.
+- Dashboard hiển thị model mặc định và phiên bản gateway thực tế.
+
+### Security
+
+- Chỉ cho phép `#note` và `#todo` ghi dữ liệu khi lệnh nằm ở đầu và chiếm toàn bộ yêu cầu, ngăn nội dung sách nhúng lệnh ghi ngoài ý muốn.
+- Backup yêu cầu admin session hợp lệ và CSRF token; file tạm được xóa sau khi tải.
+
 ## [2.1.2] - 2026-11-01
 
 ### Added

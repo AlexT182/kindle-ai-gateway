@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+APP_VERSION = "2.1.3"
+
 
 def _bool_env(name: str, default: bool) -> bool:
     return os.getenv(name, str(default)).lower() in {"true", "1", "yes", "on"}

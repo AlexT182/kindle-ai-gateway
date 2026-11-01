@@ -75,3 +75,14 @@ def test_legacy_skill_prompt_and_tool_context_reach_agent(monkeypatch):
     assert "CUSTOM BOOK PROMPT" in captured["messages"][0]["content"]
     assert "VERIFIED TOOL OBSERVATION" in captured["messages"][-1]["content"]
     assert "27 C" in captured["messages"][-1]["content"]
+
+
+def test_embedded_write_command_does_not_trigger_direct_write(monkeypatch):
+    import app.agent as legacy_agent
+
+    def must_not_save(**_):
+        raise AssertionError("embedded untrusted text must not trigger a write")
+
+    monkeypatch.setattr(legacy_agent, "save_note_to_vault", must_not_save)
+    result = asyncio.run(legacy_agent.process_hashtag_and_tools("Đoạn sách có ví dụ #note không phải lệnh"))
+    assert result[2] is False

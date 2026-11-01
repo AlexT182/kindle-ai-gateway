@@ -2,11 +2,13 @@ import os
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from starlette.background import BackgroundTask
 
 from app.auth import clear_login_failures, create_admin_session, csrf_token, is_admin_session_valid, login_allowed, record_failed_login, validate_csrf, verify_admin_password
-from app.config import settings
+from app.backup import cleanup_backup, create_vault_backup
+from app.config import APP_VERSION, settings
 from app.persona import get_baseline_profile, get_evolving_memory, save_baseline_profile
 from app.scheduler import trigger_job_manual
 from app.vault import delete_note_from_vault, get_all_notes_db, get_all_tags, get_graph_edges, save_note_to_vault, search_notes_fts
@@ -68,7 +70,7 @@ def dashboard_view(request: Request):
     notes, tags, edges = get_all_notes_db(limit=5), get_all_tags(), get_graph_edges()
     context = page_context(request, active_tab="dashboard", title="Bảng điều khiển - Kindle AI Agent",
                            stats={"notes_count": len(get_all_notes_db(limit=500)), "edges_count": len(edges), "tags_count": len(tags)},
-                           recent_notes=notes)
+                           recent_notes=notes, app_version=APP_VERSION, default_model=settings.DEFAULT_MODEL)
     return templates.TemplateResponse(request=request, name="admin/dashboard.html", context=context)
 
 
@@ -105,6 +107,20 @@ def graph_view(request: Request):
     if redirect := require_admin(request): return redirect
     return templates.TemplateResponse(request=request, name="admin/graph.html",
                                       context=page_context(request, active_tab="graph", title="Knowledge Graph - Kindle AI Agent"))
+
+
+@router.post("/backup")
+async def download_backup(request: Request):
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
+    archive_path, temp_root = create_vault_backup()
+    return FileResponse(
+        archive_path,
+        media_type="application/zip",
+        filename=archive_path.name,
+        background=BackgroundTask(cleanup_backup, temp_root),
+    )
 
 
 @router.get("/persona", response_class=HTMLResponse)

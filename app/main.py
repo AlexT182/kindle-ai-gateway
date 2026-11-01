@@ -1,8 +1,9 @@
 import time
+import uuid
 from contextlib import asynccontextmanager
 from typing import List, Literal, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
@@ -10,13 +11,11 @@ from pydantic import BaseModel, Field
 from app.agent import call_deepseek_non_stream, call_deepseek_stream
 from app.agent_runtime import run_agent_completion, run_agent_stream
 from app.auth import require_api_token
-from app.config import settings
+from app.config import APP_VERSION, settings
 from app.db import database_is_ready
 from app.routes.admin import router as admin_router
 from app.scheduler import shutdown_scheduler, start_scheduler
 from app.vault import generate_kindle_graph_image, get_all_notes_db, get_all_tags, get_graph_data, save_note_to_vault, search_notes_fts
-
-APP_VERSION = "2.1.2"
 
 
 @asynccontextmanager
@@ -33,6 +32,21 @@ app = FastAPI(title="Kindle AI Agent OS", version=APP_VERSION, lifespan=lifespan
               redoc_url="/redoc" if settings.ENABLE_DOCS else None,
               openapi_url="/openapi.json" if settings.ENABLE_DOCS else None)
 app.include_router(admin_router)
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    response.headers.setdefault("X-Request-ID", str(uuid.uuid4()))
+    if request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https":
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    if request.url.path.startswith(("/admin", "/v1/vault", "/vault")):
+        response.headers.setdefault("Cache-Control", "no-store")
+    return response
 
 if settings.ALLOWED_ORIGINS:
     app.add_middleware(CORSMiddleware, allow_origins=settings.ALLOWED_ORIGINS, allow_credentials=False,

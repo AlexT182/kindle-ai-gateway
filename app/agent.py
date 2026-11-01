@@ -266,9 +266,9 @@ async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], 
             return node_text, None, True
 
     # C. #note <content> - Save to Markdown Vault
-    m_note = re.search(r'#(?:note|ghichu)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    m_note = re.fullmatch(r'\s*#(?:note|ghichu)(?:\s+([^\n\r]*))?\s*', msg_clean, re.IGNORECASE)
     if m_note or msg_lower.startswith("ghi chú:"):
-        content = m_note.group(1).strip() if m_note else msg_clean.replace("ghi chú:", "").strip()
+        content = (m_note.group(1) or "").strip() if m_note else msg_clean.replace("ghi chú:", "").strip()
         if not content:
             return "Vui lòng nhập nội dung cần ghi chú. Ví dụ: `#note Nguyên lý Lean MVP`", None, True
         res = save_note_to_vault(content=content)
@@ -283,9 +283,9 @@ async def process_hashtag_and_tools(last_user_msg: str) -> tuple[Optional[str], 
         return reply, None, True
 
     # D. #todo <task>
-    m_todo = re.search(r'#(?:todo|viec)\s*([^\n\r]*)', msg_clean, re.IGNORECASE)
+    m_todo = re.fullmatch(r'\s*#(?:todo|viec)(?:\s+([^\n\r]*))?\s*', msg_clean, re.IGNORECASE)
     if m_todo or msg_lower.startswith("công việc:"):
-        task = m_todo.group(1).strip() if m_todo else msg_clean.replace("công việc:", "").strip()
+        task = (m_todo.group(1) or "").strip() if m_todo else msg_clean.replace("công việc:", "").strip()
         if not task:
             return "Vui lòng nhập nội dung công việc. Ví dụ: `#todo Đọc xong chương 5`", None, True
         res = save_todo(task)

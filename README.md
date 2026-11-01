@@ -70,6 +70,8 @@ Script kiểm tra health, trang đăng nhập, API auth, bảo vệ graph và CO
 
 Endpoint `/health` cũng kiểm tra khả năng truy cập SQLite Vault; nếu volume hoặc database lỗi, endpoint trả `503` thay vì báo healthy giả.
 
+Trong Dashboard, nút **Tải backup Vault** tạo một ZIP nhất quán gồm SQLite snapshot, ghi chú Markdown và cấu hình trong `/data`. Backup yêu cầu đăng nhập admin và CSRF token; archive tạm được xóa ngay sau khi gửi xong.
+
 `ALLOWED_ORIGINS` mặc định rỗng vì Kindle/native client không cần CORS. Chỉ thêm các origin HTTPS cụ thể nếu có frontend web khác domain; không dùng `*`.
 
 ## Lưu ý dữ liệu và lịch sử Git

@@ -8,7 +8,11 @@
             <h2>Bảng Điều Khiển Trung Tâm (Overview)</h2>
             <p class="subtitle">Theo dõi hoạt động, kho tri thức và trạng thái hệ sinh thái Kindle AI Gateway.</p>
         </div>
-        <div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <form method="POST" action="/admin/backup">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn-secondary">Tải backup Vault</button>
+            </form>
             <a href="/admin/notes" class="btn btn-primary">+ Tạo Ghi Chú Mới</a>
         </div>
     </div>
@@ -50,8 +54,8 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/></svg>
             </div>
             <div>
-                <div class="stat-label">AI Models</div>
-                <div class="stat-val" style="font-size: 15px; margin-top: 6px;">DeepSeek V3/R1</div>
+                <div class="stat-label">AI Model / Gateway</div>
+                <div class="stat-val" style="font-size: 15px; margin-top: 6px;">{{ default_model }} · v{{ app_version }}</div>
             </div>
         </div>
     </div>
