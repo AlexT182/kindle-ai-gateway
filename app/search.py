@@ -33,17 +33,16 @@ async def search_tavily(query: str, max_results: int = 5) -> List[Dict[str, str]
 
 def search_duckduckgo_sync(query: str, max_results: int = 5) -> List[Dict[str, str]]:
     try:
-        from duckduckgo_search import DDGS
-        with DDGS() as ddgs:
-            raw_results = list(ddgs.text(query, max_results=max_results))
-            results = []
-            for item in raw_results:
-                results.append({
-                    "title": item.get("title", ""),
-                    "url": item.get("href", ""),
-                    "content": item.get("body", ""),
-                })
-            return results
+        from ddgs import DDGS
+        raw_results = list(DDGS(timeout=8).text(query, max_results=max_results))
+        results = []
+        for item in raw_results:
+            results.append({
+                "title": item.get("title", ""),
+                "url": item.get("href", ""),
+                "content": item.get("body", ""),
+            })
+        return results
     except Exception as e:
         print(f"[Search DDG Error]: {e}")
         return []

@@ -15,6 +15,8 @@ from app.routes.admin import router as admin_router
 from app.scheduler import shutdown_scheduler, start_scheduler
 from app.vault import generate_kindle_graph_image, get_all_notes_db, get_all_tags, get_graph_data, save_note_to_vault, search_notes_fts
 
+APP_VERSION = "2.1.1"
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -25,7 +27,7 @@ async def lifespan(_: FastAPI):
     shutdown_scheduler()
 
 
-app = FastAPI(title="Kindle AI Agent OS", version="2.1.0", lifespan=lifespan,
+app = FastAPI(title="Kindle AI Agent OS", version=APP_VERSION, lifespan=lifespan,
               docs_url="/docs" if settings.ENABLE_DOCS else None,
               redoc_url="/redoc" if settings.ENABLE_DOCS else None,
               openapi_url="/openapi.json" if settings.ENABLE_DOCS else None)
@@ -60,7 +62,7 @@ class NoteCreateRequest(BaseModel):
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "timestamp": int(time.time()), "agent": "alex-agent-v2.1"}
+    return {"status": "healthy", "timestamp": int(time.time()), "version": APP_VERSION, "agent": "alex-agent"}
 
 
 @app.get("/favicon.ico", include_in_schema=False)

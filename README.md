@@ -58,6 +58,16 @@ Gateway chấp nhận `Authorization: Bearer`, `X-API-Key` hoặc `api-key` head
 5. Xác nhận `/v1/models` trả `401` khi không có token và `200` khi có Bearer token đúng.
 6. Cập nhật token mới trong KOAssistant sau khi production đã khỏe.
 
+Có thể chạy smoke test chỉ-đọc sau mỗi lần deploy:
+
+```powershell
+$env:BASE_URL = "https://kindle.alphatech.ai.vn"
+$env:AUTH_TOKEN = "<machine token>"
+python scripts/smoke_production.py
+```
+
+Script kiểm tra health, trang đăng nhập, API auth, bảo vệ graph và CORS; không gọi model AI và không ghi dữ liệu.
+
 `ALLOWED_ORIGINS` mặc định rỗng vì Kindle/native client không cần CORS. Chỉ thêm các origin HTTPS cụ thể nếu có frontend web khác domain; không dùng `*`.
 
 ## Lưu ý dữ liệu và lịch sử Git

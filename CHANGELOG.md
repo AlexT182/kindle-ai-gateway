@@ -2,6 +2,17 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
+## [2.1.1] - 2026-11-01
+
+### Added
+
+- Smoke-test production chỉ-đọc cho health, API auth, Vault protection và CORS.
+
+### Fixed
+
+- Khôi phục các lệnh `#note`, `#todo`, graph và prompt kỹ năng legacy trong luồng `alex-agent` mới.
+- Chuyển web search từ package `duckduckgo-search` đã đổi tên sang `ddgs` hiện hành.
+
 ## [2.1.0] - 2026-10-31
 
 ### Added
