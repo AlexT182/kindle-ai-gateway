@@ -9,7 +9,7 @@ from app.auth import clear_login_failures, create_admin_session, csrf_token, is_
 from app.config import settings
 from app.persona import get_baseline_profile, get_evolving_memory, save_baseline_profile
 from app.scheduler import trigger_job_manual
-from app.vault import delete_note_index, get_all_notes_db, get_all_tags, get_graph_edges, save_note_to_vault, search_notes_fts
+from app.vault import delete_note_from_vault, get_all_notes_db, get_all_tags, get_graph_edges, save_note_to_vault, search_notes_fts
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
@@ -96,7 +96,7 @@ async def delete_note_admin(request: Request, note_id: str):
     if redirect := require_admin(request): return redirect
     form = await request.form()
     validate_csrf(request, form.get("csrf_token"))
-    delete_note_index(note_id)
+    delete_note_from_vault(note_id)
     return RedirectResponse(url="/admin/notes", status_code=303)
 
 

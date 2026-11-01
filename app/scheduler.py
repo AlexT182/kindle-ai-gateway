@@ -1,123 +1,130 @@
-import os
-import asyncio
+import threading
 from datetime import datetime
-from typing import Dict, Any, List
-from app.search import web_search, format_search_results
-from app.vault import save_note_to_vault, get_all_notes_db
+from zoneinfo import ZoneInfo
+
+from app.db import get_note_by_title
+from app.search import format_search_results, web_search
+from app.vault import get_all_notes_db, save_note_to_vault
+
+VIETNAM_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
+_job_locks = {
+    "daily_morning_intel": threading.Lock(),
+    "weekly_reading_retro": threading.Lock(),
+}
+
 try:
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
-    scheduler = AsyncIOScheduler(timezone="Asia/Ho_Chi_Minh")
-    HAS_APSCHEDULER = True
+
+    scheduler = AsyncIOScheduler(timezone=VIETNAM_TZ)
 except ImportError:
     scheduler = None
-    HAS_APSCHEDULER = False
 
-async def job_daily_morning_intel():
-    print("[Scheduler] Running Daily Morning Intel...")
-    now = datetime.now()
-    date_str = now.strftime("%d/%m/%Y")
-    
-    queries = [
-        "AI technology breakthroughs and product updates 2026",
-        "Tech market trends and venture funding updates 2026"
-    ]
-    
-    all_results = []
-    for q in queries:
-        res = await web_search(q, max_results=3)
-        if res:
-            all_results.extend(res)
-            
-    content_lines = [
-        f"=== DAILY MORNING INTEL - NGÀY {date_str} ===",
-        f"Tổng hợp tự động vào lúc {now.strftime('%H:%M:%S')} (GMT+7)",
-        "",
-        "## 1. Tin Tức & Bước Ngoặt Công Nghệ Đáng Chú Ý:",
-        format_search_results(all_results) if all_results else "Không có dữ liệu mới.",
-        "",
-        "## 2. Gợi Ý Định Hướng Trong Ngày:",
-        "- Rà soát lại các mục tiêu ưu tiên cao nhất trong ngày.",
-        "- Đối chiếu các insight công nghệ mới với lộ trình sản phẩm hiện tại."
-    ]
-    
-    save_note_to_vault(
-        title=f"Daily Intel {now.strftime('%Y-%m-%d')}",
-        content="\n".join(content_lines),
-        category="Daily Digest",
-        tags=["daily-digest", "market-intel", "ai-trends"]
-    )
-    print("[Scheduler] Daily Morning Intel completed and saved to Vault!")
 
-async def job_weekly_retro():
-    print("[Scheduler] Running Weekly Reading Retro...")
-    now = datetime.now()
-    week_str = now.strftime("%Y-W%W")
-    
-    notes = get_all_notes_db(limit=20)
-    
-    lines = [
-        f"=== BÁO CÁO TỔNG KẾT TUẦN (WEEKLY RETROSPECTIVE) - {week_str} ===",
-        f"Tổng hợp các ghi chú và tri thức đã thu nạp trong tuần tính đến {now.strftime('%d/%m/%Y %H:%M')}:",
-        "",
-        "## 1. Các Ghi Chú & Khái Niệm Đã Thu Nạp:"
-    ]
-    
-    if notes:
-        for n in notes[:10]:
-            lines.append(f"- [[{n['title']}]] (Nguồn: {n.get('source_book') or 'Ghi chép tự do'})")
-    else:
-        lines.append("- Chưa có ghi chú mới trong tuần.")
-        
-    lines.extend([
-        "",
-        "## 2. Phân Tích Xu Hướng Tư Duy:",
-        "- Trọng tâm tuần này hướng về tối ưu hóa quy trình, thiết kế sản phẩm và tư duy thực nghiệm.",
-        "- Đề xuất tuần tới: Đào sâu thêm các Case Study triển khai thực tế."
-    ])
-    
-    save_note_to_vault(
-        title=f"Weekly Retro {week_str}",
-        content="\n".join(lines),
-        category="Weekly Retro",
-        tags=["weekly-retro", "knowledge-audit"]
-    )
-    print("[Scheduler] Weekly Reading Retro completed and saved to Vault!")
+def current_time() -> datetime:
+    return datetime.now(VIETNAM_TZ)
 
-def start_scheduler():
-    if scheduler and not scheduler.running:
-        # Schedule Daily Digest at 07:00 AM every day
-        scheduler.add_job(
-            job_daily_morning_intel,
-            'cron',
-            hour=7,
-            minute=0,
-            id='daily_morning_intel',
-            replace_existing=True
-        )
-        # Schedule Weekly Retro every Sunday at 21:00
-        scheduler.add_job(
-            job_weekly_retro,
-            'cron',
-            day_of_week='sun',
-            hour=21,
-            minute=0,
-            id='weekly_reading_retro',
-            replace_existing=True
-        )
-        scheduler.start()
-        print("[Scheduler] APScheduler started successfully!")
-    else:
-        print("[Scheduler] Running in standalone mode without APScheduler background loop.")
 
-def shutdown_scheduler():
+async def job_daily_morning_intel() -> str:
+    lock = _job_locks["daily_morning_intel"]
+    if not lock.acquire(blocking=False):
+        return "already_running"
+    try:
+        now = current_time()
+        title = f"Daily Intel {now:%Y-%m-%d}"
+        if get_note_by_title(title):
+            return "already_exists"
+
+        queries = [
+            f"AI technology breakthroughs and product updates {now.year}",
+            f"Tech market trends and venture funding updates {now.year}",
+        ]
+        results = []
+        for query in queries:
+            results.extend(await web_search(query, max_results=3) or [])
+
+        content = "\n".join([
+            f"=== DAILY MORNING INTEL - NGÀY {now:%d/%m/%Y} ===",
+            f"Tổng hợp tự động lúc {now:%H:%M:%S} (Asia/Ho_Chi_Minh)",
+            "",
+            "## 1. Tin tức và bước ngoặt công nghệ đáng chú ý",
+            format_search_results(results) if results else "Không có dữ liệu mới.",
+            "",
+            "## 2. Gợi ý định hướng trong ngày",
+            "- Rà soát các mục tiêu ưu tiên cao nhất trong ngày.",
+            "- Đối chiếu insight công nghệ mới với lộ trình sản phẩm hiện tại.",
+        ])
+        save_note_to_vault(content=content, title=title, category="Daily Digest",
+                           tags=["daily-digest", "market-intel", "ai-trends"])
+        return "created"
+    finally:
+        lock.release()
+
+
+async def job_weekly_retro() -> str:
+    lock = _job_locks["weekly_reading_retro"]
+    if not lock.acquire(blocking=False):
+        return "already_running"
+    try:
+        now = current_time()
+        week = now.strftime("%G-W%V")
+        title = f"Weekly Retro {week}"
+        if get_note_by_title(title):
+            return "already_exists"
+
+        notes = get_all_notes_db(limit=20)
+        lines = [
+            f"=== BÁO CÁO TỔNG KẾT TUẦN - {week} ===",
+            f"Tổng hợp kiến thức đến {now:%d/%m/%Y %H:%M}:",
+            "",
+            "## 1. Ghi chú và khái niệm đã thu nạp",
+        ]
+        if notes:
+            for note in notes[:10]:
+                source = note.get("source_book") or "Ghi chép tự do"
+                lines.append(f"- [[{note['title']}]] (Nguồn: {source})")
+        else:
+            lines.append("- Chưa có ghi chú mới trong tuần.")
+        lines.extend([
+            "",
+            "## 2. Phân tích xu hướng tư duy",
+            "- Rà soát các chủ đề xuất hiện lặp lại trong ghi chú tuần này.",
+            "- Chọn một khái niệm quan trọng để đào sâu và áp dụng trong tuần tới.",
+        ])
+        save_note_to_vault(content="\n".join(lines), title=title, category="Weekly Retro",
+                           tags=["weekly-retro", "knowledge-audit"])
+        return "created"
+    finally:
+        lock.release()
+
+
+def start_scheduler() -> None:
+    if not scheduler or scheduler.running:
+        return
+    common = {"replace_existing": True, "max_instances": 1, "coalesce": True, "misfire_grace_time": 900}
+    scheduler.add_job(job_daily_morning_intel, "cron", hour=7, minute=0,
+                      id="daily_morning_intel", **common)
+    scheduler.add_job(job_weekly_retro, "cron", day_of_week="sun", hour=21, minute=0,
+                      id="weekly_reading_retro", **common)
+    scheduler.start()
+
+
+def shutdown_scheduler() -> None:
     if scheduler and scheduler.running:
         scheduler.shutdown(wait=False)
 
+
 async def trigger_job_manual(job_name: str) -> str:
-    if job_name == "daily_morning_intel":
-        await job_daily_morning_intel()
-        return "Đã thực thi thành công Daily Morning Intel và lưu vào Vault!"
-    elif job_name == "weekly_reading_retro":
-        await job_weekly_retro()
-        return "Đã thực thi thành công Weekly Reading Retro và lưu vào Vault!"
-    return f"Không tìm thấy tác vụ '{job_name}'."
+    jobs = {
+        "daily_morning_intel": (job_daily_morning_intel, "Daily Morning Intel"),
+        "weekly_reading_retro": (job_weekly_retro, "Weekly Reading Retro"),
+    }
+    if job_name not in jobs:
+        return f"Không tìm thấy tác vụ '{job_name}'."
+    job, label = jobs[job_name]
+    result = await job()
+    messages = {
+        "created": f"Đã chạy {label} và lưu vào Vault.",
+        "already_exists": f"{label} đã tồn tại cho kỳ hiện tại; không tạo bản trùng.",
+        "already_running": f"{label} đang chạy; yêu cầu trùng đã được bỏ qua.",
+    }
+    return messages[result]

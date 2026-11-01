@@ -68,6 +68,8 @@ python scripts/smoke_production.py
 
 Script kiểm tra health, trang đăng nhập, API auth, bảo vệ graph và CORS; không gọi model AI và không ghi dữ liệu.
 
+Endpoint `/health` cũng kiểm tra khả năng truy cập SQLite Vault; nếu volume hoặc database lỗi, endpoint trả `503` thay vì báo healthy giả.
+
 `ALLOWED_ORIGINS` mặc định rỗng vì Kindle/native client không cần CORS. Chỉ thêm các origin HTTPS cụ thể nếu có frontend web khác domain; không dùng `*`.
 
 ## Lưu ý dữ liệu và lịch sử Git

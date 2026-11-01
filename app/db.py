@@ -1,7 +1,5 @@
 import sqlite3
 import os
-import json
-from datetime import datetime
 from typing import List, Dict, Any, Optional
 from app.config import settings
 
@@ -10,13 +8,17 @@ os.makedirs(DATA_DIR, exist_ok=True)
 DB_PATH = os.path.join(DATA_DIR, "vault.db")
 
 def get_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA busy_timeout = 5000")
     return conn
 
 def init_db():
     conn = get_connection()
     cursor = conn.cursor()
+    cursor.execute("PRAGMA journal_mode = WAL")
+    cursor.execute("PRAGMA synchronous = NORMAL")
     
     # 1. Notes Metadata Table
     cursor.execute('''
@@ -68,47 +70,84 @@ def init_db():
 
 def upsert_note_index(note_id: str, title: str, file_path: str, source_book: str, category: str, content_raw: str, tags: List[str], links: List[str], created_at: str, updated_at: str):
     conn = get_connection()
-    cursor = conn.cursor()
-    
-    # Upsert notes table
-    cursor.execute('''
-    INSERT OR REPLACE INTO notes (id, title, file_path, source_book, category, content_raw, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (note_id, title, file_path, source_book, category, content_raw, created_at, updated_at))
-    
-    # Update tags
-    cursor.execute('DELETE FROM note_tags WHERE note_id = ?', (note_id,))
-    for tag in tags:
-        cursor.execute('INSERT OR IGNORE INTO note_tags (note_id, tag) VALUES (?, ?)', (note_id, tag.strip().lower()))
-        
-    # Update links (Graph edges)
-    cursor.execute('DELETE FROM note_links WHERE source_node = ?', (title,))
-    for target in links:
-        if target.strip():
-            cursor.execute('INSERT OR IGNORE INTO note_links (source_node, target_node, link_type) VALUES (?, ?, ?)', (title, target.strip(), 'references'))
-    
-    # If source book is present, link book -> note
-    if source_book and source_book.strip():
-        cursor.execute('INSERT OR IGNORE INTO note_links (source_node, target_node, link_type) VALUES (?, ?, ?)', (source_book.strip(), title, 'contains'))
+    try:
+        cursor = conn.cursor()
+        # Upsert without REPLACE so foreign-key relationships are not implicitly deleted.
+        cursor.execute('''
+        INSERT INTO notes (id, title, file_path, source_book, category, content_raw, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            title = excluded.title,
+            file_path = excluded.file_path,
+            source_book = excluded.source_book,
+            category = excluded.category,
+            content_raw = excluded.content_raw,
+            updated_at = excluded.updated_at
+        ''', (note_id, title, file_path, source_book, category, content_raw, created_at, updated_at))
 
-    # Update FTS5
-    cursor.execute('DELETE FROM notes_fts WHERE id = ?', (note_id,))
-    tags_str = " ".join(tags)
-    cursor.execute('INSERT INTO notes_fts (id, title, content_raw, tags) VALUES (?, ?, ?, ?)', (note_id, title, content_raw, tags_str))
-    
-    conn.commit()
-    conn.close()
+        cursor.execute('DELETE FROM note_tags WHERE note_id = ?', (note_id,))
+        for tag in tags:
+            cursor.execute('INSERT OR IGNORE INTO note_tags (note_id, tag) VALUES (?, ?)', (note_id, tag.strip().lower()))
 
-def delete_note_index(note_id: str, title: str = ""):
+        cursor.execute('DELETE FROM note_links WHERE source_node = ?', (title,))
+        for target in links:
+            if target.strip():
+                cursor.execute('INSERT OR IGNORE INTO note_links (source_node, target_node, link_type) VALUES (?, ?, ?)', (title, target.strip(), 'references'))
+        if source_book and source_book.strip():
+            cursor.execute('INSERT OR IGNORE INTO note_links (source_node, target_node, link_type) VALUES (?, ?, ?)', (source_book.strip(), title, 'contains'))
+
+        cursor.execute('DELETE FROM notes_fts WHERE id = ?', (note_id,))
+        cursor.execute('INSERT INTO notes_fts (id, title, content_raw, tags) VALUES (?, ?, ?, ?)',
+                       (note_id, title, content_raw, " ".join(tags)))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+def get_note_db(note_id: str) -> Optional[Dict[str, Any]]:
     conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM notes WHERE id = ?', (note_id,))
-    cursor.execute('DELETE FROM note_tags WHERE note_id = ?', (note_id,))
-    cursor.execute('DELETE FROM notes_fts WHERE id = ?', (note_id,))
-    if title:
-        cursor.execute('DELETE FROM note_links WHERE source_node = ? OR target_node = ?', (title, title))
-    conn.commit()
-    conn.close()
+    try:
+        row = conn.execute('''
+        SELECT id, title, file_path, source_book, category, content_raw, created_at, updated_at
+        FROM notes WHERE id = ?
+        ''', (note_id,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def get_note_by_title(title: str) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    try:
+        row = conn.execute('''
+        SELECT id, title, file_path, source_book, category, content_raw, created_at, updated_at
+        FROM notes WHERE title = ? ORDER BY created_at DESC LIMIT 1
+        ''', (title,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def delete_note_index(note_id: str) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        row = cursor.execute('SELECT * FROM notes WHERE id = ?', (note_id,)).fetchone()
+        if not row:
+            return None
+        note = dict(row)
+        cursor.execute('DELETE FROM note_links WHERE source_node = ? OR target_node = ?', (note["title"], note["title"]))
+        cursor.execute('DELETE FROM notes_fts WHERE id = ?', (note_id,))
+        cursor.execute('DELETE FROM notes WHERE id = ?', (note_id,))
+        conn.commit()
+        return note
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 def search_notes_fts(query: str, limit: int = 20) -> List[Dict[str, Any]]:
     conn = get_connection()
@@ -167,6 +206,18 @@ def get_all_tags() -> List[Dict[str, Any]]:
     rows = cursor.fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+
+def database_is_ready() -> bool:
+    try:
+        conn = get_connection()
+        try:
+            row = conn.execute("SELECT COUNT(*) FROM notes").fetchone()
+            return row is not None
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return False
 
 # Initialize database on module load
 init_db()

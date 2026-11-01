@@ -2,6 +2,9 @@ import os
 import re
 import yaml
 import io
+import tempfile
+import uuid
+from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
 from PIL import Image, ImageDraw, ImageFont
@@ -10,6 +13,7 @@ from app.config import settings
 from app.db import (
     upsert_note_index,
     delete_note_index,
+    get_note_db,
     search_notes_fts,
     get_all_notes_db,
     get_graph_edges,
@@ -43,7 +47,8 @@ def save_note_to_vault(
 ) -> Dict[str, Any]:
     now = datetime.now()
     timestamp_str = now.strftime("%Y%m%d-%H%M%S")
-    note_id = f"note-{timestamp_str}"
+    unique_id = uuid.uuid4().hex
+    note_id = f"note-{unique_id}"
     
     if not title or not title.strip():
         lines = [l.strip() for l in content.splitlines() if l.strip()]
@@ -55,12 +60,7 @@ def save_note_to_vault(
     extracted_links = extract_wikilinks(content)
     
     clean_filename = re.sub(r'[\\/*?:"<>|]', '_', title)[:35].strip() or note_id
-    file_path = os.path.join(NOTES_DIR, f"{clean_filename}.md")
-    
-    idx = 1
-    while os.path.exists(file_path):
-        file_path = os.path.join(NOTES_DIR, f"{clean_filename}_{idx}.md")
-        idx += 1
+    file_path = os.path.join(NOTES_DIR, f"{clean_filename}_{timestamp_str}_{unique_id[:8]}.md")
         
     frontmatter = {
         "id": note_id,
@@ -75,21 +75,32 @@ def save_note_to_vault(
     
     file_content = f"---\n{yaml.dump(frontmatter, allow_unicode=True, default_flow_style=False)}---\n\n# {title}\n\n{content.strip()}\n"
     
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(file_content)
-        
-    upsert_note_index(
-        note_id=note_id,
-        title=title,
-        file_path=file_path,
-        source_book=source_book,
-        category=category,
-        content_raw=content.strip(),
-        tags=all_tags,
-        links=extracted_links,
-        created_at=now.isoformat(),
-        updated_at=now.isoformat()
-    )
+    temp_path = None
+    try:
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=NOTES_DIR, delete=False, suffix=".tmp") as temp_file:
+            temp_file.write(file_content)
+            temp_file.flush()
+            os.fsync(temp_file.fileno())
+            temp_path = temp_file.name
+        os.replace(temp_path, file_path)
+        temp_path = None
+        upsert_note_index(
+            note_id=note_id,
+            title=title,
+            file_path=file_path,
+            source_book=source_book,
+            category=category,
+            content_raw=content.strip(),
+            tags=all_tags,
+            links=extracted_links,
+            created_at=now.isoformat(),
+            updated_at=now.isoformat()
+        )
+    except Exception:
+        for candidate in (temp_path, file_path):
+            if candidate and os.path.exists(candidate):
+                os.unlink(candidate)
+        raise
     
     return {
         "id": note_id,
@@ -99,6 +110,20 @@ def save_note_to_vault(
         "links": extracted_links,
         "created_at": now.strftime("%d/%m/%Y %H:%M:%S")
     }
+
+
+def delete_note_from_vault(note_id: str) -> bool:
+    note = get_note_db(note_id)
+    if not note:
+        return False
+    file_path = Path(note["file_path"]).resolve()
+    notes_root = Path(NOTES_DIR).resolve()
+    if not file_path.is_relative_to(notes_root):
+        raise ValueError("Refusing to delete a note file outside the Vault notes directory")
+    deleted = delete_note_index(note_id)
+    if deleted and file_path.exists():
+        file_path.unlink()
+    return bool(deleted)
 
 def get_graph_data() -> Dict[str, Any]:
     notes = get_all_notes_db(limit=500)

@@ -11,11 +11,12 @@ from app.agent import call_deepseek_non_stream, call_deepseek_stream
 from app.agent_runtime import run_agent_completion, run_agent_stream
 from app.auth import require_api_token
 from app.config import settings
+from app.db import database_is_ready
 from app.routes.admin import router as admin_router
 from app.scheduler import shutdown_scheduler, start_scheduler
 from app.vault import generate_kindle_graph_image, get_all_notes_db, get_all_tags, get_graph_data, save_note_to_vault, search_notes_fts
 
-APP_VERSION = "2.1.1"
+APP_VERSION = "2.1.2"
 
 
 @asynccontextmanager
@@ -60,8 +61,14 @@ class NoteCreateRequest(BaseModel):
     tags: Optional[List[str]] = Field(default=None, max_length=30)
 
 
+def public_note(note: dict) -> dict:
+    return {key: value for key, value in note.items() if key != "file_path"}
+
+
 @app.get("/health")
 def health_check():
+    if not database_is_ready():
+        return JSONResponse(status_code=503, content={"status": "unhealthy", "component": "vault"})
     return {"status": "healthy", "timestamp": int(time.time()), "version": APP_VERSION, "agent": "alex-agent"}
 
 
@@ -120,13 +127,14 @@ async def chat_completions(req: ChatCompletionRequest, _: bool = Depends(require
 @app.get("/v1/vault/notes")
 @app.get("/vault/notes")
 def get_vault_notes(q: Optional[str] = None, limit: int = Query(50, ge=1, le=200), _: bool = Depends(require_api_token)):
-    return search_notes_fts(q.strip(), limit=limit) if q and q.strip() else get_all_notes_db(limit=limit)
+    notes = search_notes_fts(q.strip(), limit=limit) if q and q.strip() else get_all_notes_db(limit=limit)
+    return [public_note(note) for note in notes]
 
 
 @app.post("/v1/vault/notes")
 @app.post("/vault/notes")
 def create_vault_note(req: NoteCreateRequest, _: bool = Depends(require_api_token)):
-    return save_note_to_vault(req.content, req.title, req.source_book, req.category, req.tags)
+    return public_note(save_note_to_vault(req.content, req.title, req.source_book, req.category, req.tags))
 
 
 @app.get("/v1/vault/graph")

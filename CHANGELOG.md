@@ -2,6 +2,25 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
+## [2.1.2] - 2026-11-01
+
+### Added
+
+- Readiness check kiểm tra SQLite Vault thật thay vì chỉ xác nhận tiến trình web còn sống.
+- Kiểm thử hồi quy cho tính toàn vẹn Vault, API path redaction và scheduler idempotency.
+
+### Changed
+
+- Note ID dùng UUID và file Markdown được ghi nguyên tử trước khi commit index.
+- Scheduler dùng năm hiện tại, ISO week, chống chạy đồng thời và không tạo digest trùng kỳ.
+- SQLite bật foreign keys, WAL, busy timeout và transaction rollback rõ ràng.
+
+### Fixed
+
+- Ngăn hai ghi chú cùng tiêu đề/cùng giây ghi đè index của nhau.
+- Xóa ghi chú giờ xóa đồng bộ cả DB index và file Markdown, đồng thời chặn đường dẫn ngoài Vault.
+- API Vault không còn trả về đường dẫn file nội bộ của server.
+
 ## [2.1.1] - 2026-11-01
 
 ### Added

@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
+import app.main as main_module
 from app.config import settings
 from app.main import app
 from app.auth import clear_login_failures, login_allowed, record_failed_login
@@ -36,9 +37,28 @@ def test_graph_image_is_protected(client):
     assert client.get("/v1/vault/graph/image").status_code == 401
 
 
+def test_vault_api_never_exposes_server_file_paths(client, monkeypatch):
+    internal_note = {"id": "n1", "title": "Private", "content_raw": "x", "file_path": "/data/vault/notes/private.md"}
+    monkeypatch.setattr(main_module, "get_all_notes_db", lambda limit: [internal_note])
+    monkeypatch.setattr(main_module, "save_note_to_vault", lambda *_: internal_note)
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+
+    listed = client.get("/v1/vault/notes", headers=headers)
+    created = client.post("/v1/vault/notes", headers=headers, json={"content": "x"})
+    assert listed.status_code == 200 and "file_path" not in listed.json()[0]
+    assert created.status_code == 200 and "file_path" not in created.json()
+
+
 def test_arbitrary_origin_is_not_allowed(client):
     response = client.get("/health", headers={"Origin": "https://evil.example"})
     assert response.headers.get("access-control-allow-origin") is None
+
+
+def test_health_reports_vault_failure(client, monkeypatch):
+    monkeypatch.setattr(main_module, "database_is_ready", lambda: False)
+    response = client.get("/health")
+    assert response.status_code == 503
+    assert response.json() == {"status": "unhealthy", "component": "vault"}
 
 
 def test_admin_login_uses_signed_secure_cookie_not_password(client):
