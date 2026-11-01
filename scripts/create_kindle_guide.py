@@ -31,6 +31,8 @@ Không cần gõ bàn phím ảo chậm chạp trên màn hình E-ink, bạn ch�
 2. Dùng ngón tay bôi đen (highlight) một đoạn văn bản hoặc từ ngữ bạn quan tâm.
 3. Trong menu chọn hiện ra, chọn biểu tượng KOAssistant.
 4. Các nút tác vụ nhanh định sẵn sẽ xuất hiện ngay trước mắt:
+   - Tra cứu Web (#search): Tự động tìm kiếm thông tin thời sự mới nhất trên Internet về từ khóa vừa chọn.
+   - Tra Wikipedia (#wiki): Tra cứu bách khoa toàn thư Wikipedia tiếng Việt.
    - Tóm tắt cốt lõi: Trích xuất 3 luận điểm quan trọng nhất của đoạn trích, trình bày súc tích gạch đầu dòng.
    - Giải thích sâu & Ví dụ: Diễn giải khái niệm trừu tượng thành ngôn ngữ gần gũi, kèm 1 ví dụ minh họa thực tế đời sống.
    - Phản biện & Góc nhìn: Chỉ ra các điểm còn thiếu sót, góc nhìn trái chiều và 1 câu hỏi kích thích tư duy phản biện.
@@ -41,13 +43,37 @@ Không cần gõ bàn phím ảo chậm chạp trên màn hình E-ink, bạn ch�
 
 ---
 
-## 3. CÁC LỆNH TƯƠNG TÁC BỘ NHỚ VÀ TRI THỨC VỚI AI
+## 3. CÁCH ĐỂ AI AGENT TRA CỨU WEB / GOOGLE THEO YÊU CẦU
 
-Khi mở giao diện trò chuyện tự do với trợ lý, bạn có thể sử dụng các lệnh đặc biệt:
+Gateway AI tích hợp sẵn công cụ tìm kiếm mạng internet thời gian thực (Real-time Web Search) để trả lời các câu hỏi cập nhật mới nhất:
+
+### Cách 1: Sử dụng tiền tố lệnh `#search` (Khuyên dùng)
+Gõ lệnh theo cú pháp:
+  #search <câu hỏi cần tra cứu>
+Ví dụ:
+- #search giá vàng hôm nay tại Việt Nam
+- #search tin tức bầu cử mới nhất
+- #search ai là CEO hiện tại của OpenAI
+
+AI sẽ tự động kích hoạt bot tìm kiếm web, duyệt qua các bài báo mới nhất và tổng hợp câu trả lời chính xác, kèm trích dẫn nguồn.
+
+### Cách 2: Hỏi bằng ngôn ngữ tự nhiên
+Hệ thống có bộ lọc thông minh tự động kích hoạt tìm kiếm khi câu hỏi của bạn có chứa các từ khóa thời sự hoặc dữ liệu biến động:
+- Các từ khóa: "hôm nay", "mới nhất", "hiện nay", "thời sự", "tin tức", "giá bao nhiêu", "năm 2026", "ở đâu", "khi nào"...
+Ví dụ: "Hôm nay thời tiết Hà Nội thế nào?" hoặc "Giá Bitcoin hiện tại bao nhiêu?"
+
+### Cách 3: Tra cứu Wikipedia nhanh
+Nếu cần tra cứu kiến thức bách khoa, sự kiện lịch sử hoặc tiểu sử danh nhân:
+  #wiki <tên nhân vật hoặc khái niệm>
+Ví dụ: #wiki Nikola Tesla
+
+---
+
+## 4. BỘ NHỚ VÀ QUẢN LÝ GHI CHÚ CÁ NHÂN VỚI AI
 
 - #remember [chủ đề] <nội dung>
   Mục đích: Dạy cho AI hiểu bạn hơn.
-  Ví dụ: #remember [nghề nghiệp] Tôi là lập trình viên, hãy ưu tiên giải thích các vấn đề bằng tư duy hệ thống và thuật toán.
+  Ví dụ: #remember [học tập] Tôi là lập trình viên, hãy ưu tiên giải thích các vấn đề bằng tư duy logic và ví dụ code.
 - #memory
   Mục đích: Hiển thị tối đa 10 mục ghi nhớ gần nhất mà trợ lý đang lưu giữ về bạn.
 - #note [tiêu đề] <nội dung>
@@ -59,7 +85,7 @@ Khi mở giao diện trò chuyện tự do với trợ lý, bạn có thể sử
 
 ---
 
-## 4. GIẢI TRÍ VỚI BỘ GAME E-INK (BOARD GAMES)
+## 5. HƯỚNG DẪN BỘ GAME E-INK (BOARD GAMES)
 
 Khi cần thư giãn sau những giờ đọc sách tập trung:
 
@@ -67,18 +93,24 @@ Khi cần thư giãn sau những giờ đọc sách tập trung:
   1. Chạm vào mép trên cùng màn hình để hiện thanh menu KOReader.
   2. Chọn tab Công cụ (Tools) (biểu tượng bánh răng/cờ lê).
   3. Chọn mục Board Games.
-- 6 trò chơi tích hợp sẵn:
-  1. Cờ vua (Chess): Chơi với máy hoặc chơi 2 người.
-  2. Dò mìn (Minesweeper): Trò chơi logic tính toán cổ điển.
-  3. Connect 4: Xếp 4 quân cờ thẳng hàng.
-  4. Cờ đam (Checkers): Đơn giản, thư giãn.
-  5. Tic Tac Toe (Cờ ca-rô 3x3): Nhanh gọn.
-  6. Thủy chiến (Battleship): Bắn tàu theo tọa độ.
-- Tối ưu E-ink: Giao diện tương phản đen trắng sắc nét, chỉ làm mới từng ô di chuyển nên không hề bị chớp nháy màn hình.
+
+- Cách chuyển đổi giữa 6 trò chơi & cài đặt tùy chọn:
+  Ở cạnh dưới cùng của màn hình bàn cờ luôn có 4 nút điều khiển:
+  [Settings]      [Undo]      [Draw / Flag]      [Close]
+  
+  1. Đổi Game: Chạm vào nút [Settings] -> Chọn [Choose Game] -> Danh sách 6 trò chơi sẽ hiện ra:
+     - Checkers (Cờ đam)
+     - Chess (Cờ vua: chơi với bot hoặc 2 người)
+     - Connect 4 (Xếp 4 quân thẳng hàng)
+     - Tic Tac Toe (Cờ ca-rô 3x3)
+     - Minesweeper (Dò mìn)
+     - Battleship (Thủy chiến)
+  2. Chỉnh độ khó & Chế độ: Trong menu [Settings], chạm vào nút [Mode] để chọn Solo/2 người, hoặc nút [Bot Level] để đổi độ khó (Easy / Medium / Hard).
+  3. Thoát Game về lại sách: Chạm vào nút [Close] ở góc dưới bên phải màn hình (hoặc vào [Settings] -> [Exit Game]). Trò chơi sẽ đóng lại êm ả và đưa bạn về lại trang sách đang đọc.
 
 ---
 
-## 5. PHÁC THẢO SƠ ĐỒ TƯ DUY & WIREFRAME (INK AWAY)
+## 6. PHÁC THẢO SƠ ĐỒ TƯ DUY & WIREFRAME (INK AWAY)
 
 Ứng dụng giúp bạn ghi chép, phác thảo ý tưởng bất chợt:
 
@@ -96,7 +128,7 @@ Khi cần thư giãn sau những giờ đọc sách tập trung:
 
 ---
 
-## 6. ĐỒNG BỘ GHI CHÚ VỀ MÁY TÍNH (OBSIDIAN / NOTION)
+## 7. ĐỒNG BỘ GHI CHÚ VỀ MÁY TÍNH (OBSIDIAN / NOTION)
 
 Mọi ghi chú bạn lưu bằng #note trên Kindle đều nằm an toàn trên máy chủ đám mây.
 
@@ -109,7 +141,7 @@ Mọi ghi chú bạn lưu bằng #note trên Kindle đều nằm an toàn trên 
 
 ---
 
-## 7. CÁC PHÍM TẮT & CỬ CHỈ CẦN NHỚ TRÊN KOREADER
+## 8. CÁC PHÍM TẮT & CỬ CHỈ CẦN NHỚ TRÊN KOREADER
 
 - Chỉnh độ sáng đèn nền: Vuốt ngón tay lên/xuống ở mép trái màn hình.
 - Chỉnh nhiệt độ màu đèn nền: Vuốt ngón tay lên/xuống ở mép phải màn hình.
@@ -215,4 +247,4 @@ with zipfile.ZipFile(epub_path, "w") as zf:
 </ncx>"""
     zf.writestr("OEBPS/toc.ncx", toc_ncx, compress_type=zipfile.ZIP_DEFLATED)
 
-print(f"SUCCESS: Generated guide files in {target_dir}")
+print(f"SUCCESS: Generated updated guide files in {target_dir}")
