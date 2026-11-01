@@ -21,6 +21,19 @@ Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đ
 - Thêm kế hoạch tổng thể nâng cấp Kindle Paperwhite 4 (`docs/KINDLE_UPGRADE_MASTER_PLAN.md`) gồm 3 trụ cột: Game E-ink, Vẽ/Mindmap và Trạm tri thức AI 2 chiều.
 - Cập nhật biên bản phiên làm việc ngày 2026-11-01 (`docs/sessions/SESSION-2026-11-01.md`) ghi nhận toàn bộ quá trình triển khai thực tế trên ổ `E:\`, xác nhận production 2.1.6, sửa lỗi game và hướng dẫn tra cứu web.
 
+## [2.1.7] - 2026-11-01
+
+### Added
+
+- Endpoint AlphaGo Cloud AI `/api/v1/games/go/move` hỗ trợ tính toán nước cờ kỳ thủ chuyên nghiệp 9-Đẳng, trả về tọa độ, tỷ lệ thắng % và lời bình luận chiến thuật.
+- Game Cờ Thú Native mới (`animalchess.koplugin`) chuẩn E-ink 300 DPI với bàn cờ 7x9, 8 loài thú, sông nước, bẫy, hang, bot AI Minimax Alpha-Beta 3 cấp độ và chế độ nâng cao "Linh Thú Thức Tỉnh".
+- Tích hợp cửa sổ hướng dẫn luật chơi tiếng Việt trực tiếp trong game cho toàn bộ 8 trò chơi trên Kindle (`animalchess`, `go`, và 6 game trong `boardgames`).
+- Chế độ chọn đối thủ minh bạch trong game Cờ Vây (`[Bot Offline]`, `[Cloud AI 🌐 Cần Internet]`, `[2 Người]`) với cơ chế thông báo và tự động dự phòng khi mất kết nối Wi-Fi.
+
+### Fixed
+
+- Patch toàn bộ các nút luật chơi trong `boardgames.koplugin` và `go.koplugin` để hiển thị giải thích chi tiết bằng tiếng Việt thay vì tiếng Anh.
+
 ## [2.1.6] - 2026-11-01
 
 ### Added
