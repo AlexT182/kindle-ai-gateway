@@ -1,19 +1,22 @@
 import time
 import uuid
 import logging
+import json
+import asyncio
 from contextlib import asynccontextmanager
-from typing import List, Literal, Optional
+from typing import Any, AsyncIterator, Dict, List, Literal, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
 
 from app.agent import call_deepseek_non_stream, call_deepseek_stream
 from app.agent_runtime import run_agent_completion, run_agent_stream
 from app.auth import require_api_token
 from app.config import APP_VERSION, settings
-from app.db import database_is_ready
+from app.db import database_is_ready, record_usage_event
 from app.routes.admin import router as admin_router
 from app.scheduler import shutdown_scheduler, start_scheduler
 from app.vault import generate_kindle_graph_image, get_all_notes_db, get_all_tags, get_graph_data, save_note_to_vault, search_notes_fts
@@ -41,6 +44,7 @@ app.include_router(admin_router)
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     request_id = str(uuid.uuid4())
+    request.state.request_id = request_id
     started = time.perf_counter()
     try:
         response = await call_next(request)
@@ -93,6 +97,69 @@ def public_note(note: dict) -> dict:
     return {key: value for key, value in note.items() if key != "file_path"}
 
 
+def usage_fields(data: Dict[str, Any]) -> Dict[str, int]:
+    usage = data.get("usage") or {}
+    def safe_int(value: Any) -> int:
+        try:
+            return max(0, int(value or 0))
+        except (TypeError, ValueError):
+            return 0
+
+    prompt = safe_int(usage.get("prompt_tokens") or usage.get("input_tokens"))
+    completion = safe_int(usage.get("completion_tokens") or usage.get("output_tokens"))
+    total = safe_int(usage.get("total_tokens") or (prompt + completion))
+    return {"prompt_tokens": prompt, "completion_tokens": completion, "total_tokens": total}
+
+
+async def persist_usage(request_id: str, model: str, stream: bool, status: str,
+                        started: float, usage: Optional[Dict[str, Any]] = None, tool_calls: int = 0) -> None:
+    fields = usage_fields({"usage": usage or {}})
+    try:
+        await run_in_threadpool(
+            record_usage_event,
+            request_id,
+            model,
+            stream,
+            status,
+            (time.perf_counter() - started) * 1000,
+            fields["prompt_tokens"],
+            fields["completion_tokens"],
+            fields["total_tokens"],
+            tool_calls,
+        )
+    except Exception:
+        request_logger.warning("usage_persist_failed request_id=%s", request_id, exc_info=True)
+
+
+async def metered_stream(source: AsyncIterator[str], request_id: str, model: str,
+                         started: float, metrics: Optional[Dict[str, Any]] = None) -> AsyncIterator[str]:
+    observed_usage: Dict[str, Any] = {}
+    status = "success"
+    try:
+        async for chunk in source:
+            if chunk.startswith("data: "):
+                raw = chunk[6:].strip()
+                if raw and raw != "[DONE]":
+                    try:
+                        payload = json.loads(raw)
+                        if isinstance(payload.get("usage"), dict):
+                            observed_usage = payload["usage"]
+                    except (json.JSONDecodeError, AttributeError):
+                        pass
+            yield chunk
+    except asyncio.CancelledError:
+        status = "cancelled"
+        raise
+    except Exception:
+        status = "error"
+        raise
+    finally:
+        metrics = metrics or {}
+        await persist_usage(request_id, model, True, status, started,
+                            metrics.get("usage") or observed_usage,
+                            int(metrics.get("tool_calls") or 0))
+
+
 @app.get("/health")
 def health_check():
     if not database_is_ready():
@@ -123,7 +190,7 @@ def list_models(_: bool = Depends(require_api_token)):
     ]}
 
 
-async def handle_chat_completion(req: ChatCompletionRequest):
+async def handle_chat_completion(req: ChatCompletionRequest, request: Request):
     if not settings.DEEPSEEK_API_KEY:
         raise HTTPException(503, "AI provider is not configured")
     if sum(len(message.content) for message in req.messages) > settings.MAX_INPUT_CHARS:
@@ -131,25 +198,44 @@ async def handle_chat_completion(req: ChatCompletionRequest):
     if req.max_tokens > settings.MAX_OUTPUT_TOKENS:
         raise HTTPException(422, f"max_tokens cannot exceed {settings.MAX_OUTPUT_TOKENS}")
     messages = [message.model_dump() for message in req.messages]
+    request_id = request.state.request_id
+    started = time.perf_counter()
     if req.model == "alex-agent":
         if req.stream:
-            return StreamingResponse(run_agent_stream(messages, req.max_tokens), media_type="text/event-stream",
+            metrics: Dict[str, Any] = {}
+            source = run_agent_stream(messages, req.max_tokens, metrics)
+            return StreamingResponse(metered_stream(source, request_id, req.model, started, metrics), media_type="text/event-stream",
                                      headers={"Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff"})
-        return JSONResponse(content=await run_agent_completion(messages, req.max_tokens))
+        try:
+            data = await run_agent_completion(messages, req.max_tokens)
+        except Exception:
+            await persist_usage(request_id, req.model, False, "error", started)
+            raise
+        gateway_meta = data.pop("_gateway_meta", {})
+        await persist_usage(request_id, req.model, False, "success", started, data.get("usage"),
+                            int(gateway_meta.get("tool_calls") or 0))
+        return JSONResponse(content=data)
     model = req.model
     if req.stream:
-        return StreamingResponse(call_deepseek_stream(messages, model, req.temperature, req.max_tokens),
+        source = call_deepseek_stream(messages, model, req.temperature, req.max_tokens)
+        return StreamingResponse(metered_stream(source, request_id, model, started),
                                  media_type="text/event-stream",
                                  headers={"Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff"})
-    return JSONResponse(content=await call_deepseek_non_stream(messages, model, req.temperature, req.max_tokens))
+    try:
+        data = await call_deepseek_non_stream(messages, model, req.temperature, req.max_tokens)
+    except Exception:
+        await persist_usage(request_id, model, False, "error", started)
+        raise
+    await persist_usage(request_id, model, False, "success", started, data.get("usage"))
+    return JSONResponse(content=data)
 
 
 @app.post("/v1/chat/completions")
 @app.post("/chat/completions")
 @app.post("/v1")
 @app.post("/")
-async def chat_completions(req: ChatCompletionRequest, _: bool = Depends(require_api_token)):
-    return await handle_chat_completion(req)
+async def chat_completions(req: ChatCompletionRequest, request: Request, _: bool = Depends(require_api_token)):
+    return await handle_chat_completion(req, request)
 
 
 @app.get("/v1/vault/notes")

@@ -2,6 +2,23 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
+## [2.1.5] - 2026-11-01
+
+### Added
+
+- Telemetry riêng tư cho request AI: model, stream status, token count, tool-call count và latency.
+- Dashboard tổng hợp hoạt động AI 7 ngày và tự điều chỉnh bố cục theo kích thước màn hình.
+
+### Privacy
+
+- Không lưu prompt, câu trả lời, IP, header hoặc API token trong telemetry.
+- Usage event tự xóa sau 90 ngày và lỗi ghi metrics không làm hỏng request AI.
+
+### Fixed
+
+- Theo dõi đầy đủ usage cho non-stream, SSE stream, tool-calling agent, lỗi upstream và client disconnect.
+- Yêu cầu DeepSeek gửi usage chunk trong stream để token count chính xác hơn.
+
 ## [2.1.4] - 2026-11-01
 
 ### Changed

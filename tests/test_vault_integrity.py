@@ -61,3 +61,20 @@ def test_delete_refuses_file_outside_vault(isolated_vault, tmp_path):
 def test_public_note_never_exposes_server_path():
     note = {"id": "n1", "title": "Safe", "file_path": "/data/private/n1.md"}
     assert public_note(note) == {"id": "n1", "title": "Safe"}
+
+
+def test_usage_summary_contains_only_operational_metadata(isolated_vault):
+    assert db.record_usage_event("req-1", "alex-agent", False, "success", 125.5, 10, 5, 15, 2)
+    assert db.record_usage_event("req-2", "alex-agent", True, "error", 250.0)
+    summary = db.get_usage_summary(days=7)
+    assert summary["requests"] == 2
+    assert summary["total_tokens"] == 15
+    assert summary["tool_calls"] == 2
+    assert summary["errors"] == 1
+
+    connection = db.get_connection()
+    try:
+        columns = {row[1] for row in connection.execute("PRAGMA table_info(usage_events)")}
+    finally:
+        connection.close()
+    assert not ({"prompt", "response", "ip", "api_token"} & columns)

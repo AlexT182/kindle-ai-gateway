@@ -52,6 +52,7 @@ def _completion(content: str, model: str = "alex-agent") -> Dict[str, Any]:
             "message": {"role": "assistant", "content": clean_eink_text(content)},
             "finish_reason": "stop",
         }],
+        "_gateway_meta": {"tool_calls": 0},
     }
 
 
@@ -122,6 +123,7 @@ async def run_agent_completion(messages: List[Dict[str, Any]], max_tokens: int =
         if not calls:
             message["content"] = clean_eink_text(message.get("content") or "")
             choices[0]["message"] = message
+            data["_gateway_meta"] = {"tool_calls": tool_count}
             return data
 
         conversation.append(message)
@@ -139,11 +141,16 @@ async def run_agent_completion(messages: List[Dict[str, Any]], max_tokens: int =
     raise HTTPException(502, "Agent step budget exceeded")
 
 
-async def run_agent_stream(messages: List[Dict[str, Any]], max_tokens: int = 2048):
+async def run_agent_stream(messages: List[Dict[str, Any]], max_tokens: int = 2048, metrics: Dict[str, Any] | None = None):
     data = await run_agent_completion(messages, max_tokens)
+    gateway_meta = data.pop("_gateway_meta", {})
+    if metrics is not None:
+        metrics.update(gateway_meta)
+        metrics["usage"] = data.get("usage") or {}
     message = data["choices"][0]["message"]
     chunk = {"id": data.get("id", f"agent-{int(time.time())}"), "object": "chat.completion.chunk",
              "created": data.get("created", int(time.time())), "model": "alex-agent",
-             "choices": [{"index": 0, "delta": {"role": "assistant", "content": message.get("content", "")}, "finish_reason": "stop"}]}
+             "choices": [{"index": 0, "delta": {"role": "assistant", "content": message.get("content", "")}, "finish_reason": "stop"}],
+             "usage": data.get("usage")}
     yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
     yield "data: [DONE]\n\n"

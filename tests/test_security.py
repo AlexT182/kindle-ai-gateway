@@ -1,5 +1,6 @@
 import re
 import logging
+import asyncio
 
 import pytest
 from fastapi.testclient import TestClient
@@ -136,6 +137,82 @@ def test_request_bounds_are_enforced_before_provider_call(client, monkeypatch):
         json={"model": "deepseek-chat", "messages": [{"role": "user", "content": "hello"}], "max_tokens": settings.MAX_OUTPUT_TOKENS + 1},
     )
     assert response.status_code == 422
+
+
+def test_non_stream_chat_records_private_usage_metadata(client, monkeypatch):
+    captured = {}
+
+    async def fake_agent(messages, max_tokens):
+        return {
+            "choices": [{"message": {"role": "assistant", "content": "ok"}}],
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
+            "_gateway_meta": {"tool_calls": 2},
+        }
+
+    def fake_record(*args):
+        captured["args"] = args
+        return True
+
+    monkeypatch.setattr(settings, "DEEPSEEK_API_KEY", "configured")
+    monkeypatch.setattr(main_module, "run_agent_completion", fake_agent)
+    monkeypatch.setattr(main_module, "record_usage_event", fake_record)
+    response = client.post(
+        "/v1/chat/completions",
+        headers={"Authorization": f"Bearer {API_TOKEN}"},
+        json={"model": "alex-agent", "messages": [{"role": "user", "content": "hello"}]},
+    )
+    assert response.status_code == 200
+    assert "_gateway_meta" not in response.json()
+    args = captured["args"]
+    assert args[1:4] == ("alex-agent", False, "success")
+    assert args[5:9] == (10, 5, 15, 2)
+
+
+def test_stream_chat_records_usage_after_stream_finishes(client, monkeypatch):
+    captured = {}
+
+    async def fake_stream(messages, max_tokens, metrics):
+        metrics.update({"usage": {"prompt_tokens": 4, "completion_tokens": 3, "total_tokens": 7}, "tool_calls": 1})
+        yield 'data: {"choices":[],"usage":{"total_tokens":7}}\n\n'
+        yield "data: [DONE]\n\n"
+
+    def fake_record(*args):
+        captured["args"] = args
+        return True
+
+    monkeypatch.setattr(settings, "DEEPSEEK_API_KEY", "configured")
+    monkeypatch.setattr(main_module, "run_agent_stream", fake_stream)
+    monkeypatch.setattr(main_module, "record_usage_event", fake_record)
+    response = client.post(
+        "/v1/chat/completions",
+        headers={"Authorization": f"Bearer {API_TOKEN}"},
+        json={"model": "alex-agent", "stream": True, "messages": [{"role": "user", "content": "hello"}]},
+    )
+    assert response.status_code == 200
+    assert "[DONE]" in response.text
+    args = captured["args"]
+    assert args[1:4] == ("alex-agent", True, "success")
+    assert args[5:9] == (4, 3, 7, 1)
+
+
+def test_metered_stream_marks_client_cancellation(monkeypatch):
+    captured = {}
+
+    async def cancelled_source():
+        raise asyncio.CancelledError()
+        yield "unreachable"
+
+    async def fake_persist(request_id, model, stream, status, started, usage=None, tool_calls=0):
+        captured["status"] = status
+
+    async def consume():
+        async for _ in main_module.metered_stream(cancelled_source(), "req", "alex-agent", 0.0):
+            pass
+
+    monkeypatch.setattr(main_module, "persist_usage", fake_persist)
+    with pytest.raises(asyncio.CancelledError):
+        asyncio.run(consume())
+    assert captured["status"] == "cancelled"
 
 
 def test_security_validation_rejects_defaults(monkeypatch):

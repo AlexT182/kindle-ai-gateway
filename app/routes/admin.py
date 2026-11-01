@@ -10,6 +10,7 @@ from starlette.concurrency import run_in_threadpool
 from app.auth import clear_login_failures, create_admin_session, csrf_token, is_admin_session_valid, login_allowed, record_failed_login, validate_csrf, verify_admin_password
 from app.backup import cleanup_backup, create_vault_backup
 from app.config import APP_VERSION, settings
+from app.db import get_usage_summary
 from app.persona import get_baseline_profile, get_evolving_memory, save_baseline_profile
 from app.scheduler import trigger_job_manual
 from app.vault import delete_note_from_vault, get_all_notes_db, get_all_tags, get_graph_edges, save_note_to_vault, search_notes_fts
@@ -71,7 +72,8 @@ def dashboard_view(request: Request):
     notes, tags, edges = get_all_notes_db(limit=5), get_all_tags(), get_graph_edges()
     context = page_context(request, active_tab="dashboard", title="Bảng điều khiển - Kindle AI Agent",
                            stats={"notes_count": len(get_all_notes_db(limit=500)), "edges_count": len(edges), "tags_count": len(tags)},
-                           recent_notes=notes, app_version=APP_VERSION, default_model=settings.DEFAULT_MODEL)
+                           recent_notes=notes, app_version=APP_VERSION, default_model=settings.DEFAULT_MODEL,
+                           usage=get_usage_summary(days=7))
     return templates.TemplateResponse(request=request, name="admin/dashboard.html", context=context)
 
 

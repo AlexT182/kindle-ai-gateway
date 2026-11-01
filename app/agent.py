@@ -488,7 +488,8 @@ async def call_deepseek_stream(
         "model": actual_model,
         "messages": processed_messages,
         "max_tokens": max_tokens,
-        "stream": True
+        "stream": True,
+        "stream_options": {"include_usage": True}
     }
     if actual_model != "deepseek-reasoner":
         payload["temperature"] = temperature

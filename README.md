@@ -74,6 +74,8 @@ Trong Dashboard, nút **Tải backup Vault** tạo một ZIP nhất quán gồm 
 
 Gateway tắt access-log thô của Uvicorn và phát log vận hành dạng tối giản gồm request ID, method, path, status và latency. Query string, token, header và nội dung request không được ghi vào log.
 
+Dashboard tổng hợp telemetry AI trong 7 ngày: số request, token, tool calls, latency trung bình và lỗi. Telemetry chỉ chứa metadata vận hành, tự hết hạn sau 90 ngày và không lưu nội dung hội thoại hay danh tính người dùng.
+
 `ALLOWED_ORIGINS` mặc định rỗng vì Kindle/native client không cần CORS. Chỉ thêm các origin HTTPS cụ thể nếu có frontend web khác domain; không dùng `*`.
 
 ## Lưu ý dữ liệu và lịch sử Git

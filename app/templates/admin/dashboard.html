@@ -60,6 +60,18 @@
         </div>
     </div>
 
+    <div class="card" style="margin-bottom: 20px;">
+        <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 12px;">Hoạt động AI trong 7 ngày</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
+            <div><div class="stat-label">Requests</div><div class="stat-val">{{ usage.requests }}</div></div>
+            <div><div class="stat-label">Tokens</div><div class="stat-val">{{ usage.total_tokens }}</div></div>
+            <div><div class="stat-label">Tool calls</div><div class="stat-val">{{ usage.tool_calls }}</div></div>
+            <div><div class="stat-label">Latency TB</div><div class="stat-val">{{ "%.0f"|format(usage.avg_latency_ms) }} ms</div></div>
+            <div><div class="stat-label">Lỗi</div><div class="stat-val">{{ usage.errors }}</div></div>
+        </div>
+        <p class="subtitle" style="margin-top: 10px;">Chỉ lưu metadata vận hành; không lưu câu hỏi, câu trả lời, IP hoặc API token.</p>
+    </div>
+
     <!-- Recent Notes & Graph Preview -->
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
         <!-- Recent Notes -->

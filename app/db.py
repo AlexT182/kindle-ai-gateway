@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional
 from app.config import settings
 
@@ -64,6 +65,23 @@ def init_db():
         tokenize = 'unicode61'
     )
     ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS usage_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        created_at TEXT NOT NULL,
+        request_id TEXT,
+        model TEXT NOT NULL,
+        stream INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL,
+        latency_ms REAL NOT NULL DEFAULT 0,
+        prompt_tokens INTEGER NOT NULL DEFAULT 0,
+        completion_tokens INTEGER NOT NULL DEFAULT 0,
+        total_tokens INTEGER NOT NULL DEFAULT 0,
+        tool_calls INTEGER NOT NULL DEFAULT 0
+    )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_usage_events_created_at ON usage_events(created_at)')
     
     conn.commit()
     conn.close()
@@ -218,6 +236,60 @@ def database_is_ready() -> bool:
             conn.close()
     except sqlite3.Error:
         return False
+
+
+def record_usage_event(
+    request_id: str,
+    model: str,
+    stream: bool,
+    status: str,
+    latency_ms: float,
+    prompt_tokens: int = 0,
+    completion_tokens: int = 0,
+    total_tokens: int = 0,
+    tool_calls: int = 0,
+) -> bool:
+    conn = None
+    try:
+        conn = get_connection()
+        now = datetime.now(timezone.utc)
+        conn.execute('''
+        INSERT INTO usage_events (
+            created_at, request_id, model, stream, status, latency_ms,
+            prompt_tokens, completion_tokens, total_tokens, tool_calls
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (now.isoformat(), request_id, model[:80], int(stream), status[:32], max(0, latency_ms),
+              max(0, prompt_tokens), max(0, completion_tokens), max(0, total_tokens), max(0, tool_calls)))
+        cutoff = (now - timedelta(days=90)).isoformat()
+        conn.execute('DELETE FROM usage_events WHERE created_at < ?', (cutoff,))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        if conn:
+            conn.rollback()
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+
+def get_usage_summary(days: int = 7) -> Dict[str, Any]:
+    days = max(1, min(days, 90))
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    conn = get_connection()
+    try:
+        row = conn.execute('''
+        SELECT
+            COUNT(*) AS requests,
+            COALESCE(SUM(total_tokens), 0) AS total_tokens,
+            COALESCE(SUM(tool_calls), 0) AS tool_calls,
+            COALESCE(AVG(latency_ms), 0) AS avg_latency_ms,
+            COALESCE(SUM(CASE WHEN status != 'success' THEN 1 ELSE 0 END), 0) AS errors
+        FROM usage_events WHERE created_at >= ?
+        ''', (cutoff,)).fetchone()
+        return dict(row)
+    finally:
+        conn.close()
 
 # Initialize database on module load
 init_db()
