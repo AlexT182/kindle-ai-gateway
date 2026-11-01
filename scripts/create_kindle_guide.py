@@ -117,7 +117,11 @@ Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng 
 ### Nhóm 2: Game Cờ Thú (Animal Chess / Jungle) — LINH THÚ THỨC TỈNH
 
 - Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Cờ Thú (Jungle Game)].
-- Thiết kế riêng cho Kindle E-ink 300 DPI: Bàn cờ 7 cột x 9 hàng sắc nét, các ô sông nước, hang, bẫy và huy hiệu thú vẽ nổi bật.
+- Thiết kế riêng cho Kindle E-ink 300 DPI: Toàn bộ quân cờ vẽ bằng Icon Linh Thú nghệ thuật (không chữ, không số gây rối mắt).
+- Tính năng Xem Nhanh Cấp Bậc & Thông Tin Linh Thú:
+  + Chạm 1 cái vào quân cờ: Thanh trạng thái đáy màn hình lập tức hiển thị tên thú, cấp độ và đặc tính ngắn gọn.
+  + Nhấn giữ 0.5 giây vào quân bất kỳ: Bật Thẻ Thông Tin Chi Tiết (Info Card) hiển thị toàn bộ cấp bậc, kỹ năng, số quân đã tiêu diệt và trạng thái thức tỉnh.
+  + Nút [Cấp Bậc] ở đáy màn hình: Chạm để xem nhanh chuỗi thức ăn từ Cấp 8 đến Cấp 1 chỉ trong 1 giây.
 - Cấp bậc 8 loài thú (Từ mạnh đến yếu):
   (8) Voi > (7) Sư Tử > (6) Hổ > (5) Báo > (4) Chó > (3) Sói > (2) Mèo > (1) Chuột.
 - Quy tắc đặc sắc:
@@ -132,7 +136,7 @@ Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng 
     * Sói Bầy Đàn: Sói đi cạnh Chó/Báo đồng minh được +1 cấp sức mạnh (ăn được Chó).
     * Báo Lao Nhanh: Báo có thể phi thẳng 2 ô một lượt trên cạn nếu đường thông thoáng.
     * Mèo 9 Mạng: Lần đầu tiên bị ăn, Mèo tự động né đòn nhảy sang ô trống thoát chết.
-    * Thăng Cấp: Thú nào ăn được 2 quân địch sẽ được Thăng cấp (+1 sao sức mạnh vĩnh viễn).
+    * Thăng Cấp Hào Quang: Thú nào ăn được 2 quân địch sẽ được Thăng cấp và tự động tỏa Viền Hào Quang Kép uy dũng bao quanh quân cờ!
 
 ---
 
