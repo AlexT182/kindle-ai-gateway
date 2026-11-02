@@ -126,7 +126,7 @@ Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng 
   (8) Voi > (7) Sư Tử > (6) Hổ > (5) Báo > (4) Chó > (3) Sói > (2) Mèo > (1) Chuột.
 - Quy tắc đặc sắc:
   + Chuột ăn Voi: Chuột (1) là loài duy nhất ăn được Voi (8) trên cạn! Ngược lại Voi không thể ăn Chuột.
-  + Sông nước: Chỉ có Chuột được lặn dưới sông. Sư Tử (7) và Hổ (6) có quyền NHẢY QUA SÔNG theo chiều dọc hoặc ngang (nếu không có Chuột bơi cản giữa sông).
+  + Sông nước: Chuột (1) và Chó (4) có thể bơi lặn dưới sông. Sư Tử (7), Hổ (6) và Báo (5) có quyền NHẢY QUA SÔNG theo chiều dọc hoặc ngang (nếu không có Chuột hoặc Chó bơi cản giữa sông).
   + Ô Bẫy: Quân địch sập vào 3 ô Bẫy quanh hang bạn sẽ bị giảm sức mạnh về 0. Bất kỳ thú nào của bạn cũng có thể lao vào ăn nó!
   + Mục tiêu: Tiến 1 quân vào Hang đối thủ hoặc tiêu diệt toàn bộ quân địch để chiến thắng.
 - Tùy chọn Chế độ & Cấp độ:

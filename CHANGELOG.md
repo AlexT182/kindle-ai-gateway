@@ -7,13 +7,16 @@ Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đ
 ### Added
 
 - Triển khai toàn diện trò chơi **Cờ Thú (Animal Chess / Jungle)** native cho KOReader trên Kindle Paperwhite 4 (`animalchess.koplugin`).
+- Bổ sung đặc quyền bơi lặn sông cho Chó (Cấp 4) bên cạnh Chuột (Cấp 1), cho phép Chó bắt Chuột dưới nước và chặn đường nhảy sông của Sư Tử, Hổ, Báo.
 - Bộ 16 icon minh họa động vật độ tương phản cao, tối ưu hiển thị sắc nét trên màn hình E-ink Carta 300 DPI.
 - Chế độ chơi nâng cao "Linh Thú Thức Tỉnh": Kỹ năng Sói bầy đàn, Báo phi nhanh 2 ô cạn, Mèo 9 mạng né đòn và Thăng cấp khi diệt 2 quân địch.
 - Thanh công cụ tra cứu cấp bậc nhanh `[Cấp Bậc]` và cử chỉ nhấn giữ (Long-Press / Hold) để hiển thị chi tiết chiến tích và kỹ năng linh thú.
-- Bộ kiểm thử tự động `tests/test_animal_chess.py` kiểm tra bàn cờ, cơ chế Chuột vs Voi và Báo nhảy qua sông.
+- Bộ kiểm thử tự động `tests/test_animal_chess.py` kiểm tra bàn cờ, cơ chế Chuột vs Voi, Báo nhảy qua sông và Chó bơi lội.
 
 ### Fixed
 
+- Sửa lỗi phân biệt địa hình giữa Sông và Bẫy: Sông có nền xám nước với 3 gợn sóng đôi `~ ~ ~`, Bẫy chuyển sang nền trắng tinh với 4 góc ngắm nguy hiểm `┌ ┐ └ ┘` và nhãn in hoa nổi bật.
+- Sửa lỗi ô cờ cũ bị đen kịt sau khi quân di chuyển do hằng số `Blitbuffer.COLOR_GRAY_15/13` nil khiến `paintRect` fallback về màu đen `Color8(0)`; thay bằng gạch góc tinh tế không che nền.
 - Sửa lỗi màn hình E-ink không làm mới khi di chuyển quân bằng cách kết nối trực tiếp `screen` cấp cao nhất vào `BoardWidget:refresh()` và kích hoạt `UIManager:setDirty` trên toàn màn hình.
 - Sửa lỗi nhân bản quân Mèo khi thực hiện hoàn nước (Undo) sau khi kích hoạt kỹ năng né đòn.
 - Sửa lỗi căn giữa nhãn chữ Hang và Bẫy trên bàn cờ bằng cách tính toán chính xác kích thước utf-8 qua `RenderText:sizeUtf8Text`.
