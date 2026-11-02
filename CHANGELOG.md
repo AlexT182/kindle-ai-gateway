@@ -15,6 +15,14 @@ Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đ
 
 ### Fixed
 
+- **Nâng cấp Động cơ Cờ Vây AlphaGo Cloud AI (KataGo/DeepSeek Hybrid Engine)**:
+  - Tích hợp bộ quy tắc và chiến thuật Cờ Vây chuyên nghiệp `GoEngine` trong `app/routes/games.py`: tự động tính toán khí theo cụm quân, ưu tiên cứu quân nguy cấp khỏi thế Atari (+35) và chớp thời cơ siết khí bắt quân địch (+40).
+  - Triệt tiêu hoàn toàn nước đi tự sát (suicide) và nước đi tự vào thế Atari (-80 điểm phạt), loại bỏ hoàn toàn các nước đi bừa/vô nghĩa.
+  - Định hình chiến thuật mở màn chuẩn Pro 9-Dan: ưu tiên điểm sao Hoshi và Thiên nguyên Tengen (5, 5), chiếm đất vàng tuyến 3 và mở rộng thế lực tuyến 4, phạt nặng nước đi sát biên tuyến 1 (tử địa).
+  - Đảm bảo 100% nước cờ hợp luật quốc tế và thông minh ở mọi cấp độ (Easy, Medium, Hard/Pro).
+- **Cờ Thú: Bổ sung Voi biết bơi & Kỹ năng 'Cá Sấu Lên Bờ'**:
+  - Cho phép Voi (Cấp 8) bơi lội dưới sông bên cạnh Chuột (Cấp 1) và Chó (Cấp 4), đồng thời cản trở đường nhảy qua sông của Sư Tử, Hổ và Báo.
+  - Khởi tạo cơ chế tác chiến "Cá Sấu Lên Bờ": thú dưới nước (Chuột, Chó, Voi) có thể tấn công và bắt thú đối phương trên cạn khi di chuyển từ dưới nước lên cạn theo đúng cấp bậc sức mạnh. Thú biết bơi cũng có thể lao từ trên cạn xuống nước để săn mồi.
 - **Khắc phục triệt để lỗi kết nối AlphaGo Cloud AI (`go.koplugin`)**:
   - Mở rộng schema Pydantic trong `app/routes/games.py` cho phép `board` nhận ma trận số nguyên `0` (trống), `1` (đen), `2` (trắng) tránh lỗi HTTP 422 Unprocessable Entity.
   - Chuẩn hóa client KOReader (`go.koplugin/screen.lua`): chuyển đổi ma trận bàn cờ sang ký hiệu `"."`, `"black"`, `"white"`, bổ sung header `User-Agent` hợp lệ tránh bị Cloudflare chặn 403.

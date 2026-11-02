@@ -39,6 +39,28 @@ def test_go_move_endpoint_occupied():
     assert data["move"] != {"r": 3, "c": 3}
 
 
+def test_go_move_atari_capture():
+    # Surround black stone at (3, 3) on 3 sides: (2, 3), (4, 3), (3, 2). Only (3, 4) remains.
+    # White must capture it at (3, 4)!
+    board = [[0 for _ in range(9)] for _ in range(9)]
+    board[2][2] = 1  # Black at (3, 3)
+    board[1][2] = 2  # White at (2, 3)
+    board[3][2] = 2  # White at (4, 3)
+    board[2][1] = 2  # White at (3, 2)
+    payload = {
+        "size": 9,
+        "board": board,
+        "turn": "white",
+        "difficulty": "medium"
+    }
+    response = client.post("/api/v1/games/go/move", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["move"] == {"r": 3, "c": 4}
+    assert "Bắt" in data["commentary"]
+
+
+
 def test_go_move_endpoint_integer_board():
     # 0 = empty, 1 = black, 2 = white (matches KOReader internal representation)
     board = [[0 for _ in range(9)] for _ in range(9)]
@@ -53,4 +75,26 @@ def test_go_move_endpoint_integer_board():
     assert response.status_code == 200
     data = response.json()
     assert data["move"] != {"r": 3, "c": 3}
+
+
+def test_go_move_atari_capture():
+    # Surround black stone at (3, 3) on 3 sides: (2, 3), (4, 3), (3, 2). Only (3, 4) remains.
+    # White must capture it at (3, 4)!
+    board = [[0 for _ in range(9)] for _ in range(9)]
+    board[2][2] = 1  # Black at (3, 3)
+    board[1][2] = 2  # White at (2, 3)
+    board[3][2] = 2  # White at (4, 3)
+    board[2][1] = 2  # White at (3, 2)
+    payload = {
+        "size": 9,
+        "board": board,
+        "turn": "white",
+        "difficulty": "medium"
+    }
+    response = client.post("/api/v1/games/go/move", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["move"] == {"r": 3, "c": 4}
+    assert "Bắt" in data["commentary"]
+
 

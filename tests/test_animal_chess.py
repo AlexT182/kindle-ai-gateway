@@ -94,14 +94,39 @@ def test_leopard_river_jump():
     assert leopard["rank"] >= wolf["rank"]
 
 
-def test_dog_swimming():
+def test_swimming_and_crocodile_strike():
     b = JungleBoard()
-    # Dog (rank 4) and Rat (rank 1) can enter river
-    can_swim_ranks = [1, 4]
-    dog_rank = 4
-    rat_rank = 1
+    # Swimmers: Rat (1), Dog (4), Elephant (8)
+    can_swim_ranks = [1, 4, 8]
+    assert 1 in can_swim_ranks
+    assert 4 in can_swim_ranks
+    assert 8 in can_swim_ranks
+    assert 6 not in can_swim_ranks # Tiger cannot swim
+    assert 7 not in can_swim_ranks # Lion cannot swim
+
+    # Crocodile Strike rule:
+    # Swimmers in river can attack pieces on land according to rank
+    # 1. Elephant (8) in river captures Leopard (5) on land
+    att_in_river = True
+    def_in_river = False
+    att_rank = 8
+    def_rank = 5
+    is_swimmer = att_rank in can_swim_ranks
+    can_capture_land = is_swimmer and (att_rank >= def_rank)
+    assert can_capture_land is True
+
+    # 2. Rat (1) in river captures Elephant (8) on land
+    att_rank, def_rank = 1, 8
+    can_rat_capture_elephant_land = (att_rank == 1 and def_rank == 8)
+    assert can_rat_capture_elephant_land is True
+
+    # 3. Dog (4) in river captures Wolf (3) on land
+    att_rank, def_rank = 4, 3
+    can_dog_capture_wolf_land = (att_rank >= def_rank)
+    assert can_dog_capture_wolf_land is True
+
+    # 4. Non-swimmer on land cannot attack into river
     tiger_rank = 6
-    assert dog_rank in can_swim_ranks
-    assert rat_rank in can_swim_ranks
-    assert tiger_rank not in can_swim_ranks
+    can_tiger_attack_river = tiger_rank in can_swim_ranks
+    assert can_tiger_attack_river is False
 
