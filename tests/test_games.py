@@ -37,3 +37,20 @@ def test_go_move_endpoint_occupied():
     assert response.status_code == 200
     data = response.json()
     assert data["move"] != {"r": 3, "c": 3}
+
+
+def test_go_move_endpoint_integer_board():
+    # 0 = empty, 1 = black, 2 = white (matches KOReader internal representation)
+    board = [[0 for _ in range(9)] for _ in range(9)]
+    board[2][2] = 1  # Black stone at (3, 3) 1-indexed
+    payload = {
+        "size": 9,
+        "board": board,
+        "turn": "white",
+        "difficulty": "pro"
+    }
+    response = client.post("/api/v1/games/go/move", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["move"] != {"r": 3, "c": 3}
+

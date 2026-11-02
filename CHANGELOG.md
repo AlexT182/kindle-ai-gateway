@@ -15,6 +15,11 @@ Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đ
 
 ### Fixed
 
+- **Khắc phục triệt để lỗi kết nối AlphaGo Cloud AI (`go.koplugin`)**:
+  - Mở rộng schema Pydantic trong `app/routes/games.py` cho phép `board` nhận ma trận số nguyên `0` (trống), `1` (đen), `2` (trắng) tránh lỗi HTTP 422 Unprocessable Entity.
+  - Chuẩn hóa client KOReader (`go.koplugin/screen.lua`): chuyển đổi ma trận bàn cờ sang ký hiệu `"."`, `"black"`, `"white"`, bổ sung header `User-Agent` hợp lệ tránh bị Cloudflare chặn 403.
+  - Tích hợp `NetworkMgr:runWhenOnline` tự động đánh thức Wi-Fi trước khi gửi request và thiết lập timeout an toàn qua `socketutil`.
+  - Hiển thị mã lỗi chi tiết khi gặp sự cố mạng thay vì thông báo chung chung "thiếu Wi-Fi".
 - Sửa lỗi phân biệt địa hình giữa Sông và Bẫy: Sông có nền xám nước với 3 gợn sóng đôi `~ ~ ~`, Bẫy chuyển sang nền trắng tinh với 4 góc ngắm nguy hiểm `┌ ┐ └ ┘` và nhãn in hoa nổi bật.
 - Sửa lỗi ô cờ cũ bị đen kịt sau khi quân di chuyển do hằng số `Blitbuffer.COLOR_GRAY_15/13` nil khiến `paintRect` fallback về màu đen `Color8(0)`; thay bằng gạch góc tinh tế không che nền.
 - Sửa lỗi màn hình E-ink không làm mới khi di chuyển quân bằng cách kết nối trực tiếp `screen` cấp cao nhất vào `BoardWidget:refresh()` và kích hoạt `UIManager:setDirty` trên toàn màn hình.

@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/v1/games", tags=["Games AI"])
 
 class GoMoveRequest(BaseModel):
     size: int = Field(default=9, description="Board size: 9, 13, or 19")
-    board: List[List[Optional[str]]] = Field(default_factory=list, description="2D board [r][c], 1-indexed or 0-indexed")
+    board: List[List[Any]] = Field(default_factory=list, description="2D board [r][c], 1-indexed or 0-indexed (supports 0/1/2, '.', 'black', 'white')")
     history: List[Dict[str, Any]] = Field(default_factory=list, description="Recent moves")
     turn: str = Field(default="white", description="Whose turn to play: 'black' or 'white'")
     difficulty: str = Field(default="pro", description="'kyu', 'dan', or 'pro'")
@@ -79,6 +79,10 @@ async def calculate_go_move(req: GoMoveRequest):
                 c = c_idx + 1 if len(row) == n else c_idx
                 if val in ("black", "white"):
                     board_map[(r, c)] = val
+                elif val == 1 or val == "1" or val == "X" or val == "x":
+                    board_map[(r, c)] = "black"
+                elif val == 2 or val == "2" or val == "O" or val == "o":
+                    board_map[(r, c)] = "white"
 
     # Build ASCII representation of board for the LLM
     board_lines = []
