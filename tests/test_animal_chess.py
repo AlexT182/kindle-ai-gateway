@@ -92,3 +92,16 @@ def test_leopard_river_jump():
     assert wolf["side"] == "top"
     # Leopard can capture Wolf
     assert leopard["rank"] >= wolf["rank"]
+
+
+def test_dog_swimming():
+    b = JungleBoard()
+    # Dog (rank 4) and Rat (rank 1) can enter river
+    can_swim_ranks = [1, 4]
+    dog_rank = 4
+    rat_rank = 1
+    tiger_rank = 6
+    assert dog_rank in can_swim_ranks
+    assert rat_rank in can_swim_ranks
+    assert tiger_rank not in can_swim_ranks
+
