@@ -83,6 +83,31 @@ def init_db():
     ''')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_usage_events_created_at ON usage_events(created_at)')
     
+    # 5. Cloud Library Tables (Manga, PDF, Books from Google Drive)
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS library_items (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        series TEXT NOT NULL,
+        folder_path TEXT NOT NULL,
+        file_ext TEXT NOT NULL,
+        mime_type TEXT NOT NULL,
+        size_bytes INTEGER DEFAULT 0,
+        cached_path TEXT,
+        created_at TEXT
+    )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_lib_series ON library_items(series)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_lib_name ON library_items(name)')
+
+    # 6. Library Config
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS library_config (
+        key TEXT PRIMARY KEY,
+        value TEXT
+    )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -292,4 +317,140 @@ def get_usage_summary(days: int = 7) -> Dict[str, Any]:
         conn.close()
 
 # Initialize database on module load
+
+
+# ============================================================================
+# Cloud Library (Manga / PDF / E-books from Google Drive)
+# ============================================================================
+
+def upsert_library_items(items: List[Dict[str, Any]]) -> int:
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        count = 0
+        now = datetime.now(timezone.utc).isoformat()
+        for item in items:
+            cursor.execute('''
+            INSERT INTO library_items (id, name, series, folder_path, file_ext, mime_type, size_bytes, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                name = excluded.name,
+                series = excluded.series,
+                folder_path = excluded.folder_path,
+                file_ext = excluded.file_ext,
+                mime_type = excluded.mime_type,
+                size_bytes = excluded.size_bytes
+            ''', (
+                item['id'], item['name'], item['series'], item.get('folder_path', ''),
+                item.get('file_ext', '.pdf'), item.get('mime_type', 'application/pdf'),
+                item.get('size_bytes', 0), now
+            ))
+            count += 1
+        conn.commit()
+        return count
+    finally:
+        conn.close()
+
+
+def get_library_series() -> List[Dict[str, Any]]:
+    conn = get_connection()
+    try:
+        rows = conn.execute('''
+        SELECT series, COUNT(*) as count, MIN(folder_path) as folder_path
+        FROM library_items
+        GROUP BY series
+        ORDER BY series COLLATE NOCASE ASC
+        ''').fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_library_items_by_series(series: str) -> List[Dict[str, Any]]:
+    conn = get_connection()
+    try:
+        rows = conn.execute('''
+        SELECT id, name, series, folder_path, file_ext, mime_type, size_bytes, cached_path, created_at
+        FROM library_items
+        WHERE series = ?
+        ORDER BY name COLLATE NOCASE ASC
+        ''', (series,)).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_library_item(item_id: str) -> Optional[Dict[str, Any]]:
+    conn = get_connection()
+    try:
+        row = conn.execute('''
+        SELECT id, name, series, folder_path, file_ext, mime_type, size_bytes, cached_path, created_at
+        FROM library_items
+        WHERE id = ?
+        ''', (item_id,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def search_library_items(query: str, limit: int = 50) -> List[Dict[str, Any]]:
+    conn = get_connection()
+    try:
+        pattern = f"%{query}%"
+        rows = conn.execute('''
+        SELECT id, name, series, folder_path, file_ext, mime_type, size_bytes, cached_path, created_at
+        FROM library_items
+        WHERE name LIKE ? OR series LIKE ?
+        ORDER BY series COLLATE NOCASE ASC, name COLLATE NOCASE ASC
+        LIMIT ?
+        ''', (pattern, pattern, limit)).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_library_stats() -> Dict[str, Any]:
+    conn = get_connection()
+    try:
+        row = conn.execute('''
+        SELECT
+            COUNT(*) as total_items,
+            COUNT(DISTINCT series) as total_series,
+            COALESCE(SUM(size_bytes), 0) as total_bytes
+        FROM library_items
+        ''').fetchone()
+        return dict(row) if row else {"total_items": 0, "total_series": 0, "total_bytes": 0}
+    finally:
+        conn.close()
+
+
+def get_library_config(key: str, default: str = "") -> str:
+    conn = get_connection()
+    try:
+        row = conn.execute('SELECT value FROM library_config WHERE key = ?', (key,)).fetchone()
+        return row['value'] if row else default
+    finally:
+        conn.close()
+
+
+def set_library_config(key: str, value: str):
+    conn = get_connection()
+    try:
+        conn.execute('''
+        INSERT INTO library_config (key, value) VALUES (?, ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        ''', (key, value))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def update_library_cached_path(item_id: str, path: str):
+    conn = get_connection()
+    try:
+        conn.execute('UPDATE library_items SET cached_path = ? WHERE id = ?', (path, item_id))
+        conn.commit()
+    finally:
+        conn.close()
+
 init_db()

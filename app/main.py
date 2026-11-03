@@ -19,6 +19,7 @@ from app.config import APP_VERSION, settings
 from app.db import database_is_ready, record_usage_event
 from app.routes.admin import router as admin_router
 from app.routes.games import router as games_router
+from app.routes.library import router as library_router
 from app.scheduler import shutdown_scheduler, start_scheduler
 from app.vault import generate_kindle_graph_image, get_all_notes_db, get_all_tags, get_graph_data, save_note_to_vault, search_notes_fts
 
@@ -41,6 +42,7 @@ app = FastAPI(title="Kindle AI Agent OS", version=APP_VERSION, lifespan=lifespan
               openapi_url="/openapi.json" if settings.ENABLE_DOCS else None)
 app.include_router(admin_router)
 app.include_router(games_router)
+app.include_router(library_router)
 
 
 @app.middleware("http")

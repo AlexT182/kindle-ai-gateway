@@ -1,7 +1,8 @@
 import os
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Request
+from pathlib import Path
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
@@ -10,7 +11,14 @@ from starlette.concurrency import run_in_threadpool
 from app.auth import clear_login_failures, create_admin_session, csrf_token, is_admin_session_valid, login_allowed, record_failed_login, validate_csrf, verify_admin_password
 from app.backup import cleanup_backup, create_vault_backup
 from app.config import APP_VERSION, settings
-from app.db import get_usage_summary
+from app.db import (
+    get_library_config,
+    get_library_series,
+    get_library_stats,
+    set_library_config,
+    get_usage_summary
+)
+from app.routes.library import background_sync_drive
 from app.persona import get_baseline_profile, get_evolving_memory, save_baseline_profile
 from app.scheduler import trigger_job_manual
 from app.vault import delete_note_from_vault, get_all_notes_db, get_all_tags, get_graph_edges, save_note_to_vault, search_notes_fts
@@ -171,3 +179,56 @@ def mcp_view(request: Request):
     if redirect := require_admin(request): return redirect
     return templates.TemplateResponse(request=request, name="admin/mcp.html",
         context=page_context(request, active_tab="mcp", title="Công cụ tích hợp - Kindle AI Agent"))
+
+
+@router.get("/library", response_class=HTMLResponse)
+def library_admin_view(request: Request):
+    if redirect := require_admin(request): return redirect
+    base_url = str(request.base_url).rstrip("/")
+    stats = get_library_stats()
+    series_list = get_library_series()
+    root_folder_id = get_library_config("root_folder_id", "1eEWmqXZZmDXx4QsmsTsnjkgUMp7pe6EH")
+    sync_status = get_library_config("sync_status", "idle")
+    last_synced = get_library_config("last_synced_at", "")
+
+    cache_dir = Path(settings.DATA_DIR) / "library_cache"
+    cache_bytes = sum(f.stat().st_size for f in cache_dir.glob("*") if f.is_file()) if cache_dir.exists() else 0
+    cache_size_str = f"{cache_bytes // 1024 // 1024} MB" if cache_bytes >= 1024 * 1024 else f"{cache_bytes // 1024} KB"
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/library.html",
+        context=page_context(
+            request,
+            active_tab="library",
+            title="Thư Viện Sách (Cloud) - Kindle AI Agent",
+            stats=stats,
+            series_list=series_list,
+            root_folder_id=root_folder_id,
+            sync_status=sync_status,
+            last_synced=last_synced,
+            cache_size_str=cache_size_str,
+            opds_url=f"{base_url}/opds",
+            web_url=f"{base_url}/library",
+        )
+    )
+
+
+@router.post("/library/sync")
+async def trigger_library_sync(request: Request, background_tasks: BackgroundTasks):
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
+    background_tasks.add_task(background_sync_drive)
+    return RedirectResponse(url="/admin/library", status_code=303)
+
+
+@router.post("/library/config")
+async def update_library_config(request: Request):
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
+    folder_id = str(form.get("root_folder_id", "")).strip()
+    if folder_id:
+        set_library_config("root_folder_id", folder_id)
+    return RedirectResponse(url="/admin/library", status_code=303)

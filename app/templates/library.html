@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thư Viện Kindle Cloud — Truyện Tranh & Sách</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 12px;
+            line-height: 1.4;
+        }
+        header {
+            border-bottom: 2px solid #000000;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        h1 {
+            font-size: 1.4rem;
+            margin: 0 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stats-bar {
+            font-size: 0.85rem;
+            color: #444444;
+            margin-bottom: 10px;
+        }
+        .search-box {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 1rem;
+            border: 2px solid #000000;
+            border-radius: 4px;
+            background: #ffffff;
+        }
+        .btn {
+            background-color: #000000;
+            color: #ffffff;
+            border: 2px solid #000000;
+            padding: 8px 14px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .btn-outline {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .opds-banner {
+            border: 2px dashed #000000;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            background: #f9f9f9;
+        }
+        .opds-url {
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 0.95rem;
+            background: #e6e6e6;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .grid-series {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .card {
+            border: 2px solid #000000;
+            padding: 10px 12px;
+            border-radius: 4px;
+            background: #ffffff;
+            text-decoration: none;
+            color: #000000;
+            display: block;
+        }
+        .card:hover, .card:active {
+            background-color: #f0f0f0;
+        }
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .card-desc {
+            font-size: 0.85rem;
+            color: #444444;
+        }
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #cccccc;
+            padding: 10px 4px;
+            gap: 10px;
+        }
+        .item-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            flex: 1;
+        }
+        .btn-download {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        .nav-back {
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📖 Thư Viện Kindle Cloud (Google Drive)</h1>
+        <div class="stats-bar">
+            <span>Tổng số: <strong>{{ stats.total_series }}</strong> bộ truyện | <strong>{{ stats.total_items }}</strong> tập file</span>
+        </div>
+        <div class="opds-banner">
+            ⚡ <strong>Đọc qua KOReader:</strong> Thêm địa chỉ OPDS: <span class="opds-url">https://kindle.alphatech.ai.vn/opds</span> vào mục <em>OPDS Catalog</em> để tải đọc trực tiếp cực nhanh.
+        </div>
+    </header>
+
+    <form method="GET" action="/library" class="search-box">
+        <input type="text" name="q" value="{{ q }}" placeholder="Tìm tên truyện, tên tập..." class="search-input">
+        <button type="submit" class="btn">Tìm</button>
+        {% if q or current_series %}
+            <a href="/library" class="btn btn-outline">Xem Tất Cả</a>
+        {% endif %}
+    </form>
+
+    {% if current_series %}
+        <div class="nav-back">
+            <a href="/library" class="btn btn-outline">⬅ Quay lại danh mục bộ truyện</a>
+        </div>
+        <h2>📁 {{ current_view }}</h2>
+        <ul class="item-list">
+            {% for item in items %}
+                <li class="item-row">
+                    <div class="item-name">📄 {{ item.name }}</div>
+                    <a href="/api/v1/library/download/{{ item.id }}" class="btn btn-download">Tải Về Đọc</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% elif q %}
+        <h2>🔍 {{ current_view }} ({{ items|length }} kết quả)</h2>
+        <ul class="item-list">
+            {% for item in items %}
+                <li class="item-row">
+                    <div class="item-name">
+                        <strong>[{{ item.series }}]</strong> {{ item.name }}
+                    </div>
+                    <a href="/api/v1/library/download/{{ item.id }}" class="btn btn-download">Tải Về</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <h2>📁 Danh Mục Các Bộ Truyện</h2>
+        <div class="grid-series">
+            {% for s in all_series %}
+                <a href="/library?series={{ s.series|urlencode }}" class="card">
+                    <div class="card-title">📚 {{ s.series }}</div>
+                    <div class="card-desc">Trọn bộ {{ s.count }} tập / chương ➔</div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</body>
+</html>

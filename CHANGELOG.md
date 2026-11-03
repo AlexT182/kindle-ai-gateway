@@ -2,6 +2,24 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
+## [2.1.9] - 2026-11-03
+
+### Added
+
+- **Tích hợp Thư Viện Truyện Tranh & Sách Cloud từ Google Drive (`app/routes/library.py`)**:
+  - Giải quyết bài toán bộ nhớ Kindle nhỏ bằng cơ chế On-Demand Streaming: người dùng duyệt toàn bộ kho truyện trên Cloud và chỉ tải về máy tập cần đọc.
+  - Chuẩn kết nối quốc tế **OPDS 1.2 Catalog** (`/opds`, `/opds/series`, `/opds/series/{name}`, `/opds/search`): cho phép Kindle KOReader kết nối thẳng vào Gateway để duyệt thư mục và tải sách 1-chạm.
+  - Cổng **E-ink Web Reader** (`/library`): giao diện đen trắng tối giản, tương phản cao, thao tác mượt mà trên trình duyệt có sẵn của Kindle hoặc điện thoại.
+  - Cơ chế **Smart Server Cache** (`data/library_cache/`): tự động lưu đệm file trên SSD Gateway ngay lần tải đầu tiên, các lần tải sau truyền với tốc độ gigabit mạng nội bộ, triệt tiêu nguy cơ chạm giới hạn tải (quota) của Google Drive.
+- **Trang Quản Trị Thư Viện Sách Cloud (`/admin/library`)**:
+  - Giao diện quản lý Folder ID Google Drive, thống kê số lượng bộ truyện, tổng số tập và dung lượng bộ nhớ đệm server.
+  - Nút bấm quét và đồng bộ danh mục ngầm (Background Indexing) từ Google Drive không làm gián đoạn hệ thống.
+  - Hướng dẫn cấu hình kết nối trực quan cho Kindle KOReader và Trình duyệt web với nút bấm sao chép URL 1-chạm.
+- **Mở rộng cơ sở dữ liệu (`app/db.py`)**:
+  - Bổ sung bảng `library_items` và `library_config` cùng các index hỗ trợ tìm kiếm siêu tốc theo bộ và tên tập.
+- **Bộ kiểm thử tự động `tests/test_library.py`**:
+  - Kiểm tra toàn diện OPDS feeds, Web Reader và API stream tải sách. Đạt 56/56 tests toàn hệ thống.
+
 ## [2.1.8] - 2026-11-02
 
 ### Added
