@@ -1,8 +1,10 @@
 """Generate user guide files for Kindle Paperwhite 4 in E:/documents/Books."""
 
 import html
+import re
 import zipfile
 from pathlib import Path
+import markdown
 
 target_dir = Path("E:/documents/Books")
 target_dir.mkdir(parents=True, exist_ok=True)
@@ -21,10 +23,10 @@ Chiếc Kindle Paperwhite 4 của bạn đã được tối ưu hóa toàn diệ
 - **Kho Truyện Tranh & Sách Cloud (Google Drive Integration)**: Kết nối kho truyện gần 800 tập / hơn 50 bộ truyện tranh PDF kinh điển qua chuẩn quốc tế OPDS 1.2 và Web Reader E-ink, tải theo nhu cầu (On-Demand) không lo đầy bộ nhớ trong.
 - **Bộ từ điển Anh - Việt Thích Học Offline**: Hàng trăm ngàn mục từ dịch nghĩa tiếng Việt sắc nét, tra cứu tức thì khi chạm vào từ mà không cần Wi-Fi.
 - **Bộ công cụ giải trí & rèn luyện tư duy 7-trong-1**:
-  + Game Cờ Vây (Go / Weiqi) tích hợp AlphaGo Cloud AI 9-Đẳng.
-  + Game Cờ Thú (Animal Chess / Jungle) chuẩn E-ink với chế độ "Linh Thú Thức Tỉnh", Voi & Chó bơi lội, đòn đánh "Cá Sấu Lên Bờ".
-  + Bộ 6 Board Games kinh điển (Cờ vua, Cờ đam, Connect 4, Tic Tac Toe, Dò mìn, Thủy chiến).
-  + Ứng dụng phác thảo tư duy & Wireframe (Ink Away).
+  - Game Cờ Vây (Go / Weiqi) tích hợp AlphaGo Cloud AI 9-Đẳng.
+  - Game Cờ Thú (Animal Chess / Jungle) chuẩn E-ink với chế độ "Linh Thú Thức Tỉnh", Voi & Chó bơi lội, đòn đánh "Cá Sấu Lên Bờ".
+  - Bộ 6 Board Games kinh điển (Cờ vua, Cờ đam, Connect 4, Tic Tac Toe, Dò mìn, Thủy chiến).
+  - Ứng dụng phác thảo tư duy & Wireframe (Ink Away).
 - **Hệ thống truyền file không dây (Wireless Sync)**: SSH/SFTP Server, Calibre Wireless, KOReader Sync (KOSync).
 
 ---
@@ -137,9 +139,9 @@ Hệ thống có 7 game được thiết kế riêng cho màn hình mực điệ
 ### Nhóm 1: Game Cờ Vây (Go / Weiqi) — TÍCH HỢP ALPHAGO CLOUD AI!
 - Cách mở: Menu Công cụ (Tools) -> Chọn [Go].
 - Chế độ đối thủ (Menu 3 gạch ở góc trên bên trái):
-  + **Đối thủ: Cloud AI 🌐 (AlphaGo)**: Kết nối Siêu AI AlphaGo qua Gateway. AI phân tích chiến thuật, dự đoán tỷ lệ thắng % và gợi ý nước đi chuẩn kỳ thủ chuyên nghiệp.
-  + **Đối thủ: Bot Máy 🤖 (Offline)**: 3 cấp độ (Beginner / Medium / Advanced) đánh offline không cần mạng.
-  + **Đối thủ: 2 Người 👥 (Chuyền tay)**: Chơi cùng bạn bè trên cùng máy Kindle.
+  - **Đối thủ: Cloud AI 🌐 (AlphaGo)**: Kết nối Siêu AI AlphaGo qua Gateway. AI phân tích chiến thuật, dự đoán tỷ lệ thắng % và gợi ý nước đi chuẩn kỳ thủ chuyên nghiệp.
+  - **Đối thủ: Bot Máy 🤖 (Offline)**: 3 cấp độ (Beginner / Medium / Advanced) đánh offline không cần mạng.
+  - **Đối thủ: 2 Người 👥 (Chuyền tay)**: Chơi cùng bạn bè trên cùng máy Kindle.
 - Bàn cờ: Hỗ trợ bàn 9x9, 13x13, 19x19.
 
 ### Nhóm 2: Game Cờ Thú (Animal Chess / Jungle) — LINH THÚ THỨC TỈNH
@@ -147,10 +149,10 @@ Hệ thống có 7 game được thiết kế riêng cho màn hình mực điệ
 - Quân cờ vẽ bằng Icon Linh Thú nghệ thuật sắc nét 300 DPI.
 - Cấp bậc: (8) Voi > (7) Sư Tử > (6) Hổ > (5) Báo > (4) Chó > (3) Sói > (2) Mèo > (1) Chuột.
 - Đặc quyền đặc sắc:
-  + Chuột (1) ăn được Voi (8). Voi không ăn được Chuột.
-  + **Sông nước & Đòn đánh "Cá Sấu Lên Bờ"**: Chuột (1), Chó (4) và Voi (8) đều có thể bơi lội dưới sông. Thú dưới nước có thể lao từ dưới nước lên cạn để bắt thú đối phương!
-  + Sư Tử (7), Hổ (6) và Báo (5) có thể nhảy bay qua sông nếu không có thú bơi cản đường.
-  + Phân biệt địa hình: Sông có gợn sóng đôi `~ ~ ~`; Bẫy nền trắng tinh có 4 góc ngắm `┌ ┐ └ ┘`.
+  - Chuột (1) ăn được Voi (8). Voi không ăn được Chuột.
+  - **Sông nước & Đòn đánh "Cá Sấu Lên Bờ"**: Chuột (1), Chó (4) và Voi (8) đều có thể bơi lội dưới sông. Thú dưới nước có thể lao từ dưới nước lên cạn để bắt thú đối phương!
+  - Sư Tử (7), Hổ (6) và Báo (5) có thể nhảy bay qua sông nếu không có thú bơi cản đường.
+  - Phân biệt địa hình: Sông có gợn sóng đôi `~ ~ ~`; Bẫy nền trắng tinh có 4 góc ngắm `┌ ┐ └ ┘`.
 - Tùy chọn [Luật: Thức Tỉnh ✨]: Sói đi cạnh đồng minh được +1 cấp; Báo phi nhanh 2 ô cạn; Mèo 9 mạng né đòn; Thú diệt 2 quân được Thăng cấp tỏa hào quang.
 
 ### Nhóm 3: Gói Board Games 6-trong-1
@@ -205,15 +207,15 @@ Mọi ghi chú bạn lưu bằng `#note` trên Kindle đều nằm an toàn trê
 ## 10. CÁC PHÍM TẮT, CỬ CHỈ & THAO TÁC CẦN NHỚ TRÊN KOREADER
 
 - **Chỉnh đèn nền cực nhanh**:
-  + Vuốt ngón tay lên/xuống ở **mép viền trái màn hình**: Tăng/giảm độ sáng đèn.
-  + Vuốt ngón tay lên/xuống ở **mép viền phải màn hình**: Tăng/giảm nhiệt độ màu (ấm / trắng).
+  - Vuốt ngón tay lên/xuống ở **mép viền trái màn hình**: Tăng/giảm độ sáng đèn.
+  - Vuốt ngón tay lên/xuống ở **mép viền phải màn hình**: Tăng/giảm nhiệt độ màu (ấm / trắng).
 - **Đánh dấu trang (Bookmark)**: Chạm nhanh 1 cái vào góc trên cùng bên phải trang sách.
 - **Mở Mục lục & Tiến độ đọc**: Chạm nhẹ vào mép dưới cùng màn hình.
 - **Xem Thống kê đọc sách**: Tab Công cụ (Tools) -> Reading Statistics để xem biểu đồ số giờ đọc, tốc độ đọc và số trang đã đọc trong ngày/tuần.
 - **Thoát về giao diện Kindle gốc**:
-  + Chạm mép trên màn hình -> Tab **Cài đặt / Nguồn** (biểu tượng bánh răng hoặc nút nguồn ở góc phải) -> Chọn **Exit** -> Chọn **Exit to Kindle OS**.
+  - Chạm mép trên màn hình -> Tab **Cài đặt / Nguồn** (biểu tượng bánh răng hoặc nút nguồn ở góc phải) -> Chọn **Exit** -> Chọn **Exit to Kindle OS**.
 - **Mở lại KOReader từ Kindle gốc**:
-  + Ở màn hình chính Kindle (Home), bấm vào cuốn sách có tên **KOReader** (hoặc mở menu KUAL -> KOReader).
+  - Ở màn hình chính Kindle (Home), bấm vào cuốn sách có tên **KOReader** (hoặc mở menu KUAL -> KOReader).
 - **Mẹo tiết kiệm pin**: Nên tắt Wi-Fi khi đọc sách thông thường; chỉ bật Wi-Fi khi cần hỏi AI KOAssistant, duyệt kho truyện Cloud hoặc đồng bộ ghi chú.
 
 ---
@@ -221,79 +223,150 @@ Mọi ghi chú bạn lưu bằng `#note` trên Kindle đều nằm an toàn trê
 Chúc bạn có những trải nghiệm đọc sách, nghiên cứu và giải trí tuyệt vời nhất trên chiếc Kindle Paperwhite 4!
 """
 
-# 1. Write Markdown file
+# ============================================================================
+# 1. Write Markdown file (.md)
+# ============================================================================
 with open(target_dir / "HUONG_DAN_SU_DUNG_KINDLE.md", "w", encoding="utf-8") as f:
     f.write(md_content)
 
-# 2. Write Plain Text file
+# ============================================================================
+# 2. Write Clean Plain Text file (.txt)
+# (Strip markdown formatting syntax like **, `, # so it reads cleanly as plain text)
+# ============================================================================
+plain_text = md_content
+plain_text = re.sub(r"\*\*(.*?)\*\*", r"\1", plain_text)  # Remove bold **
+plain_text = re.sub(r"\*(.*?)\*", r"\1", plain_text)      # Remove italic *
+plain_text = re.sub(r"`(.*?)`", r"\1", plain_text)        # Remove code backticks
+plain_text = re.sub(r"^#+\s*", "", plain_text, flags=re.MULTILINE) # Remove header hashes
+
 with open(target_dir / "HUONG_DAN_SU_DUNG_KINDLE.txt", "w", encoding="utf-8") as f:
-    f.write(md_content)
+    f.write(plain_text)
 
-# 3. Create EPUB file
-epub_path = target_dir / "HUONG_DAN_SU_DUNG_KINDLE.epub"
-with zipfile.ZipFile(epub_path, "w") as zf:
-    zf.writestr("mimetype", "application/epub+zip", compress_type=zipfile.ZIP_STORED)
+# ============================================================================
+# 3. Create High-Quality EPUB with Full HTML Conversion & Table of Contents
+# ============================================================================
+# Convert Markdown to proper XHTML using Python markdown package
+html_body = markdown.markdown(
+    md_content,
+    extensions=["extra", "sane_lists", "toc"]
+)
 
-    container_xml = """<?xml version="1.0" encoding="UTF-8"?>
-<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
-  <rootfiles>
-    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
-  </rootfiles>
-</container>"""
-    zf.writestr("META-INF/container.xml", container_xml, compress_type=zipfile.ZIP_DEFLATED)
+# Ensure XML compliance for self-closing tags
+html_body = html_body.replace("<hr>", "<hr/>").replace("<br>", "<br/>")
 
-    paragraphs = []
-    for line in md_content.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        if line.startswith("# "):
-            paragraphs.append(f"<h1>{html.escape(line[2:])}</h1>")
-        elif line.startswith("## "):
-            paragraphs.append(f"<h2>{html.escape(line[3:])}</h2>")
-        elif line.startswith("### "):
-            paragraphs.append(f"<h3>{html.escape(line[4:])}</h3>")
-        elif line.startswith("#### "):
-            paragraphs.append(f"<h4>{html.escape(line[5:])}</h4>")
-        elif line.startswith("- "):
-            paragraphs.append(f"<li>{html.escape(line[2:])}</li>")
-        elif line.startswith("+ "):
-            paragraphs.append(f"<li>{html.escape(line[2:])}</li>")
-        elif line == "---":
-            paragraphs.append("<hr/>")
-        else:
-            paragraphs.append(f"<p>{html.escape(line)}</p>")
+# Extract chapters from md_content to generate TOC navPoints
+chapters = []
+chap_num = 1
+for line in md_content.splitlines():
+    if line.startswith("## "):
+        title = line[3:].strip()
+        anchor = f"chap-{chap_num}"
+        chapters.append((anchor, title, chap_num))
+        # Add anchor to html_body
+        old_h2 = f"<h2>{html.escape(title)}</h2>"
+        new_h2 = f'<h2 id="{anchor}">{html.escape(title)}</h2>'
+        html_body = html_body.replace(old_h2, new_h2)
+        chap_num += 1
 
-    body_html = "\n".join(paragraphs)
-    xhtml_content = f"""<?xml version="1.0" encoding="utf-8"?>
+xhtml_content = f"""<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="vi">
 <head>
-  <title>Hướng Dẫn Sử Dụng Kindle Toàn Tập</title>
+  <title>Sổ Tay Toàn Tập Hướng Dẫn Sử Dụng Kindle</title>
   <style>
-    body {{ font-family: serif; margin: 4%; line-height: 1.5; }}
-    h1 {{ text-align: center; font-size: 1.5em; margin-bottom: 0.5em; }}
-    h2 {{ font-size: 1.25em; margin-top: 1.2em; border-bottom: 1px solid #444; padding-bottom: 4px; }}
-    h3 {{ font-size: 1.1em; margin-top: 1em; color: #222; }}
-    h4 {{ font-size: 1.0em; margin-top: 0.8em; font-style: italic; }}
-    li {{ margin-bottom: 0.4em; }}
-    p {{ text-indent: 1em; margin: 0.4em 0; }}
-    hr {{ border: none; border-top: 1px dashed #777; margin: 1em 0; }}
+    body {{
+      font-family: serif;
+      margin: 3% 4%;
+      line-height: 1.55;
+      color: #000000;
+    }}
+    h1 {{
+      text-align: center;
+      font-size: 1.55em;
+      margin-top: 0.5em;
+      margin-bottom: 0.3em;
+      line-height: 1.3;
+    }}
+    h2 {{
+      font-size: 1.22em;
+      margin-top: 1.4em;
+      margin-bottom: 0.5em;
+      border-bottom: 1.5px solid #222222;
+      padding-bottom: 4px;
+      page-break-after: avoid;
+    }}
+    h3 {{
+      font-size: 1.08em;
+      margin-top: 1.1em;
+      margin-bottom: 0.4em;
+      color: #111111;
+      page-break-after: avoid;
+    }}
+    strong, b {{
+      font-weight: bold;
+    }}
+    em, i {{
+      font-style: italic;
+    }}
+    code {{
+      font-family: monospace;
+      background-color: #eeeeee;
+      padding: 1px 4px;
+      font-size: 0.9em;
+    }}
+    ul, ol {{
+      margin: 0.5em 0;
+      padding-left: 1.4em;
+    }}
+    li {{
+      margin-bottom: 0.35em;
+      line-height: 1.5;
+    }}
+    p {{
+      margin: 0.5em 0;
+      text-indent: 0;
+    }}
+    hr {{
+      border: none;
+      border-top: 1px dashed #777777;
+      margin: 1.2em 0;
+    }}
   </style>
 </head>
 <body>
-{body_html}
+{html_body}
 </body>
 </html>"""
-    zf.writestr("OEBPS/guide.xhtml", xhtml_content, compress_type=zipfile.ZIP_DEFLATED)
 
-    content_opf = """<?xml version="1.0" encoding="UTF-8"?>
+# Generate toc.ncx navPoints
+nav_points_xml = []
+for anchor, title, num in chapters:
+    nav_points_xml.append(f"""    <navPoint id="navPoint-{num}" playOrder="{num}">
+      <navLabel><text>{html.escape(title)}</text></navLabel>
+      <content src="guide.xhtml#{anchor}"/>
+    </navPoint>""")
+
+nav_map_str = "\n".join(nav_points_xml)
+
+toc_ncx_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+  <head>
+    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-03-v5-complete"/>
+  </head>
+  <docTitle><text>Sổ Tay Toàn Tập Hướng Dẫn Sử Dụng Kindle</text></docTitle>
+  <navMap>
+{nav_map_str}
+  </navMap>
+</ncx>"""
+
+content_opf_content = """<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="BookID">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:title>Sổ Tay Toàn Tập Hướng Dẫn Sử Dụng Kindle</dc:title>
     <dc:creator>Antigravity</dc:creator>
     <dc:language>vi</dc:language>
-    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-03-v4-full</dc:identifier>
+    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-03-v5-complete</dc:identifier>
   </metadata>
   <manifest>
     <item id="guide" href="guide.xhtml" media-type="application/xhtml+xml"/>
@@ -303,22 +376,22 @@ with zipfile.ZipFile(epub_path, "w") as zf:
     <itemref idref="guide"/>
   </spine>
 </package>"""
-    zf.writestr("OEBPS/content.opf", content_opf, compress_type=zipfile.ZIP_DEFLATED)
 
-    toc_ncx = """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
-<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
-  <head>
-    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-03-v4-full"/>
-  </head>
-  <docTitle><text>Sổ Tay Toàn Tập Hướng Dẫn Sử Dụng Kindle</text></docTitle>
-  <navMap>
-    <navPoint id="navPoint-1" playOrder="1">
-      <navLabel><text>Bắt Đầu</text></navLabel>
-      <content src="guide.xhtml"/>
-    </navPoint>
-  </navMap>
-</ncx>"""
-    zf.writestr("OEBPS/toc.ncx", toc_ncx, compress_type=zipfile.ZIP_DEFLATED)
+container_xml = """<?xml version="1.0" encoding="UTF-8"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>"""
+
+epub_path = target_dir / "HUONG_DAN_SU_DUNG_KINDLE.epub"
+with zipfile.ZipFile(epub_path, "w") as zf:
+    zf.writestr("mimetype", "application/epub+zip", compress_type=zipfile.ZIP_STORED)
+    zf.writestr("META-INF/container.xml", container_xml, compress_type=zipfile.ZIP_DEFLATED)
+    zf.writestr("OEBPS/guide.xhtml", xhtml_content, compress_type=zipfile.ZIP_DEFLATED)
+    zf.writestr("OEBPS/content.opf", content_opf_content, compress_type=zipfile.ZIP_DEFLATED)
+    zf.writestr("OEBPS/toc.ncx", toc_ncx_content, compress_type=zipfile.ZIP_DEFLATED)
 
 print(f"SUCCESS: Generated detailed guide files in {target_dir}")
+print(f"- TOC Chapters: {len(chapters)}")
+print(f"- EPUB size: {epub_path.stat().st_size} bytes")
