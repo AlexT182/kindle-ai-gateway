@@ -7,270 +7,218 @@ from pathlib import Path
 target_dir = Path("E:/documents/Books")
 target_dir.mkdir(parents=True, exist_ok=True)
 
-md_content = """# SỔ TAY HƯỚNG DẪN SỬ DỤNG KINDLE PAPERWHITE 4
-## Trạm Tri Thức AI, Kho Truyện Tranh Cloud & Bộ 7 Game E-ink
+md_content = """# SỔ TAY TOÀN TẬP HƯỚNG DẪN SỬ DỤNG KINDLE PAPERWHITE 4
+## Trạm Tri Thức AI, Kho Truyện Tranh Cloud, Từ Điển Offline & Hệ Sinh Thái E-ink
 
 ---
 
-## 1. TỔNG QUAN HỆ THỐNG
+## 1. TỔNG QUAN HỆ THỐNG ĐÃ NÂNG CẤP
 
-Chiếc Kindle Paperwhite 4 của bạn đã được nâng cấp toàn diện thành thiết bị thông minh đa năng:
-- **Phần cứng**: Màn hình 6-inch E-ink Carta 300 DPI chống chói lóa mắt, đèn nền dịu nhẹ điều chỉnh linh hoạt.
-- **Hệ thống đọc sách**: KOReader v2026.07.2 — giao diện chuẩn E-ink, hiển thị sắc nét, lật trang siêu tốc, tiết kiệm pin tối đa.
-- **Trợ lý AI & Kho tri thức**: KOAssistant kết nối trực tiếp với Kindle AI Gateway (`kindle.alphatech.ai.vn`) chạy model alex-agent, DeepSeek, SQLite Vault, tìm kiếm Web thời gian thực và Bộ nhớ cá nhân thông minh.
-- **Thư Viện Truyện Tranh & Sách Cloud (Google Drive Integration)**: Kết nối kho truyện tranh PDF/EPUB đồ sộ qua chuẩn quốc tế OPDS 1.2 và Web Reader E-ink, tải và đọc theo nhu cầu (On-Demand) không lo đầy bộ nhớ trong.
-- **Bộ công cụ giải trí & rèn luyện tư duy**:
-  + Game Cờ Vây (Go / Weiqi) tích hợp siêu trí tuệ AlphaGo Cloud AI 9-Đẳng.
-  + Game Cờ Thú (Animal Chess / Jungle) chuẩn E-ink với chế độ độc quyền "Linh Thú Thức Tỉnh", Voi & Chó bơi sông, đòn đánh "Cá Sấu Lên Bờ".
+Chiếc Kindle Paperwhite 4 của bạn đã được tối ưu hóa toàn diện thành một thiết bị đọc sách và nghiên cứu thông minh:
+- **Phần cứng**: Màn hình 6-inch E-ink Carta 300 DPI chống chói lóa mắt, đèn nền dịu nhẹ điều chỉnh linh hoạt hai tông màu sáng/ấm.
+- **Hệ thống đọc sách chính**: **KOReader v2026.07.2** — đọc PDF, EPUB, MOBI, CBZ siêu nhanh, cắt lề thông minh, dàn trang mượt mà, tiết kiệm pin tối đa.
+- **Trợ lý AI & Kho tri thức**: **KOAssistant** kết nối trực tiếp với Kindle AI Gateway (`kindle.alphatech.ai.vn`) chạy mô hình alex-agent, DeepSeek, SQLite Vault, tìm kiếm Web thời gian thực và Bộ nhớ cá nhân thông minh.
+- **Kho Truyện Tranh & Sách Cloud (Google Drive Integration)**: Kết nối kho truyện gần 800 tập / hơn 50 bộ truyện tranh PDF kinh điển qua chuẩn quốc tế OPDS 1.2 và Web Reader E-ink, tải theo nhu cầu (On-Demand) không lo đầy bộ nhớ trong.
+- **Bộ từ điển Anh - Việt Thích Học Offline**: Hàng trăm ngàn mục từ dịch nghĩa tiếng Việt sắc nét, tra cứu tức thì khi chạm vào từ mà không cần Wi-Fi.
+- **Bộ công cụ giải trí & rèn luyện tư duy 7-trong-1**:
+  + Game Cờ Vây (Go / Weiqi) tích hợp AlphaGo Cloud AI 9-Đẳng.
+  + Game Cờ Thú (Animal Chess / Jungle) chuẩn E-ink với chế độ "Linh Thú Thức Tỉnh", Voi & Chó bơi lội, đòn đánh "Cá Sấu Lên Bờ".
   + Bộ 6 Board Games kinh điển (Cờ vua, Cờ đam, Connect 4, Tic Tac Toe, Dò mìn, Thủy chiến).
   + Ứng dụng phác thảo tư duy & Wireframe (Ink Away).
+- **Hệ thống truyền file không dây (Wireless Sync)**: SSH/SFTP Server, Calibre Wireless, KOReader Sync (KOSync).
 
 ---
 
-## 2. HƯỚNG DẪN CHI TIẾT: GÕ LỆNH #SEARCH Ở ĐÂU VÀ NHƯ THẾ NÀO?
+## 2. TRỢ LÝ AI KOASSISTANT: TRA CỨU WEB, TÓM TẮT & HỎI ĐÁP THỜI GIAN THỰC
 
-Nhiều bạn thắc mắc: "Làm sao để gõ được lệnh #search trên máy đọc sách? Gõ ở chỗ nào?". Dưới đây là hướng dẫn cụ thể từng bước:
+### CÁCH 1: Bộ 9 Nút Tác Vụ 1-Chạm Khi Đang Đọc Sách (Khuyên dùng — Không cần gõ phím)
 
-### CÁCH 1: Gõ trực tiếp trong ô Chat của KOAssistant (Bất kỳ lúc nào)
-
-1. Khi đang mở một cuốn sách trong KOReader:
-   - Dùng ngón tay chạm và giữ (hoặc quét ngang) để bôi đen (highlight) một từ hoặc một câu bất kỳ trên màn hình.
-   - Một thanh công cụ màu trắng hiện lên: Bạn tìm và chạm vào biểu tượng KOAssistant (hình robot hoặc biểu tượng trò chuyện).
-2. Khi hộp thoại KOAssistant xuất hiện:
-   - Nhìn xuống dưới đáy hộp thoại, bạn sẽ thấy một ô nhập liệu có dòng chữ gợi ý: `Type your message...` (hoặc `Nhập tin nhắn...`).
-   - Chạm ngón tay vào ô này: Bàn phím ảo của KOReader sẽ trượt lên từ cạnh dưới màn hình.
-3. Gõ lệnh và gửi:
-   - Gõ chính xác dấu `#` rồi đến chữ `search` và nội dung câu hỏi.
-     Ví dụ: `#search giá vàng hôm nay tại Việt Nam`
-     Ví dụ: `#search kết quả bóng đá ngoại hạng Anh mới nhất`
-     Ví dụ: `#search ai đang là tổng thống Mỹ`
-   - Nhấn nút Send (hoặc Enter) trên bàn phím ảo.
-   - Gateway sẽ lập tức điều khiển bot tìm kiếm Google/Web, đọc các bài báo mới nhất và trả về câu trả lời tổng hợp súc tích kèm nguồn tin!
+Bàn phím ảo trên màn hình E-ink gõ tương đối chậm, vì vậy hệ thống đã trang bị sẵn **9 nút tác vụ 1-chạm** cực kỳ tiện lợi:
+1. Khi đang đọc một cuốn sách, dùng ngón tay bôi đen (highlight) một cụm từ, đoạn văn hoặc câu hỏi bạn thắc mắc.
+2. Thanh công cụ màu trắng hiện lên -> Chạm vào biểu tượng **KOAssistant** (hình robot hoặc hội thoại).
+3. Chạm vào 1 trong 9 tác vụ chuyên sâu:
+   - **[Tra cứu Web (#search)]**: Tự động mang từ vừa bôi đen tìm kiếm trên Google/Web và tóm lược thông tin thời sự mới nhất kèm nguồn tin.
+   - **[Tra Wikipedia (#wiki)]**: Tra nhanh Bách khoa toàn thư Wikipedia tiếng Việt.
+   - **[Tóm tắt cốt lõi]**: AI tự động đúc kết 3 luận điểm quan trọng nhất của đoạn trích bằng gạch đầu dòng ngắn gọn.
+   - **[Giải thích sâu & Ví dụ]**: Giải thích cặn kẽ bản chất khái niệm và lấy 1 ví dụ thực tế minh họa sinh động theo đúng bối cảnh cuốn sách bạn đang đọc.
+   - **[Phản biện & Góc nhìn]**: Đóng vai chuyên gia phản biện, đưa ra 2 góc nhìn đa chiều và 1 câu hỏi đào sâu tư duy.
+   - **[Bài học thực hành]**: Rút ra 1-2 hành động cụ thể có thể áp dụng ngay vào công việc và đời sống.
+   - **[Lưu Vault (#note)]**: Lưu tự động đoạn trích vào kho tri thức cá nhân trên Server đám mây (có gắn kèm tên sách).
+   - **[Lưu Việc (#todo)]**: Biến ý tưởng trong trang sách thành 1 việc cần làm (task) lưu vào kho việc.
+   - **[Tổng quan sách]**: Chạm khi không bôi đen từ nào để AI tóm lược toàn cảnh cuốn sách bạn đang mở (chủ đề, bối cảnh, 3 giá trị nổi bật).
 
 ---
 
-### CÁCH 2: Dùng nút 1-Chạm "Tra cứu Web (#search)" (KHÔNG CẦN GÕ PHÍM)
+### CÁCH 2: Gõ Lệnh Trực Tiếp Trong Ô Chat Của KOAssistant
 
-Bàn phím ảo trên màn hình E-ink gõ tương đối chậm. Vì vậy, hệ thống đã trang bị sẵn nút 1-chạm để bạn tra cứu tức thì:
-
-1. Khi đang đọc sách, gặp một nhân vật, sự kiện hoặc khái niệm thời sự chưa rõ:
-   - Bôi đen (highlight) cụm từ đó (ví dụ: bôi đen từ "Sam Altman" hoặc "Quantum Computing").
-2. Chạm vào biểu tượng KOAssistant trên thanh công cụ.
-3. Trong danh sách các nút tác vụ hiện ra, chạm ngay vào:
-   - [Tra cứu Web (#search)]: Hệ thống tự động lấy từ vừa bôi đen mang đi tìm kiếm trên Web và tóm lược ngay lập tức!
-   - [Tra Wikipedia (#wiki)]: Nếu muốn tra bách khoa toàn thư Wikipedia tiếng Việt.
+1. Bôi đen văn bản hoặc mở khung chat của KOAssistant.
+2. Chạm vào ô nhập liệu ở đáy (`Type your message...`): Bàn phím ảo sẽ trượt lên.
+3. Gõ câu hỏi hoặc các lệnh nhanh:
+   - `#search <nội dung>`: Tìm kiếm web thời gian thực (ví dụ: `#search giá vàng hôm nay tại Việt Nam`, `#search tổng thống Mỹ mới nhất`).
+   - `#wiki <nội dung>`: Tra cứu bách khoa toàn thư.
+   - Nhấn **Send** (hoặc Enter) để nhận câu trả lời súc tích tối ưu cho màn hình E-ink.
 
 ---
 
-### CÁCH 3: Mở khung Chat Tự Do (General Chat) khi không đọc sách
+### CÁCH 3: Mở Khung Chat Tự Do (General Chat) Khi Không Đọc Sách
 
-Nếu bạn đang ở màn hình duyệt file (File Manager) hoặc muốn hỏi đáp độc lập mà không cần mở sách:
-1. Chạm vào mép trên cùng màn hình để hiện thanh menu chính của KOReader.
-2. Chọn tab Công cụ (Tools) (biểu tượng cờ lê / bánh răng).
-3. Chọn mục KOAssistant -> Chọn General Chat / Action.
-4. Hộp thoại chat mở ra -> Chạm vào ô nhập tin nhắn ở đáy -> Gõ `#search <nội dung>` và nhấn Gửi.
+1. Chạm mép trên cùng màn hình để hiện menu chính của KOReader.
+2. Chọn tab **Công cụ (Tools)** (biểu tượng cờ lê / bánh răng).
+3. Chọn mục **KOAssistant** -> Chọn **General Chat / Action**.
+4. Hộp thoại mở ra để bạn trò chuyện, hỏi đáp tự do với AI như ChatGPT trên màn hình E-ink.
 
 ---
 
 ## 3. BỘ NHỚ VÀ QUẢN LÝ GHI CHÚ CÁ NHÂN VỚI AI
 
-Trong cùng ô nhập tin nhắn của KOAssistant, bạn có thể dùng các lệnh sau:
-
-- #remember [chủ đề] <nội dung>
-  Mục đích: Dạy AI hiểu bối cảnh và sở thích của bạn để câu trả lời sau này luôn đúng ý.
-  Ví dụ: `#remember [chuyên môn] Tôi là lập trình viên backend, hãy giải thích bằng tư duy logic và code minh họa.`
-- #memory
-  Mục đích: Hiển thị 10 điều ghi nhớ gần nhất mà AI đang lưu giữ về bạn.
-- #note [tiêu đề] <nội dung>
-  Mục đích: Lưu một ý tưởng hay vào kho ghi chú cá nhân (SQLite Vault).
-- #todo <công việc>
-  Mục đích: Thêm một việc cần làm vào danh sách task.
-- #help
-  Mục đích: Xem nhanh danh sách các lệnh trợ giúp ngay trên Kindle.
+Trong ô chat của KOAssistant, bạn có thể dạy AI hiểu thói quen của bạn và quản lý ghi chú:
+- `#remember [chủ đề] <nội dung>`: Dạy AI ghi nhớ ngữ cảnh và phong cách của bạn (Ví dụ: `#remember [chuyên môn] Tôi là lập trình viên backend, hãy giải thích bằng tư duy logic và code minh họa`).
+- `#memory`: Xem 10 điều ghi nhớ gần nhất AI đang lưu về bạn.
+- `#note [tiêu đề] <nội dung>`: Lưu nhanh một ghi chú, ý tưởng vào kho SQLite Vault đám mây.
+- `#todo <công việc>`: Thêm một công việc cần làm vào danh sách việc.
+- `#help`: Xem danh sách tất cả các lệnh hỗ trợ trực tiếp trên màn hình.
 
 ---
 
 ## 4. KHO TRUYỆN TRANH & SÁCH CLOUD TỪ GOOGLE DRIVE (OPDS & WEB READER)
 
-Bộ nhớ trong của Kindle khá nhỏ (~2.8GB đến 6GB). Nếu chép hàng chục bộ truyện tranh PDF dung lượng nặng, máy sẽ lập tức bị đầy bộ nhớ. Hệ thống Kindle AI Gateway giải quyết triệt để vấn đề này bằng cơ chế **Đọc Đám Mây Theo Nhu Cầu (On-Demand Cloud Streaming)**: toàn bộ kho truyện nằm an toàn trên Google Drive, Kindle chỉ tải về tập bạn muốn đọc, đọc xong có thể xóa mà không lo mất sách.
+Bộ nhớ trong của Kindle chỉ có vài GB. Toàn bộ kho truyện tranh gần 800 tập / hơn 50 bộ truyện kinh điển (*Bác Sĩ Quái Dị*, *7 Seeds*, *07-Ghost*, *Ouran High School*, *1-00 AM*, *Siêu Nhân May Mắn*, *Ashita No Joe*, *Bad Luck*, *Basara*, *BEASTARS*, *Biệt Đội Lính Cứu Hỏa*, v.v.) được lưu trên Google Drive. Bạn có thể duyệt và tải về đọc từng tập theo nhu cầu (On-Demand), đọc xong xóa đi để giải phóng bộ nhớ mà không bao giờ mất file gốc.
 
-Hiện tại kho truyện đã được Gateway quét và phân loại sẵn **hơn 50 bộ truyện kinh điển (gần 800 tập PDF)** như: *Bác Sĩ Quái Dị*, *7 Seeds*, *07-Ghost*, *Ouran High School*, *1-00 AM*, *Siêu Nhân May Mắn*, *Ashita No Joe*, *Bad Luck*, *Basara*, *BEASTARS*, *Biệt Đội Lính Cứu Hỏa*, v.v.
+### CÁCH 1: Duyệt thư viện OPDS trong KOReader (Khuyên dùng — Đọc sướng nhất)
 
-### CÁCH 1: Kết nối thư viện OPDS trên KOReader (Khuyên dùng — Tiện lợi nhất)
-
-Chuẩn OPDS (Open Publication Distribution System) là chuẩn duyệt và tải sách trực tiếp được tích hợp sẵn trong KOReader:
-
-1. Bật Wi-Fi trên Kindle.
-2. Trong KOReader, chạm vào mép trên cùng màn hình để mở thanh menu.
-3. Chạm vào biểu tượng **Kính lúp / Tủ sách** (Search and Library) ở góc trên bên trái.
-4. Chọn mục **"OPDS catalog" (Thư viện OPDS)**.
-5. Chọn dòng **"Add catalog" (Thêm thư viện mới)**:
-   - **Tên thư viện (Catalog Name):** `Kindle Cloud Manga`
-   - **Địa chỉ (Catalog URL):** `https://kindle.alphatech.ai.vn/opds`
+1. Bật Wi-Fi trên máy Kindle.
+2. Trong KOReader, chạm mép trên màn hình để mở menu.
+3. Chạm vào biểu tượng **Kính lúp / Tủ sách** (Search & Library) ở góc trên bên trái.
+4. Chọn **"OPDS catalog" (Thư viện OPDS)**.
+5. Chọn **"Add catalog" (Thêm thư viện mới)**:
+   - Tên thư viện: `Kindle Cloud Manga`
+   - Địa chỉ URL: `https://kindle.alphatech.ai.vn/opds`
 6. Bấm **Lưu (Save)**.
-7. Thư viện `Kindle Cloud Manga` sẽ xuất hiện trong danh sách:
-   - Chạm vào `📁 Danh Mục Các Bộ Truyện`: Toàn bộ các bộ truyện được sắp xếp theo thư mục gọn gàng kèm số lượng tập.
-   - Chạm vào bộ truyện bạn muốn xem (ví dụ: *Bác Sĩ Quái Dị* hoặc *7 Seeds*).
-   - Danh sách các tập sẽ hiện ra kèm nút tải. Chạm vào tập muốn đọc: KOReader sẽ tải trực tiếp file về máy và mở sách để bạn thưởng thức ngay lập tức!
-   - Bạn cũng có thể dùng mục Tìm kiếm (Search) trong OPDS để gõ tên bộ truyện cần tìm.
+7. Mở `Kindle Cloud Manga` -> Chọn `📁 Danh Mục Các Bộ Truyện` -> Chọn bộ truyện yêu thích -> Chạm vào tập muốn đọc để tải về máy và mở đọc ngay tức thì!
 
 ---
 
-### CÁCH 2: Dùng Trình duyệt Web có sẵn của Kindle (Web Browser)
+### CÁCH 2: Dùng Trình duyệt Web tích hợp của Kindle (Web Browser)
 
-Nếu bạn không mở KOReader hoặc muốn duyệt sách từ giao diện chính của Kindle:
-
-1. Bật Wi-Fi trên máy Kindle.
-2. Ở màn hình Home chính của Kindle, chạm vào nút Menu (ba dấu chấm dọc ở góc trên bên phải) -> Chọn **Web Browser (Trình duyệt thử nghiệm)**.
+1. Bật Wi-Fi trên Kindle.
+2. Từ màn hình chính của Kindle, chạm vào nút Menu ba chấm ở góc trên bên phải -> Chọn **Web Browser (Trình duyệt thử nghiệm)**.
 3. Nhập địa chỉ: `https://kindle.alphatech.ai.vn/library`
-4. Giao diện Web Reader được thiết kế tối giản, tông màu đen trắng tương phản cao chuẩn E-ink Carta:
-   - Xem thống kê số lượng bộ truyện và tập truyện.
-   - Chọn bộ truyện hoặc gõ tên truyện vào ô tìm kiếm.
-   - Chạm vào nút **[Tải Về Đọc]** ở tập mong muốn để máy Kindle tải file về mục Documents.
+4. Giao diện E-ink đen trắng sắc nét hiện ra: Chọn bộ truyện và bấm nút **[Tải Về Đọc]** ở tập mong muốn.
 
 ---
 
 ### CÁCH 3: Quản lý kho sách trên máy tính / điện thoại (Gateway Webapp)
 
-Bạn có thể quản lý kho sách từ bất kỳ thiết bị nào qua trình duyệt web:
-- Địa chỉ trang quản trị: `https://kindle.alphatech.ai.vn/admin/library`
-- Tại đây bạn có thể:
-  + Thay đổi Google Drive Root Folder ID nếu muốn liên kết sang kho sách khác.
-  + Bấm nút **"Đồng Bộ Danh Mục Ngay" (Scan Google Drive)** để Gateway quét ngầm các tập truyện mới thêm vào Drive mà không làm gián đoạn máy đọc sách.
-  + Kiểm tra dung lượng bộ nhớ đệm (SSD Cache) trên máy chủ.
-  + Lấy link cấu hình nhanh cho Kindle.
+- Truy cập trang quản trị: `https://kindle.alphatech.ai.vn/admin/library`
+- Bấm nút **"Đồng Bộ Danh Mục Ngay" (Scan Google Drive)** khi có thêm truyện mới vào Drive để hệ thống tự động quét ngầm.
+- Theo dõi dung lượng bộ nhớ đệm (SSD Cache) trên máy chủ Gateway.
 
 ---
 
-## 5. HƯỚNG DẪN CHI TIẾT BỘ 7 GAME E-INK & CÁCH CHƠI
+## 5. TRA CỨU TỪ ĐIỂN ANH - VIỆT OFFLINE & KHO TỪ VỰNG (VOCABULARY BUILDER)
 
-Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng cho màn hình mực điện tử E-ink (không giật lag, không chớp nháy):
+Chiếc Kindle đã được tích hợp bộ từ điển **Anh - Việt Thích Học Offline (19MB)** với hàng trăm ngàn từ:
 
-### Nhóm 1: Game Cờ Vây (Go / Weiqi) — ĐÃ TÍCH HỢP ALPHAGO CLOUD AI!
+### Cách tra từ điển khi đọc sách tiếng Anh:
+1. Khi đang đọc một cuốn sách tiếng Anh, chạm ngón tay vào từ bạn chưa biết nghĩa.
+2. Bảng tra từ điển sẽ lập tức bật lên hiển thị: phiên âm quốc tế IPA, từ loại (danh từ, động từ...), các tầng nghĩa tiếng Việt chi tiết và ví dụ ngữ cảnh.
+3. Toàn bộ hoạt động **hoàn toàn offline**, không cần bật Wi-Fi, tốc độ tra tức thì chỉ 0.1 giây.
 
-- Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Go].
-- Cách đổi chế độ đối thủ & Cài đặt bàn cờ:
-  Chạm vào biểu tượng Menu 3 gạch ở góc trên cùng bên trái thanh tiêu đề:
-  + [Opponent]: Chạm để chuyển đổi 3 chế độ đối thủ:
-    * Đối thủ: Bot Máy 🤖 (Offline): Đánh với Bot offline máy tính tích hợp sẵn, không cần Wi-Fi/Internet.
-    * Đối thủ: Cloud AI 🌐 (AlphaGo): Kết nối với Siêu trí tuệ nhân tạo AlphaGo qua Gateway. AI tính toán nước cờ kỳ thủ đỉnh cao, hiển thị tỷ lệ thắng % và phân tích chiến thuật (Yêu cầu kết nối Wi-Fi & Internet).
-    * Đối thủ: 2 Người 👥 (Chuyền tay): Hai người chơi đổi lượt trên cùng một chiếc Kindle.
-  + [Bot: Beginner / Medium / Advanced]: Chạm vào dòng này để đổi 3 mức độ của bot máy:
-    * Beginner (Tập sự): Máy đi ngẫu nhiên đơn giản, phù hợp làm quen luật cờ.
-    * Medium (Tiêu chuẩn): Khai cuộc chiếm góc Hoshi, mở biên đường 3-4, cứu quân và bắt quân atari.
-    * Advanced (Nâng cao): Áp dụng chiến thuật cờ vây toàn diện, nối quân Keima/Kosumi, bắt quân sát ván.
-  + [Size]: Đổi kích thước bàn cờ (9x9, 13x13, 19x19).
-- Cách chơi & Luật cơ bản:
-  + Bạn đi quân Đen (đi trước), máy đi quân Trắng (Trắng được 6.5 điểm Komi).
-  + Chạm vào các giao điểm trên bàn cờ để đặt quân.
-  + Luật khí và bắt quân: Nhóm quân cờ sống nhờ các giao điểm trống liền kề ("khí"). Khi bị đối phương chặn hết khí, quân sẽ bị bắt và nhấc ra khỏi bàn cờ.
-  + Mục tiêu: Vây chiếm các vùng đất trống. Bên nào kiểm soát diện tích đất và bắt được nhiều quân hơn sẽ chiến thắng.
+### Kho từ vựng (Vocabulary Builder):
+- Mỗi khi bạn tra một từ mới trong lúc đọc sách, hệ thống sẽ tự động lưu từ đó vào danh sách từ vựng.
+- Để ôn tập từ vựng: Chạm mép trên màn hình -> Tab **Công cụ (Tools)** -> Chọn **Vocabulary Builder** để lật các thẻ flashcard ôn lại nghĩa của các từ đã tra.
 
 ---
+
+## 6. HƯỚNG DẪN CHI TIẾT BỘ 7 GAME E-INK & CÁCH CHƠI
+
+Hệ thống có 7 game được thiết kế riêng cho màn hình mực điện tử E-ink (không giật lag, độ tương phản tuyệt đối):
+
+### Nhóm 1: Game Cờ Vây (Go / Weiqi) — TÍCH HỢP ALPHAGO CLOUD AI!
+- Cách mở: Menu Công cụ (Tools) -> Chọn [Go].
+- Chế độ đối thủ (Menu 3 gạch ở góc trên bên trái):
+  + **Đối thủ: Cloud AI 🌐 (AlphaGo)**: Kết nối Siêu AI AlphaGo qua Gateway. AI phân tích chiến thuật, dự đoán tỷ lệ thắng % và gợi ý nước đi chuẩn kỳ thủ chuyên nghiệp.
+  + **Đối thủ: Bot Máy 🤖 (Offline)**: 3 cấp độ (Beginner / Medium / Advanced) đánh offline không cần mạng.
+  + **Đối thủ: 2 Người 👥 (Chuyền tay)**: Chơi cùng bạn bè trên cùng máy Kindle.
+- Bàn cờ: Hỗ trợ bàn 9x9, 13x13, 19x19.
 
 ### Nhóm 2: Game Cờ Thú (Animal Chess / Jungle) — LINH THÚ THỨC TỈNH
-
-- Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Cờ Thú (Jungle Game)].
-- Thiết kế riêng cho Kindle E-ink 300 DPI: Toàn bộ quân cờ vẽ bằng Icon Linh Thú nghệ thuật sắc nét.
-- Tính năng Xem Nhanh Cấp Bậc & Thông Tin Linh Thú:
-  + Chạm 1 cái vào quân cờ: Thanh trạng thái đáy màn hình lập tức hiển thị tên thú, cấp độ và đặc tính ngắn gọn.
-  + Nhấn giữ 0.5 giây vào quân bất kỳ: Bật Thẻ Thông Tin Chi Tiết (Info Card) hiển thị toàn bộ cấp bậc, kỹ năng, số quân đã tiêu diệt và trạng thái thức tỉnh.
-  + Nút [Cấp Bậc] ở đáy màn hình: Chạm để xem nhanh chuỗi thức ăn từ Cấp 8 đến Cấp 1 chỉ trong 1 giây.
-- Cấp bậc 8 loài thú (Từ mạnh đến yếu):
-  (8) Voi > (7) Sư Tử > (6) Hổ > (5) Báo > (4) Chó > (3) Sói > (2) Mèo > (1) Chuột.
-- Quy tắc đặc sắc:
-  + Chuột ăn Voi: Chuột (1) là loài duy nhất ăn được Voi (8)! Ngược lại Voi không thể ăn Chuột.
-  + Sông nước & Kỹ năng bơi lội: Chuột (1), Chó (4) và Voi (8) đều có thể bơi lặn dưới sông. Đặc biệt có đòn đánh "Cá Sấu Lên Bờ": Thú dưới nước (Chuột, Chó, Voi) có thể tấn công bắt thú đối phương trên cạn khi từ dưới nước đi lên cạn! Sư Tử (7), Hổ (6) và Báo (5) có quyền NHẢY QUA SÔNG theo chiều dọc hoặc ngang (nếu không có thú bơi cản giữa sông).
-  + Phân biệt địa hình: Ô Sông có 3 dải gợn sóng nước đôi `~ ~ ~` trên nền xám nhạt; ô Bẫy có nền trắng tinh với 4 góc ngắm nguy hiểm `┌ ┐ └ ┘` và nhãn in hoa nổi bật.
-  + Ô Bẫy: Quân địch sập vào 3 ô Bẫy quanh hang bạn sẽ bị giảm sức mạnh về 0. Bất kỳ thú nào của bạn cũng có thể lao vào ăn nó!
-  + Mục tiêu: Tiến 1 quân vào Hang đối thủ hoặc tiêu diệt toàn bộ quân địch để chiến thắng.
-- Tùy chọn Chế độ & Cấp độ:
-  + Đấu với Máy (Dễ / Vừa / Khó với thuật toán Minimax Alpha-Beta tính trước 3-4 nước cờ) hoặc 2 Người chuyền tay.
-  + Nút [Đi Lại] (Undo) ngay ở thanh điều khiển đáy để rút lại nước cờ nhầm lẫn.
-  + Tùy chọn [Luật: Cổ Điển 📜] hoặc [Luật: Thức Tỉnh ✨]:
-    * Sói Bầy Đàn: Sói đi cạnh Chó/Báo đồng minh được +1 cấp sức mạnh (ăn được Chó).
-    * Báo Lao Nhanh: Báo có thể phi thẳng 2 ô một lượt trên cạn nếu đường thông thoáng.
-    * Mèo 9 Mạng: Lần đầu tiên bị ăn, Mèo tự động né đòn nhảy sang ô trống thoát chết.
-    * Thăng Cấp Hào Quang: Thú nào ăn được 2 quân địch sẽ được Thăng cấp và tự động tỏa Viền Hào Quang Kép uy dũng bao quanh quân cờ!
-
----
+- Cách mở: Menu Công cụ (Tools) -> Chọn [Cờ Thú (Jungle Game)].
+- Quân cờ vẽ bằng Icon Linh Thú nghệ thuật sắc nét 300 DPI.
+- Cấp bậc: (8) Voi > (7) Sư Tử > (6) Hổ > (5) Báo > (4) Chó > (3) Sói > (2) Mèo > (1) Chuột.
+- Đặc quyền đặc sắc:
+  + Chuột (1) ăn được Voi (8). Voi không ăn được Chuột.
+  + **Sông nước & Đòn đánh "Cá Sấu Lên Bờ"**: Chuột (1), Chó (4) và Voi (8) đều có thể bơi lội dưới sông. Thú dưới nước có thể lao từ dưới nước lên cạn để bắt thú đối phương!
+  + Sư Tử (7), Hổ (6) và Báo (5) có thể nhảy bay qua sông nếu không có thú bơi cản đường.
+  + Phân biệt địa hình: Sông có gợn sóng đôi `~ ~ ~`; Bẫy nền trắng tinh có 4 góc ngắm `┌ ┐ └ ┘`.
+- Tùy chọn [Luật: Thức Tỉnh ✨]: Sói đi cạnh đồng minh được +1 cấp; Báo phi nhanh 2 ô cạn; Mèo 9 mạng né đòn; Thú diệt 2 quân được Thăng cấp tỏa hào quang.
 
 ### Nhóm 3: Gói Board Games 6-trong-1
-
-- Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Board Games].
-- Điều khiển chung: Ở chân màn hình luôn có 4 nút:
-  [Settings]      [Undo]      [Draw / Flag]      [Close]
-  + Để đổi game: Chạm [Settings] -> [Choose Game] -> Chọn 1 trong 6 game bên dưới.
-  + Để đổi độ khó / người chơi: Chạm [Settings] -> Chạm [Mode] (Solo/2 người) hoặc [Bot Level] (Dễ/Vừa/Khó).
-  + Để thoát về sách: Chạm [Close] (góc dưới bên phải).
-
-#### 1. Hướng dẫn chi tiết Game Thủy Chiến (Battleship):
-Game mô phỏng cuộc chiến hải quân bắn hạ hạm đội đối phương, gồm 2 giai đoạn rõ ràng:
-- Giai đoạn 1: Bố trí đội tàu (Setup Phase)
-  + Bạn sở hữu 5 chiến hạm có độ dài khác nhau: Tàu sân bay (5 ô), Thiết giáp hạm (4 ô), Tuần dương hạm (3 ô), Tàu ngầm (3 ô), Tàu khu trục (2 ô).
-  + Các nút ở thanh điều khiển dưới đáy:
-    * [Rotate: H / V]: Đổi chiều xoay tàu (Ngang hoặc Dọc). Sau đó chạm lên ô bàn cờ để đặt tàu.
-    * [Random Fleet]: NÚT QUAN TRỌNG NHẤT — Nếu lười xếp tay, hãy bấm nút này để máy tự động xếp ngẫu nhiên 5 tàu vào vị trí tối ưu trong 1 giây!
-  + Sau khi đủ 5 tàu, trận chiến khai hỏa!
-- Giai đoạn 2: Tác chiến bắn tàu (Battle Phase)
-  + Dưới đáy màn hình có 2 nút chuyển đổi góc nhìn:
-    * [Enemy Waters] (Vùng biển địch): Mặc định bạn sẽ ở góc nhìn này. Chạm ngón tay vào ô tọa độ bất kỳ để nã pháo!
-      - Ký hiệu `X`: Bắn TRÚNG (Hit) vào thân tàu địch! Tiếp tục bắn các ô liền kề để đánh chìm hẳn con tàu.
-      - Ký hiệu `o`: Bắn TRƯỢT (Miss) xuống nước.
-    * [Your Fleet] (Hạm đội của bạn): Chạm nút này để xem bot đã bắn vào đâu trên đội tàu của mình.
-  + Mục tiêu: Bắn chìm toàn bộ 5 tàu của bot trước khi hạm đội của bạn bị xóa sổ!
-
-#### 2. Dò Mìn (Minesweeper):
-- Bàn cờ 9x9 với 10 quả mìn ẩn giấu.
-- Chạm vào ô để mở. Ô mở ra sẽ hiện số (số lượng mìn xung quanh ô đó).
-- Nút [Flag] / [Reveal] ở đáy: Chạm để chuyển đổi giữa chế độ Mở ô và chế độ Cắm cờ đánh dấu ô có mìn.
-
-#### 3. Cờ Vua (Chess):
-- Chơi với máy hoặc 2 người.
-- Chạm vào quân cờ của bạn -> Các ô nước đi hợp lệ sẽ sáng lên -> Chạm vào ô đích để di chuyển.
-- Có hỗ trợ nhập thành (Castling), bắt tốt qua đường (En passant) và phong cấp (Promotion) trong menu Settings.
-
-#### 4. Cờ Đam (Checkers):
-- Quân cờ đi chéo trên các ô màu tối. Nhảy qua đầu quân địch để ăn.
-- Sang được hàng cuối của đối phương sẽ hóa thành Vua (King) và có thể đi tiến/lùi tự do.
-
-#### 5. Connect 4:
-- Chạm vào cột bất kỳ để thả quân cờ xuống. Người đầu tiên nối được 4 quân liên tiếp (ngang, dọc hoặc chéo) sẽ thắng.
-
-#### 6. Tic Tac Toe (Cờ ca-rô 3x3):
-- Chạm vào ô trống để đánh dấu X/O. Nối 3 ô thẳng hàng để chiến thắng.
+- Cách mở: Menu Công cụ (Tools) -> Chọn [Board Games].
+- Chạm nút **[Settings]** -> **[Choose Game]** để chọn 1 trong 6 trò chơi:
+  1. **Thủy Chiến (Battleship)**: Bố trí hạm đội 5 tàu (có nút *Random Fleet* tự xếp trong 1 giây) và nã pháo bắn chìm tàu địch.
+  2. **Dò Mìn (Minesweeper)**: Bàn cờ 9x9, chạm mở ô và nút [Flag] cắm cờ đánh dấu mìn.
+  3. **Cờ Vua (Chess)**: Hỗ trợ đánh với máy hoặc 2 người, đầy đủ luật nhập thành, bắt tốt qua đường, phong cấp.
+  4. **Cờ Đam (Checkers)**: Nhảy chéo ăn quân, phong Vua khi sang hàng cuối.
+  5. **Connect 4**: Thả quân nối 4 chấm liên tiếp để thắng.
+  6. **Tic Tac Toe**: Cờ ca-rô 3x3 giải trí nhanh.
 
 ---
 
-## 6. PHÁC THẢO SƠ ĐỒ TƯ DUY & WIREFRAME (INK AWAY)
+## 7. PHÁC THẢO SƠ ĐỒ TƯ DUY & WIREFRAME (INK AWAY)
 
-- Cách mở: Menu Công cụ (Tools) -> Ink Away (hoặc vuốt từ cạnh phải màn hình lên trên).
-- Mẹo phác thảo Mindmap:
-  + Dùng công cụ Shape (Hình chữ nhật/Oval) để tạo các nhánh ý tưởng.
-  + Dùng công cụ Line / Arrow để nối các nhánh.
-  + Dùng Text box để chèn chữ in thẳng hàng.
-  + Xuất file ảnh PNG làm hình nền chờ (Sleep screen) hoặc xuất PDF gửi về PC.
+- Cách mở: Menu Công cụ (Tools) -> **Ink Away** (hoặc vuốt từ mép phải màn hình lên).
+- Vẽ hình khối (Chữ nhật, Tròn, Mũi tên), chèn chữ Text box để tạo sơ đồ tư duy hoặc phác thảo giao diện wireframe.
+- Xuất file ảnh PNG làm hình nền khóa màn hình (Sleep screen) hoặc xuất file gửi về máy tính.
 
 ---
 
-## 7. ĐỒNG BỘ GHI CHÚ VỀ MÁY TÍNH (OBSIDIAN / NOTION)
+## 8. TRUYỀN FILE SÁCH & ĐỒNG BỘ KHÔNG DÂY QUA WI-FI (KHÔNG CẦN CÁP USB)
 
-Mọi ghi chú bạn lưu bằng `#note` trên Kindle đều nằm an toàn trên server đám mây.
-- Khi về bàn làm việc, mở máy tính và chạy lệnh:
+Bạn không cần phải cắm cáp USB vào máy tính mỗi khi muốn chép sách:
+
+### 1. Truyền file qua SSH / SFTP (Khuyên dùng):
+- Bật Wi-Fi trên Kindle.
+- Trong KOReader, chạm mép trên màn hình -> Tab **Công cụ (Tools)** -> Chọn **SSH Server** -> Bật ON.
+- Màn hình sẽ hiện địa chỉ IP (ví dụ: `192.168.1.50`) và cổng (mặc định: `2222`).
+- Trên máy tính, mở phần mềm WinSCP, FileZilla hoặc File Explorer gõ `sftp://192.168.1.50:2222`: Bạn có thể kéo thả sách trực tiếp từ PC vào thư mục `documents/Books` trên Kindle với tốc độ Wi-Fi siêu nhanh.
+
+### 2. Kết nối Calibre không dây (Calibre Wireless):
+- Bật Calibre trên máy tính -> Menu Kết nối -> Khởi chạy Content Server.
+- Trên KOReader: Menu Kính lúp/Tủ sách -> Chọn **Calibre** -> Kết nối để gửi sách từ Calibre sang Kindle qua Wi-Fi.
+
+### 3. Đồng bộ trang đọc dở (KOReader Sync - KOSync):
+- Menu Kính lúp/Tủ sách -> Chọn **KOReader Sync**.
+- Đăng ký một tài khoản miễn phí: Khi đọc dở một cuốn sách trên Kindle, bạn mở KOReader trên điện thoại Android/iOS sẽ tự động nhảy đến đúng trang sách đó!
+
+---
+
+## 9. ĐỒNG BỘ GHI CHÚ VỀ MÁY TÍNH (OBSIDIAN / NOTION)
+
+Mọi ghi chú bạn lưu bằng `#note` trên Kindle đều nằm an toàn trên server SQLite Vault.
+- Khi ngồi vào bàn làm việc, mở Terminal trên máy tính và chạy:
   `python scripts/sync_vault_notes.py`
-- Toàn bộ ghi chú đọc sách ban đêm sẽ tự động được kéo về thư mục `vault_notes` trên máy tính dưới dạng Markdown hoàn chỉnh, có phân loại theo tên sách.
+- Toàn bộ ghi chú đọc sách ban đêm sẽ tự động được kéo về thư mục `vault_notes` trên PC dưới dạng Markdown hoàn chỉnh, có phân loại theo từng cuốn sách và liên kết 2 chiều (backlinks).
 
 ---
 
-## 8. CÁC PHÍM TẮT & CỬ CHỈ CẦN NHỚ TRÊN KOREADER
+## 10. CÁC PHÍM TẮT, CỬ CHỈ & THAO TÁC CẦN NHỚ TRÊN KOREADER
 
-- Chỉnh độ sáng đèn nền: Vuốt ngón tay lên/xuống ở mép trái màn hình.
-- Chỉnh nhiệt độ màu đèn nền: Vuốt ngón tay lên/xuống ở mép phải màn hình.
-- Đánh dấu trang (Bookmark): Chạm nhanh vào góc trên cùng bên phải trang sách.
-- Mở mục lục & Tiến độ: Chạm mép dưới cùng màn hình.
-- Tiết kiệm pin: Nên tắt Wi-Fi khi đọc sách thuần túy; chỉ bật Wi-Fi khi cần tra cứu AI hoặc tải sách.
+- **Chỉnh đèn nền cực nhanh**:
+  + Vuốt ngón tay lên/xuống ở **mép viền trái màn hình**: Tăng/giảm độ sáng đèn.
+  + Vuốt ngón tay lên/xuống ở **mép viền phải màn hình**: Tăng/giảm nhiệt độ màu (ấm / trắng).
+- **Đánh dấu trang (Bookmark)**: Chạm nhanh 1 cái vào góc trên cùng bên phải trang sách.
+- **Mở Mục lục & Tiến độ đọc**: Chạm nhẹ vào mép dưới cùng màn hình.
+- **Xem Thống kê đọc sách**: Tab Công cụ (Tools) -> Reading Statistics để xem biểu đồ số giờ đọc, tốc độ đọc và số trang đã đọc trong ngày/tuần.
+- **Thoát về giao diện Kindle gốc**:
+  + Chạm mép trên màn hình -> Tab **Cài đặt / Nguồn** (biểu tượng bánh răng hoặc nút nguồn ở góc phải) -> Chọn **Exit** -> Chọn **Exit to Kindle OS**.
+- **Mở lại KOReader từ Kindle gốc**:
+  + Ở màn hình chính Kindle (Home), bấm vào cuốn sách có tên **KOReader** (hoặc mở menu KUAL -> KOReader).
+- **Mẹo tiết kiệm pin**: Nên tắt Wi-Fi khi đọc sách thông thường; chỉ bật Wi-Fi khi cần hỏi AI KOAssistant, duyệt kho truyện Cloud hoặc đồng bộ ghi chú.
 
-Chúc bạn có những trải nghiệm đọc sách, học tập và thư giãn đỉnh cao trên chiếc Kindle!
+---
+
+Chúc bạn có những trải nghiệm đọc sách, nghiên cứu và giải trí tuyệt vời nhất trên chiếc Kindle Paperwhite 4!
 """
 
 # 1. Write Markdown file
@@ -321,7 +269,7 @@ with zipfile.ZipFile(epub_path, "w") as zf:
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="vi">
 <head>
-  <title>Hướng Dẫn Sử Dụng Kindle</title>
+  <title>Hướng Dẫn Sử Dụng Kindle Toàn Tập</title>
   <style>
     body {{ font-family: serif; margin: 4%; line-height: 1.5; }}
     h1 {{ text-align: center; font-size: 1.5em; margin-bottom: 0.5em; }}
@@ -342,10 +290,10 @@ with zipfile.ZipFile(epub_path, "w") as zf:
     content_opf = """<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="BookID">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:title>Sổ Tay Hướng Dẫn Sử Dụng Kindle</dc:title>
+    <dc:title>Sổ Tay Toàn Tập Hướng Dẫn Sử Dụng Kindle</dc:title>
     <dc:creator>Antigravity</dc:creator>
     <dc:language>vi</dc:language>
-    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-03-v3</dc:identifier>
+    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-03-v4-full</dc:identifier>
   </metadata>
   <manifest>
     <item id="guide" href="guide.xhtml" media-type="application/xhtml+xml"/>
@@ -361,9 +309,9 @@ with zipfile.ZipFile(epub_path, "w") as zf:
 <!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
-    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-03-v3"/>
+    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-03-v4-full"/>
   </head>
-  <docTitle><text>Sổ Tay Hướng Dẫn Sử Dụng Kindle</text></docTitle>
+  <docTitle><text>Sổ Tay Toàn Tập Hướng Dẫn Sử Dụng Kindle</text></docTitle>
   <navMap>
     <navPoint id="navPoint-1" playOrder="1">
       <navLabel><text>Bắt Đầu</text></navLabel>
