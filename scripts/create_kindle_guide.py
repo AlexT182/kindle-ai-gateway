@@ -8,19 +8,21 @@ target_dir = Path("E:/documents/Books")
 target_dir.mkdir(parents=True, exist_ok=True)
 
 md_content = """# SỔ TAY HƯỚNG DẪN SỬ DỤNG KINDLE PAPERWHITE 4
-## Trạm Tri Thức AI, Hướng Dẫn Tra Cứu Web & Bộ 7 Game E-ink
+## Trạm Tri Thức AI, Kho Truyện Tranh Cloud & Bộ 7 Game E-ink
 
 ---
 
 ## 1. TỔNG QUAN HỆ THỐNG
 
-Chiếc Kindle Paperwhite 4 của bạn đã được nâng cấp toàn diện:
-- Phần cứng: Màn hình 6-inch E-ink Carta 300 DPI chống lóa, đèn nền tích hợp.
-- Hệ thống đọc sách: KOReader v2026.07.2 — hiển thị đẹp, tiết kiệm pin, lật trang nhanh.
-- Trợ lý AI & Kho tri thức: KOAssistant kết nối trực tiếp với Kindle AI Gateway (chạy model alex-agent, DeepSeek, SQLite Vault, tìm kiếm Web thời gian thực và Bộ nhớ cá nhân).
-- Bộ công cụ giải trí & tư duy:
+Chiếc Kindle Paperwhite 4 của bạn đã được nâng cấp toàn diện thành thiết bị thông minh đa năng:
+- **Phần cứng**: Màn hình 6-inch E-ink Carta 300 DPI chống chói lóa mắt, đèn nền dịu nhẹ điều chỉnh linh hoạt.
+- **Hệ thống đọc sách**: KOReader v2026.07.2 — giao diện chuẩn E-ink, hiển thị sắc nét, lật trang siêu tốc, tiết kiệm pin tối đa.
+- **Trợ lý AI & Kho tri thức**: KOAssistant kết nối trực tiếp với Kindle AI Gateway (`kindle.alphatech.ai.vn`) chạy model alex-agent, DeepSeek, SQLite Vault, tìm kiếm Web thời gian thực và Bộ nhớ cá nhân thông minh.
+- **Thư Viện Truyện Tranh & Sách Cloud (Google Drive Integration)**: Kết nối kho truyện tranh PDF/EPUB đồ sộ qua chuẩn quốc tế OPDS 1.2 và Web Reader E-ink, tải và đọc theo nhu cầu (On-Demand) không lo đầy bộ nhớ trong.
+- **Bộ công cụ giải trí & rèn luyện tư duy**:
+  + Game Cờ Vây (Go / Weiqi) tích hợp siêu trí tuệ AlphaGo Cloud AI 9-Đẳng.
+  + Game Cờ Thú (Animal Chess / Jungle) chuẩn E-ink với chế độ độc quyền "Linh Thú Thức Tỉnh", Voi & Chó bơi sông, đòn đánh "Cá Sấu Lên Bờ".
   + Bộ 6 Board Games kinh điển (Cờ vua, Cờ đam, Connect 4, Tic Tac Toe, Dò mìn, Thủy chiến).
-  + Game Cờ vây (Go / Weiqi) hỗ trợ bàn 9x9, 13x13, 19x19 đấu với bot AI.
   + Ứng dụng phác thảo tư duy & Wireframe (Ink Away).
 
 ---
@@ -88,7 +90,59 @@ Trong cùng ô nhập tin nhắn của KOAssistant, bạn có thể dùng các l
 
 ---
 
-## 4. HƯỚNG DẪN CHI TIẾT BỘ 7 GAME E-INK & CÁCH CHƠI
+## 4. KHO TRUYỆN TRANH & SÁCH CLOUD TỪ GOOGLE DRIVE (OPDS & WEB READER)
+
+Bộ nhớ trong của Kindle khá nhỏ (~2.8GB đến 6GB). Nếu chép hàng chục bộ truyện tranh PDF dung lượng nặng, máy sẽ lập tức bị đầy bộ nhớ. Hệ thống Kindle AI Gateway giải quyết triệt để vấn đề này bằng cơ chế **Đọc Đám Mây Theo Nhu Cầu (On-Demand Cloud Streaming)**: toàn bộ kho truyện nằm an toàn trên Google Drive, Kindle chỉ tải về tập bạn muốn đọc, đọc xong có thể xóa mà không lo mất sách.
+
+Hiện tại kho truyện đã được Gateway quét và phân loại sẵn **hơn 50 bộ truyện kinh điển (gần 800 tập PDF)** như: *Bác Sĩ Quái Dị*, *7 Seeds*, *07-Ghost*, *Ouran High School*, *1-00 AM*, *Siêu Nhân May Mắn*, *Ashita No Joe*, *Bad Luck*, *Basara*, *BEASTARS*, *Biệt Đội Lính Cứu Hỏa*, v.v.
+
+### CÁCH 1: Kết nối thư viện OPDS trên KOReader (Khuyên dùng — Tiện lợi nhất)
+
+Chuẩn OPDS (Open Publication Distribution System) là chuẩn duyệt và tải sách trực tiếp được tích hợp sẵn trong KOReader:
+
+1. Bật Wi-Fi trên Kindle.
+2. Trong KOReader, chạm vào mép trên cùng màn hình để mở thanh menu.
+3. Chạm vào biểu tượng **Kính lúp / Tủ sách** (Search and Library) ở góc trên bên trái.
+4. Chọn mục **"OPDS catalog" (Thư viện OPDS)**.
+5. Chọn dòng **"Add catalog" (Thêm thư viện mới)**:
+   - **Tên thư viện (Catalog Name):** `Kindle Cloud Manga`
+   - **Địa chỉ (Catalog URL):** `https://kindle.alphatech.ai.vn/opds`
+6. Bấm **Lưu (Save)**.
+7. Thư viện `Kindle Cloud Manga` sẽ xuất hiện trong danh sách:
+   - Chạm vào `📁 Danh Mục Các Bộ Truyện`: Toàn bộ các bộ truyện được sắp xếp theo thư mục gọn gàng kèm số lượng tập.
+   - Chạm vào bộ truyện bạn muốn xem (ví dụ: *Bác Sĩ Quái Dị* hoặc *7 Seeds*).
+   - Danh sách các tập sẽ hiện ra kèm nút tải. Chạm vào tập muốn đọc: KOReader sẽ tải trực tiếp file về máy và mở sách để bạn thưởng thức ngay lập tức!
+   - Bạn cũng có thể dùng mục Tìm kiếm (Search) trong OPDS để gõ tên bộ truyện cần tìm.
+
+---
+
+### CÁCH 2: Dùng Trình duyệt Web có sẵn của Kindle (Web Browser)
+
+Nếu bạn không mở KOReader hoặc muốn duyệt sách từ giao diện chính của Kindle:
+
+1. Bật Wi-Fi trên máy Kindle.
+2. Ở màn hình Home chính của Kindle, chạm vào nút Menu (ba dấu chấm dọc ở góc trên bên phải) -> Chọn **Web Browser (Trình duyệt thử nghiệm)**.
+3. Nhập địa chỉ: `https://kindle.alphatech.ai.vn/library`
+4. Giao diện Web Reader được thiết kế tối giản, tông màu đen trắng tương phản cao chuẩn E-ink Carta:
+   - Xem thống kê số lượng bộ truyện và tập truyện.
+   - Chọn bộ truyện hoặc gõ tên truyện vào ô tìm kiếm.
+   - Chạm vào nút **[Tải Về Đọc]** ở tập mong muốn để máy Kindle tải file về mục Documents.
+
+---
+
+### CÁCH 3: Quản lý kho sách trên máy tính / điện thoại (Gateway Webapp)
+
+Bạn có thể quản lý kho sách từ bất kỳ thiết bị nào qua trình duyệt web:
+- Địa chỉ trang quản trị: `https://kindle.alphatech.ai.vn/admin/library`
+- Tại đây bạn có thể:
+  + Thay đổi Google Drive Root Folder ID nếu muốn liên kết sang kho sách khác.
+  + Bấm nút **"Đồng Bộ Danh Mục Ngay" (Scan Google Drive)** để Gateway quét ngầm các tập truyện mới thêm vào Drive mà không làm gián đoạn máy đọc sách.
+  + Kiểm tra dung lượng bộ nhớ đệm (SSD Cache) trên máy chủ.
+  + Lấy link cấu hình nhanh cho Kindle.
+
+---
+
+## 5. HƯỚNG DẪN CHI TIẾT BỘ 7 GAME E-INK & CÁCH CHƠI
 
 Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng cho màn hình mực điện tử E-ink (không giật lag, không chớp nháy):
 
@@ -101,7 +155,7 @@ Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng 
     * Đối thủ: Bot Máy 🤖 (Offline): Đánh với Bot offline máy tính tích hợp sẵn, không cần Wi-Fi/Internet.
     * Đối thủ: Cloud AI 🌐 (AlphaGo): Kết nối với Siêu trí tuệ nhân tạo AlphaGo qua Gateway. AI tính toán nước cờ kỳ thủ đỉnh cao, hiển thị tỷ lệ thắng % và phân tích chiến thuật (Yêu cầu kết nối Wi-Fi & Internet).
     * Đối thủ: 2 Người 👥 (Chuyền tay): Hai người chơi đổi lượt trên cùng một chiếc Kindle.
-  + [Bot: Beginner / Medium / Advanced]: Chạm vào dòng này để đổi 3 mức độ của bot máy offline:
+  + [Bot: Beginner / Medium / Advanced]: Chạm vào dòng này để đổi 3 mức độ của bot máy:
     * Beginner (Tập sự): Máy đi ngẫu nhiên đơn giản, phù hợp làm quen luật cờ.
     * Medium (Tiêu chuẩn): Khai cuộc chiếm góc Hoshi, mở biên đường 3-4, cứu quân và bắt quân atari.
     * Advanced (Nâng cao): Áp dụng chiến thuật cờ vây toàn diện, nối quân Keima/Kosumi, bắt quân sát ván.
@@ -117,7 +171,7 @@ Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng 
 ### Nhóm 2: Game Cờ Thú (Animal Chess / Jungle) — LINH THÚ THỨC TỈNH
 
 - Cách mở: Chạm mép trên màn hình -> Tab Công cụ (Tools) -> Chọn mục [Cờ Thú (Jungle Game)].
-- Thiết kế riêng cho Kindle E-ink 300 DPI: Toàn bộ quân cờ vẽ bằng Icon Linh Thú nghệ thuật (không chữ, không số gây rối mắt).
+- Thiết kế riêng cho Kindle E-ink 300 DPI: Toàn bộ quân cờ vẽ bằng Icon Linh Thú nghệ thuật sắc nét.
 - Tính năng Xem Nhanh Cấp Bậc & Thông Tin Linh Thú:
   + Chạm 1 cái vào quân cờ: Thanh trạng thái đáy màn hình lập tức hiển thị tên thú, cấp độ và đặc tính ngắn gọn.
   + Nhấn giữ 0.5 giây vào quân bất kỳ: Bật Thẻ Thông Tin Chi Tiết (Info Card) hiển thị toàn bộ cấp bậc, kỹ năng, số quân đã tiêu diệt và trạng thái thức tỉnh.
@@ -125,8 +179,9 @@ Hiện tại thiết bị của bạn đã có 7 game được tối ưu riêng 
 - Cấp bậc 8 loài thú (Từ mạnh đến yếu):
   (8) Voi > (7) Sư Tử > (6) Hổ > (5) Báo > (4) Chó > (3) Sói > (2) Mèo > (1) Chuột.
 - Quy tắc đặc sắc:
-  + Chuột ăn Voi: Chuột (1) là loài duy nhất ăn được Voi (8) trên cạn! Ngược lại Voi không thể ăn Chuột.
-  + Sông nước: Chuột (1) và Chó (4) có thể bơi lặn dưới sông. Sư Tử (7), Hổ (6) và Báo (5) có quyền NHẢY QUA SÔNG theo chiều dọc hoặc ngang (nếu không có Chuột hoặc Chó bơi cản giữa sông).
+  + Chuột ăn Voi: Chuột (1) là loài duy nhất ăn được Voi (8)! Ngược lại Voi không thể ăn Chuột.
+  + Sông nước & Kỹ năng bơi lội: Chuột (1), Chó (4) và Voi (8) đều có thể bơi lặn dưới sông. Đặc biệt có đòn đánh "Cá Sấu Lên Bờ": Thú dưới nước (Chuột, Chó, Voi) có thể tấn công bắt thú đối phương trên cạn khi từ dưới nước đi lên cạn! Sư Tử (7), Hổ (6) và Báo (5) có quyền NHẢY QUA SÔNG theo chiều dọc hoặc ngang (nếu không có thú bơi cản giữa sông).
+  + Phân biệt địa hình: Ô Sông có 3 dải gợn sóng nước đôi `~ ~ ~` trên nền xám nhạt; ô Bẫy có nền trắng tinh với 4 góc ngắm nguy hiểm `┌ ┐ └ ┘` và nhãn in hoa nổi bật.
   + Ô Bẫy: Quân địch sập vào 3 ô Bẫy quanh hang bạn sẽ bị giảm sức mạnh về 0. Bất kỳ thú nào của bạn cũng có thể lao vào ăn nó!
   + Mục tiêu: Tiến 1 quân vào Hang đối thủ hoặc tiêu diệt toàn bộ quân địch để chiến thắng.
 - Tùy chọn Chế độ & Cấp độ:
@@ -187,7 +242,7 @@ Game mô phỏng cuộc chiến hải quân bắn hạ hạm đội đối phư�
 
 ---
 
-## 5. PHÁC THẢO SƠ ĐỒ TƯ DUY & WIREFRAME (INK AWAY)
+## 6. PHÁC THẢO SƠ ĐỒ TƯ DUY & WIREFRAME (INK AWAY)
 
 - Cách mở: Menu Công cụ (Tools) -> Ink Away (hoặc vuốt từ cạnh phải màn hình lên trên).
 - Mẹo phác thảo Mindmap:
@@ -198,7 +253,7 @@ Game mô phỏng cuộc chiến hải quân bắn hạ hạm đội đối phư�
 
 ---
 
-## 6. ĐỒNG BỘ GHI CHÚ VỀ MÁY TÍNH (OBSIDIAN / NOTION)
+## 7. ĐỒNG BỘ GHI CHÚ VỀ MÁY TÍNH (OBSIDIAN / NOTION)
 
 Mọi ghi chú bạn lưu bằng `#note` trên Kindle đều nằm an toàn trên server đám mây.
 - Khi về bàn làm việc, mở máy tính và chạy lệnh:
@@ -207,7 +262,7 @@ Mọi ghi chú bạn lưu bằng `#note` trên Kindle đều nằm an toàn trê
 
 ---
 
-## 7. CÁC PHÍM TẮT & CỬ CHỈ CẦN NHỚ TRÊN KOREADER
+## 8. CÁC PHÍM TẮT & CỬ CHỈ CẦN NHỚ TRÊN KOREADER
 
 - Chỉnh độ sáng đèn nền: Vuốt ngón tay lên/xuống ở mép trái màn hình.
 - Chỉnh nhiệt độ màu đèn nền: Vuốt ngón tay lên/xuống ở mép phải màn hình.
@@ -290,7 +345,7 @@ with zipfile.ZipFile(epub_path, "w") as zf:
     <dc:title>Sổ Tay Hướng Dẫn Sử Dụng Kindle</dc:title>
     <dc:creator>Antigravity</dc:creator>
     <dc:language>vi</dc:language>
-    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-01-v2</dc:identifier>
+    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-03-v3</dc:identifier>
   </metadata>
   <manifest>
     <item id="guide" href="guide.xhtml" media-type="application/xhtml+xml"/>
@@ -306,7 +361,7 @@ with zipfile.ZipFile(epub_path, "w") as zf:
 <!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
-    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-01-v2"/>
+    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-03-v3"/>
   </head>
   <docTitle><text>Sổ Tay Hướng Dẫn Sử Dụng Kindle</text></docTitle>
   <navMap>
