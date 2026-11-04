@@ -9,3 +9,4 @@ python-multipart==0.0.32
 APScheduler==3.11.3
 Pillow==13.0.0
 gdown==5.2.0
+PyMuPDF==1.27.2.3

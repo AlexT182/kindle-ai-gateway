@@ -40,3 +40,4 @@ gdown==5.2.0
 requests==2.32.3
 soupsieve==2.6
 tqdm==4.67.1
+PyMuPDF==1.27.2.3

@@ -27,9 +27,46 @@ router = APIRouter(tags=["Cloud Library & OPDS"])
 
 CACHE_DIR = Path(settings.DATA_DIR) / "library_cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+PAGE_CACHE_DIR = CACHE_DIR / "pages"
+PAGE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
+
+
+def _get_or_download_pdf(file_id: str) -> Path:
+    """
+    Ensure the PDF file is cached locally on server disk.
+    Returns Path to the cached PDF. Raises HTTPException if not found or unreachable.
+    """
+    item = get_library_item(file_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tập truyện trong thư viện")
+
+    filename = item["name"]
+    cached_file = CACHE_DIR / f"{file_id}_{filename}"
+
+    if not cached_file.exists():
+        cookies_file = Path(settings.DATA_DIR) / "google_cookies.txt"
+        cookies_arg = str(cookies_file) if cookies_file.exists() else None
+        try:
+            import gdown
+            downloaded = gdown.download(
+                id=file_id,
+                output=str(cached_file),
+                quiet=True,
+                cookies=cookies_arg,
+                use_cookies=True if cookies_arg else False
+            )
+            if downloaded and Path(downloaded).exists():
+                update_library_cached_path(file_id, str(cached_file))
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Lỗi khi tải file từ Google Drive: {str(e)[:100]}")
+
+    if not cached_file.exists():
+        raise HTTPException(status_code=502, detail="File chưa sẵn sàng trên máy chủ.")
+
+    return cached_file
 
 
 def escape_xml(text: str) -> str:
@@ -338,6 +375,124 @@ def web_library_portal(request: Request, q: Optional[str] = None, series: Option
             "current_view": current_view,
             "q": q or "",
         }
+    )
+
+
+@router.get("/library/read/{file_id}", response_class=HTMLResponse)
+def web_reader(request: Request, file_id: str, page: int = Query(1, ge=1)):
+    """
+    Dedicated minimalist E-ink web reader interface for Kindle browser.
+    """
+    item = get_library_item(file_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tập truyện")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="reader.html",
+        context={
+            "item": item,
+            "file_id": file_id,
+            "initial_page": page,
+        }
+    )
+
+
+@router.get("/api/v1/library/info/{file_id}")
+def get_book_info(file_id: str):
+    """
+    Returns book metadata and total page count by inspecting the PDF file.
+    """
+    item = get_library_item(file_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tập truyện")
+
+    pdf_path = _get_or_download_pdf(file_id)
+
+    try:
+        import fitz
+        doc = fitz.open(str(pdf_path))
+        page_count = len(doc)
+        doc.close()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Không thể đọc file PDF: {str(e)}")
+
+    return {
+        "id": file_id,
+        "name": item["name"],
+        "series": item.get("series", ""),
+        "total_pages": page_count,
+    }
+
+
+@router.get("/api/v1/library/page/{file_id}/{page_num}")
+def get_rendered_page(
+    file_id: str,
+    page_num: int,
+    max_w: int = Query(1072, ge=200, le=2400),
+    max_h: int = Query(1448, ge=200, le=3200),
+    quality: int = Query(80, ge=30, le=100)
+):
+    """
+    Renders a specific PDF page to an E-ink Carta optimized grayscale JPEG.
+    Caches rendered JPEG on server disk for sub-5ms repeat loads.
+    """
+    if page_num < 1:
+        raise HTTPException(status_code=400, detail="Trang phải lớn hơn hoặc bằng 1")
+
+    # Check cache first
+    book_cache_dir = PAGE_CACHE_DIR / file_id
+    cached_page_file = book_cache_dir / f"p_{page_num}_{max_w}x{max_h}_q{quality}.jpg"
+
+    if cached_page_file.exists():
+        return FileResponse(
+            path=str(cached_page_file),
+            media_type="image/jpeg",
+            headers={"Cache-Control": "public, max-age=604800"}  # Cache 7 days
+        )
+
+    # Need source PDF
+    pdf_path = _get_or_download_pdf(file_id)
+
+    import fitz
+    doc = fitz.open(str(pdf_path))
+    try:
+        if page_num > len(doc):
+            raise HTTPException(status_code=404, detail=f"Trang {page_num} vượt quá tổng số trang ({len(doc)})")
+
+        page = doc[page_num - 1]
+
+        # Calculate optimal scale factor fitting Kindle E-ink resolution
+        rect = page.rect
+        scale_x = max_w / rect.width if rect.width > 0 else 1.0
+        scale_y = max_h / rect.height if rect.height > 0 else 1.0
+        scale = min(scale_x, scale_y)
+
+        # Render grayscale pixmap
+        pix = page.get_pixmap(
+            matrix=fitz.Matrix(scale, scale),
+            colorspace=fitz.csGRAY,
+            alpha=False
+        )
+        img_bytes = pix.tobytes("jpeg", jpg_quality=quality)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi khi hiển thị trang: {str(e)}")
+    finally:
+        try:
+            doc.close()
+        except Exception:
+            pass
+
+    # Save to disk cache
+    book_cache_dir.mkdir(parents=True, exist_ok=True)
+    cached_page_file.write_bytes(img_bytes)
+
+    return Response(
+        content=img_bytes,
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=604800"}
     )
 
 

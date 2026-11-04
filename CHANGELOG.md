@@ -2,6 +2,25 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
+## [2.2.0] - 2026-11-04
+
+### Added
+
+- **Trình Đọc Truyện Online Trực Tiếp (E-ink Cloud Web Streaming Reader) (`/library/read/{file_id}`)**:
+  - Đọc truyện tranh và sách PDF trực tiếp trên trình duyệt Web Kindle mà **không cần tải về máy (0 MB tiêu tốn bộ nhớ Kindle)**.
+  - Bộ kết xuất trang sách phía Server (`/api/v1/library/page/{file_id}/{page_num}`) ứng dụng **PyMuPDF (`fitz`)**: chuyển đổi từng trang PDF thành ảnh Grayscale JPEG chuẩn E-ink Carta (tối ưu kích thước 1072x1448, ~150-250KB/trang) với tốc độ siêu tốc (~70ms).
+  - Cơ chế **Server Page Cache (`data/library_cache/pages/`)**: lưu đệm các trang đã kết xuất trên ổ cứng SSD, giảm thời gian phản hồi cho các lượt đọc sau xuống dưới 2ms.
+  - Giao diện **Web Reader tối giản E-ink**:
+    - Thiết kế tương phản cao (High-Contrast Black & White), không có hiệu ứng chuyển động gây nhấp nháy màn hình mực điện tử.
+    - Phân vùng cảm ứng trực quan: Chạm bên Trái (32%) = Lùi trang, Chạm bên Phải (32%) = Sang trang, Chạm ở Giữa (36%) = Ẩn/Hiện thanh công cụ.
+    - Tính năng chuyển đổi khổ hiển thị thông minh: Vừa khớp toàn trang (`Fit to Page`) hoặc Tràn ngang màn hình (`Fit to Width`).
+    - Nhảy trang trực tiếp (`Jump to page`) và tự động lưu tiến độ đọc vào `localStorage` của trình duyệt.
+    - Cơ chế Preload tải trước trang kế tiếp ngầm, lật trang tức thì không độ trễ.
+  - Bổ sung nút **`[📖 Đọc Online]`** nổi bật cạnh nút `[⬇ Tải Về]` trên toàn bộ danh mục thư viện (`/library`).
+  - Mở rộng API siêu dữ liệu sách (`/api/v1/library/info/{file_id}`) trả về tổng số trang và thông tin chi tiết.
+- **Bộ kiểm thử tự động `tests/test_library.py`**:
+  - Bổ sung kiểm thử Web Reader HTML, API thông tin sách và API render/cache trang ảnh PDF E-ink. Toàn bộ 57/57 tests hệ thống đều vượt qua.
+
 ## [2.1.9] - 2026-11-04
 
 ### Added

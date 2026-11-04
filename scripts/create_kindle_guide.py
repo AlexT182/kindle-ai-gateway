@@ -100,12 +100,19 @@ Bộ nhớ trong của Kindle chỉ có vài GB. Toàn bộ kho truyện tranh g
 
 ---
 
-### CÁCH 2: Dùng Trình duyệt Web tích hợp của Kindle (Web Browser)
+### CÁCH 2: Đọc Trực Tiếp Online Không Tốn Bộ Nhớ (0 MB Storage) Qua Trình Duyệt Kindle (Web Reader)
 
+Nếu máy Kindle của bạn sắp hết dung lượng bộ nhớ hoặc bạn muốn đọc thử vài chương mà **không cần tải bất kỳ file nào về máy**:
 1. Bật Wi-Fi trên Kindle.
-2. Từ màn hình chính của Kindle, chạm vào nút Menu ba chấm ở góc trên bên phải -> Chọn **Web Browser (Trình duyệt thử nghiệm)**.
+2. Từ màn hình chính của Kindle (hoặc menu KOReader), chạm vào nút Menu ba chấm ở góc trên bên phải -> Chọn **Web Browser (Trình duyệt thử nghiệm)**.
 3. Nhập địa chỉ: `https://kindle.alphatech.ai.vn/library`
-4. Giao diện E-ink đen trắng sắc nét hiện ra: Chọn bộ truyện và bấm nút **[Tải Về Đọc]** ở tập mong muốn.
+4. Duyệt tìm bộ truyện và tập mong muốn -> Bấm nút **[📖 Đọc Online]**.
+5. Giao diện E-ink Web Reader chuyên dụng sẽ mở ra:
+   - **Lật trang**: Chạm vào 1/3 mép bên phải màn hình để Sang trang, chạm vào 1/3 mép bên trái để Lùi trang.
+   - **Bật thanh menu**: Chạm vào khoảng giữa màn hình để Ẩn / Hiện thanh công cụ trên và dưới.
+   - **Chuyển đổi khổ đọc**: Chạm nút `[Khổ: Vừa Trang]` hoặc `[Khổ: Tràn Ngang]` để phóng to tranh đọc thoại to rõ nhất.
+   - **Nhớ trang tự động**: Trình duyệt tự ghi nhớ trang bạn đang đọc dở, lần sau mở lại đọc tiếp ngay tức thì.
+   - Toàn bộ trang sách được Server chuyển đổi thành ảnh đen trắng E-ink siêu nhẹ (~200KB) truyền mượt mà, **không tốn 1 megabyte bộ nhớ lưu trữ nào trên Kindle**.
 
 ---
 
