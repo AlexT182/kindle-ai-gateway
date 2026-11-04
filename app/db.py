@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from app.config import settings
 
@@ -107,6 +108,30 @@ def init_db():
         value TEXT
     )
     ''')
+
+    # 7. Auto-seed Cloud Library if empty
+    cursor.execute('SELECT COUNT(*) FROM library_items')
+    if cursor.fetchone()[0] == 0:
+        seed_path = Path(__file__).resolve().parent / "library_seed.json"
+        if seed_path.exists():
+            try:
+                import json
+                items = json.loads(seed_path.read_text(encoding="utf-8"))
+                now = datetime.now(timezone.utc).isoformat()
+                for item in items:
+                    cursor.execute('''
+                    INSERT OR IGNORE INTO library_items (id, name, series, folder_path, file_ext, mime_type, size_bytes, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        item['id'], item['name'], item['series'], item.get('folder_path', ''),
+                        item.get('file_ext', '.pdf'), item.get('mime_type', 'application/pdf'),
+                        item.get('size_bytes', 0), now
+                    ))
+                cursor.execute("INSERT OR REPLACE INTO library_config (key, value) VALUES ('sync_status', 'completed')")
+                cursor.execute("INSERT OR REPLACE INTO library_config (key, value) VALUES ('total_indexed', ?)", (str(len(items)),))
+                cursor.execute("INSERT OR REPLACE INTO library_config (key, value) VALUES ('last_synced_at', ?)", ("03/11/2026 20:17:45 UTC",))
+            except Exception:
+                pass
     
     conn.commit()
     conn.close()
