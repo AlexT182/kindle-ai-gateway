@@ -2,7 +2,7 @@
 
 Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đây.
 
-## [2.1.9] - 2026-11-03
+## [2.1.9] - 2026-11-04
 
 ### Added
 
@@ -19,6 +19,13 @@ Tất cả thay đổi đáng chú ý của dự án được ghi lại tại đ
   - Bổ sung bảng `library_items` và `library_config` cùng các index hỗ trợ tìm kiếm siêu tốc theo bộ và tên tập.
 - **Bộ kiểm thử tự động `tests/test_library.py`**:
   - Kiểm tra toàn diện OPDS feeds, Web Reader và API stream tải sách. Đạt 56/56 tests toàn hệ thống.
+
+### Fixed
+
+- **Khắc phục lỗi mất CSS trang quản trị thư viện (`app/templates/admin/library.html`)**: Chuyển đổi toàn bộ sang hệ thống CSS Dark-theme gốc của Admin Gateway (`.container`, `.card`, `.grid-4`, `.stat-card`, `.btn`), hiển thị đồng bộ và sắc nét.
+- **Tự động nạp 798 tập truyện Cloud (Auto-Seed Database)**: Xuất `app/library_seed.json` và bổ sung cơ chế tự nạp trong `app/db.py` khi khởi động server, đảm bảo Web Reader (`/library`) và KOReader OPDS (`/opds`) luôn có sẵn 51 bộ truyện mà không cần chờ quét mạng Google Drive.
+- **Khắc phục lỗi xem Manga PDF bị crop mất trang**: Patch cấu hình metadata KOReader sang chế độ `zoom_mode = "page"` và `trim_page = 0`, đồng thời bổ sung mục hướng dẫn xem Full-Page và xoay ngang chia đôi trang siêu nét vào Sổ tay Kindle.
+- **Chuyển đổi hoàn chỉnh định dạng Sổ tay Kindle**: Render chuẩn XHTML trong EPUB (`<strong>`, `<em>`, `<code>`, `<ul>`) và loại bỏ ký tự rác trong file TXT.
 
 ## [2.1.8] - 2026-11-02
 
