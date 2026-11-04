@@ -177,6 +177,14 @@
         {% endif %}
     </form>
 
+    <div style="border: 2px solid #000000; padding: 10px 12px; margin-bottom: 16px; background: #ffffff;">
+        <div style="font-weight: bold; margin-bottom: 6px; font-size: 0.95rem;">⚡ Đọc Nhanh Tùy Chọn Từ Link Google Drive Cá Nhân:</div>
+        <form onsubmit="event.preventDefault(); var val = document.getElementById('quick-drive-input').value.trim(); if(val){ window.location.href='/library/read/' + encodeURIComponent(val); } return false;" style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <input id="quick-drive-input" type="text" placeholder="Dán link file Google Drive PDF muốn đọc..." style="flex: 1; min-width: 200px; padding: 7px 10px; border: 2px solid #000000; font-size: 0.9rem;">
+            <button type="submit" class="btn" style="padding: 7px 14px;">Mở Đọc Ngay</button>
+        </form>
+    </div>
+
     {% if current_series %}
         <div class="nav-back">
             <a href="/library" class="btn btn-outline">⬅ Quay lại danh mục bộ truyện</a>

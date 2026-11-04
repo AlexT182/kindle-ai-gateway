@@ -109,6 +109,27 @@ def init_db():
     )
     ''')
 
+    # 6b. Cloud Drive Sources Table (Multiple folders / curated links)
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS library_sources (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        folder_id TEXT NOT NULL,
+        is_active INTEGER NOT NULL DEFAULT 0,
+        item_count INTEGER DEFAULT 0,
+        last_synced_at TEXT,
+        created_at TEXT
+    )
+    ''')
+
+    # Seed default source if empty
+    cursor.execute('SELECT COUNT(*) FROM library_sources')
+    if cursor.fetchone()[0] == 0:
+        cursor.execute('''
+        INSERT INTO library_sources (id, title, folder_id, is_active, item_count, created_at)
+        VALUES ('src_default', 'Kho Tổng Hợp Manga 800 Tập (Mặc định)', '1eEWmqXZZmDXx4QsmsTsnjkgUMp7pe6EH', 1, 798, ?)
+        ''', (datetime.now(timezone.utc).isoformat(),))
+
     # 7. Auto-seed Cloud Library if empty
     cursor.execute('SELECT COUNT(*) FROM library_items')
     if cursor.fetchone()[0] == 0:
@@ -479,3 +500,51 @@ def update_library_cached_path(item_id: str, path: str):
         conn.close()
 
 init_db()
+
+
+def get_library_sources() -> List[Dict[str, Any]]:
+    conn = get_connection()
+    try:
+        rows = conn.execute('SELECT id, title, folder_id, is_active, item_count, last_synced_at, created_at FROM library_sources ORDER BY created_at ASC').fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def add_library_source(title: str, folder_id: str, set_active: bool = False) -> str:
+    import uuid
+    conn = get_connection()
+    try:
+        source_id = f'src_{uuid.uuid4().hex[:8]}'
+        now = datetime.now(timezone.utc).isoformat()
+        if set_active:
+            conn.execute('UPDATE library_sources SET is_active = 0')
+        conn.execute('INSERT INTO library_sources (id, title, folder_id, is_active, item_count, created_at) VALUES (?, ?, ?, ?, 0, ?)', (source_id, title, folder_id, 1 if set_active else 0, now))
+        if set_active:
+            conn.execute("INSERT INTO library_config (key, value) VALUES ('root_folder_id', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", (folder_id,))
+        conn.commit()
+        return source_id
+    finally:
+        conn.close()
+
+
+def activate_library_source(source_id: str):
+    conn = get_connection()
+    try:
+        conn.execute('UPDATE library_sources SET is_active = 0')
+        conn.execute('UPDATE library_sources SET is_active = 1 WHERE id = ?', (source_id,))
+        row = conn.execute('SELECT folder_id FROM library_sources WHERE id = ?', (source_id,)).fetchone()
+        if row:
+            conn.execute("INSERT INTO library_config (key, value) VALUES ('root_folder_id', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", (row['folder_id'],))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_library_source(source_id: str):
+    conn = get_connection()
+    try:
+        conn.execute('DELETE FROM library_sources WHERE id = ?', (source_id,))
+        conn.commit()
+    finally:
+        conn.close()

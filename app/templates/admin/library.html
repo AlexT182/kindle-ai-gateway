@@ -8,7 +8,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
             <h2>Quản Lý Thư Viện Cloud (Google Drive)</h2>
-            <p class="subtitle">Cấu hình liên kết Google Drive, đồng bộ danh mục truyện tranh/PDF và xuất chuẩn OPDS cho Kindle.</p>
+            <p class="subtitle">Cấu hình liên kết Google Drive, chuyển đổi thư mục nguồn và xuất chuẩn OPDS / Web Reader cho Kindle.</p>
         </div>
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
             <a href="/library" target="_blank" class="btn btn-secondary">
@@ -19,7 +19,7 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <button type="submit" class="btn btn-primary">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"/></svg>
-                    Quét &amp; Đồng Bộ Danh Mục
+                    Quét &amp; Đồng Bộ Thư Mục Đang Chọn
                 </button>
             </form>
         </div>
@@ -91,39 +91,102 @@
             </div>
 
             <div style="background: var(--bg-main); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color);">
-                <div style="font-weight: 600; font-size: 14px; color: #f8fafc; margin-bottom: 6px;">Cách 2: Trình Duyệt Web Kindle (Web Library)</div>
+                <div style="font-weight: 600; font-size: 14px; color: #f8fafc; margin-bottom: 6px;">Cách 2: Trình Duyệt Web Kindle (Web Reader 0 MB Storage)</div>
                 <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px;">
-                    Mở Trình duyệt (Experimental Browser hoặc KOReader Web Viewer) và truy cập:
+                    Mở Trình duyệt Kindle (Experimental Web Browser) và truy cập:
                 </p>
                 <div style="display: flex; gap: 8px;">
                     <input type="text" readonly value="{{ web_url }}" style="font-family: monospace; font-size: 12px; background: var(--bg-input);">
                     <button type="button" onclick="navigator.clipboard.writeText('{{ web_url }}'); alert('Đã sao chép link Web!');" class="btn btn-secondary" style="white-space: nowrap; padding: 8px 12px;">Sao Chép</button>
                 </div>
-                <p style="font-size: 11.5px; color: var(--text-dim); margin-top: 8px;">Giao diện đen trắng độ tương phản cao, tối ưu mượt mà cho màn hình E-ink.</p>
+                <p style="font-size: 11.5px; color: var(--text-dim); margin-top: 8px;">Đọc online trực tiếp chuẩn E-ink, không tốn bộ nhớ máy Kindle.</p>
             </div>
         </div>
     </div>
 
-    <!-- Google Drive Configuration -->
+    <!-- Multi-Source Google Drive Management -->
     <div class="card">
-        <h3 style="font-size: 16px; font-weight: 600; color: #ffffff; margin-bottom: 14px;">Cấu Hình Google Drive</h3>
-        <form method="POST" action="/admin/library/config" style="display: flex; flex-direction: column; gap: 14px;">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <div>
-                <label style="display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px;">Folder ID Google Drive (Gốc)</label>
-                <input type="text" name="root_folder_id" value="{{ root_folder_id }}" style="font-family: monospace;">
-                <p style="font-size: 11.5px; color: var(--text-dim); margin-top: 4px;">Link thư mục gốc: https://drive.google.com/drive/folders/<strong>1eEWmqXZZmDXx4QsmsTsnjkgUMp7pe6EH</strong></p>
-            </div>
-            <div>
-                <button type="submit" class="btn btn-secondary">Lưu Cấu Hình</button>
-            </div>
-        </form>
+        <h3 style="font-size: 16px; font-weight: 600; color: #ffffff; margin-bottom: 8px;">Danh Sách Link / Thư Mục Google Drive Đã Kết Nối</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+            Bạn có thể thêm nhiều thư mục Google Drive khác nhau (truyện tranh cá nhân, tài liệu học tập, sách chuyên ngành) và chuyển đổi nhanh thư mục hoạt động.
+        </p>
+
+        <!-- Sources Table -->
+        <div style="overflow-x: auto; margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+                <thead>
+                    <tr style="background: rgba(3, 7, 18, 0.4); border-bottom: 1px solid var(--border-color); text-align: left;">
+                        <th style="padding: 10px 16px; font-weight: 600; color: var(--text-muted);">Trạng Thái</th>
+                        <th style="padding: 10px 16px; font-weight: 600; color: var(--text-muted);">Tên Kho Nguồn</th>
+                        <th style="padding: 10px 16px; font-weight: 600; color: var(--text-muted);">Google Drive Folder ID</th>
+                        <th style="padding: 10px 16px; font-weight: 600; color: var(--text-muted); text-align: right;">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for src in sources %}
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px 16px;">
+                            {% if src.is_active %}
+                                <span class="badge badge-success" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 600;">✓ Đang Kích Hoạt</span>
+                            {% else %}
+                                <span class="badge badge-secondary" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8;">Chờ</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px 16px; font-weight: 600; color: #ffffff;">📁 {{ src.title }}</td>
+                        <td style="padding: 12px 16px; font-family: monospace; font-size: 12px; color: var(--text-dim);">
+                            <a href="https://drive.google.com/drive/folders/{{ src.folder_id }}" target="_blank" style="color: #818cf8; text-decoration: none;">{{ src.folder_id }} ↗</a>
+                        </td>
+                        <td style="padding: 12px 16px; text-align: right;">
+                            <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                                {% if not src.is_active %}
+                                    <form method="POST" action="/admin/library/sources/activate/{{ src.id }}" style="margin: 0;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">Kích Hoạt</button>
+                                    </form>
+                                {% endif %}
+                                {% if src.id != 'src_default' %}
+                                    <form method="POST" action="/admin/library/sources/delete/{{ src.id }}" onsubmit="return confirm('Bạn có chắc muốn xóa thư mục này khỏi danh sách?');" style="margin: 0;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px; color: #ef4444;">Xóa</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add New Source Form -->
+        <div style="background: var(--bg-main); padding: 18px; border-radius: 10px; border: 1px dashed var(--border-color);">
+            <h4 style="font-size: 14px; font-weight: 600; color: #f8fafc; margin-bottom: 12px;">➕ Thêm Link / Thư Mục Google Drive Mới</h4>
+            <form method="POST" action="/admin/library/sources/add" style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="grid-2">
+                    <div>
+                        <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Tên Gợi Nhớ (Ví dụ: Truyện Tranh Yêu Thích, Sách Kinh Tế)</label>
+                        <input type="text" name="title" required placeholder="Nhập tên thư mục..." style="background: var(--bg-input);">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Link Google Drive hoặc Folder ID</label>
+                        <input type="text" name="folder_link" required placeholder="https://drive.google.com/drive/folders/... hoặc ID" style="font-family: monospace; background: var(--bg-input);">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 4px;">
+                    <label style="font-size: 12.5px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="checkbox" name="sync_now" value="1" checked> Tự động quét và đồng bộ các tập sách ngay sau khi thêm
+                    </label>
+                    <button type="submit" class="btn btn-primary" style="padding: 8px 16px;">Lưu &amp; Kích Hoạt Thư Mục Này</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Series Table -->
     <div class="card" style="padding: 0; overflow: hidden;">
         <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="font-size: 16px; font-weight: 600; color: #ffffff;">Danh Sách Các Bộ Truyện Hiện Có ({{ series_list|length }} bộ)</h3>
+            <h3 style="font-size: 16px; font-weight: 600; color: #ffffff;">Danh Sách Các Bộ Truyện Đang Có ({{ series_list|length }} bộ)</h3>
         </div>
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
@@ -148,7 +211,7 @@
                     {% else %}
                     <tr>
                         <td colspan="4" style="padding: 32px 20px; text-align: center; color: var(--text-dim);">
-                            Chưa có dữ liệu bộ truyện nào. Vui lòng bấm <strong>"Quét &amp; Đồng Bộ Danh Mục"</strong> ở trên để nạp dữ liệu từ Google Drive.
+                            Chưa có dữ liệu bộ truyện nào. Vui lòng bấm <strong>"Quét &amp; Đồng Bộ Thư Mục Đang Chọn"</strong> ở trên để nạp dữ liệu từ Google Drive.
                         </td>
                     </tr>
                     {% endfor %}

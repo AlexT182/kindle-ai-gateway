@@ -12,13 +12,17 @@ from app.auth import clear_login_failures, create_admin_session, csrf_token, is_
 from app.backup import cleanup_backup, create_vault_backup
 from app.config import APP_VERSION, settings
 from app.db import (
+    activate_library_source,
+    add_library_source,
+    delete_library_source,
     get_library_config,
     get_library_series,
+    get_library_sources,
     get_library_stats,
     set_library_config,
     get_usage_summary
 )
-from app.routes.library import background_sync_drive
+from app.routes.library import background_sync_drive, extract_drive_id
 from app.persona import get_baseline_profile, get_evolving_memory, save_baseline_profile
 from app.scheduler import trigger_job_manual
 from app.vault import delete_note_from_vault, get_all_notes_db, get_all_tags, get_graph_edges, save_note_to_vault, search_notes_fts
@@ -195,6 +199,7 @@ def library_admin_view(request: Request):
     cache_bytes = sum(f.stat().st_size for f in cache_dir.glob("*") if f.is_file()) if cache_dir.exists() else 0
     cache_size_str = f"{cache_bytes // 1024 // 1024} MB" if cache_bytes >= 1024 * 1024 else f"{cache_bytes // 1024} KB"
 
+    sources = get_library_sources()
     return templates.TemplateResponse(
         request=request,
         name="admin/library.html",
@@ -204,6 +209,7 @@ def library_admin_view(request: Request):
             title="Thư Viện Sách (Cloud) - Kindle AI Agent",
             stats=stats,
             series_list=series_list,
+            sources=sources,
             root_folder_id=root_folder_id,
             sync_status=sync_status,
             last_synced=last_synced,
@@ -228,7 +234,48 @@ async def update_library_config(request: Request):
     if redirect := require_admin(request): return redirect
     form = await request.form()
     validate_csrf(request, form.get("csrf_token"))
-    folder_id = str(form.get("root_folder_id", "")).strip()
+    raw_folder = str(form.get("root_folder_id", "")).strip()
+    folder_id = extract_drive_id(raw_folder)
     if folder_id:
         set_library_config("root_folder_id", folder_id)
+    return RedirectResponse(url="/admin/library", status_code=303)
+
+
+@router.post("/library/sources/add")
+async def add_source_route(request: Request, background_tasks: BackgroundTasks):
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
+    title = str(form.get("title", "")).strip() or "Thư Mục Mới"
+    raw_link = str(form.get("folder_link", "")).strip()
+    clean_id = extract_drive_id(raw_link)
+    sync_now = bool(form.get("sync_now"))
+
+    if clean_id:
+        add_library_source(title, clean_id, set_active=True)
+        if sync_now:
+            background_tasks.add_task(background_sync_drive, clean_id)
+
+    return RedirectResponse(url="/admin/library", status_code=303)
+
+
+@router.post("/library/sources/activate/{source_id}")
+async def activate_source_route(request: Request, source_id: str, background_tasks: BackgroundTasks):
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
+    activate_library_source(source_id)
+    # Trigger background sync for the newly activated source
+    folder_id = get_library_config("root_folder_id")
+    if folder_id:
+        background_tasks.add_task(background_sync_drive, folder_id)
+    return RedirectResponse(url="/admin/library", status_code=303)
+
+
+@router.post("/library/sources/delete/{source_id}")
+async def delete_source_route(request: Request, source_id: str):
+    if redirect := require_admin(request): return redirect
+    form = await request.form()
+    validate_csrf(request, form.get("csrf_token"))
+    delete_library_source(source_id)
     return RedirectResponse(url="/admin/library", status_code=303)

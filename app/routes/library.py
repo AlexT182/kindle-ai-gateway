@@ -37,14 +37,13 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 def _get_or_download_pdf(file_id: str) -> Path:
     """
     Ensure the PDF file is cached locally on server disk.
-    Returns Path to the cached PDF. Raises HTTPException if not found or unreachable.
+    If not cached, downloads via gdown / Google Drive.
+    Supports on-the-fly virtual items registered via URL.
     """
     item = get_library_item(file_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Không tìm thấy tập truyện trong thư viện")
-
-    filename = item["name"]
-    cached_file = CACHE_DIR / f"{file_id}_{filename}"
+    filename = item["name"] if item else f"doc_{file_id[:8]}.pdf"
+    clean_id = extract_drive_id(file_id)
+    cached_file = CACHE_DIR / f"{clean_id}_{filename}"
 
     if not cached_file.exists():
         cookies_file = Path(settings.DATA_DIR) / "google_cookies.txt"
@@ -52,22 +51,43 @@ def _get_or_download_pdf(file_id: str) -> Path:
         try:
             import gdown
             downloaded = gdown.download(
-                id=file_id,
+                id=clean_id,
                 output=str(cached_file),
                 quiet=True,
                 cookies=cookies_arg,
                 use_cookies=True if cookies_arg else False
             )
             if downloaded and Path(downloaded).exists():
-                update_library_cached_path(file_id, str(cached_file))
+                if item:
+                    update_library_cached_path(file_id, str(cached_file))
         except Exception as e:
-            raise HTTPException(status_code=502, detail=f"Lỗi khi tải file từ Google Drive: {str(e)[:100]}")
+            err_msg = str(e)
+            if "Too many users" in err_msg or "quota" in err_msg.lower():
+                raise HTTPException(status_code=429, detail="File Google Drive này đang bị giới hạn lượt tải (Quota Exceeded). Vui lòng thử lại sau hoặc nhập link file khác.")
+            raise HTTPException(status_code=502, detail=f"Lỗi khi tải file từ Google Drive: {err_msg[:120]}")
 
     if not cached_file.exists():
-        raise HTTPException(status_code=502, detail="File chưa sẵn sàng trên máy chủ.")
+        raise HTTPException(status_code=502, detail="Không thể tải file từ Google Drive. Vui lòng kiểm tra quyền chia sẻ công khai của link.")
 
     return cached_file
 
+
+
+
+def extract_drive_id(raw: str) -> str:
+    raw = (raw or '').strip()
+    if not raw:
+        return ''
+    m = re.search(r'folders/([a-zA-Z0-9_-]+)', raw)
+    if m:
+        return m.group(1)
+    m = re.search(r'file/d/([a-zA-Z0-9_-]+)', raw)
+    if m:
+        return m.group(1)
+    m = re.search(r'[?&]id=([a-zA-Z0-9_-]+)', raw)
+    if m:
+        return m.group(1)
+    return raw
 
 def escape_xml(text: str) -> str:
     return saxutils.escape(str(text or ""))
@@ -382,17 +402,23 @@ def web_library_portal(request: Request, q: Optional[str] = None, series: Option
 def web_reader(request: Request, file_id: str, page: int = Query(1, ge=1)):
     """
     Dedicated minimalist E-ink web reader interface for Kindle browser.
+    Supports either pre-indexed library items or arbitrary Google Drive file links.
     """
     item = get_library_item(file_id)
+    clean_id = extract_drive_id(file_id)
     if not item:
-        raise HTTPException(status_code=404, detail="Không tìm thấy tập truyện")
+        item = {
+            "id": clean_id,
+            "name": f"Google Drive File ({clean_id[:8]}...)",
+            "series": "Đọc Trực Tiếp (Tùy Chọn)",
+        }
 
     return templates.TemplateResponse(
         request=request,
         name="reader.html",
         context={
             "item": item,
-            "file_id": file_id,
+            "file_id": clean_id,
             "initial_page": page,
         }
     )
@@ -403,11 +429,9 @@ def get_book_info(file_id: str):
     """
     Returns book metadata and total page count by inspecting the PDF file.
     """
-    item = get_library_item(file_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Không tìm thấy tập truyện")
-
-    pdf_path = _get_or_download_pdf(file_id)
+    clean_id = extract_drive_id(file_id)
+    item = get_library_item(clean_id)
+    pdf_path = _get_or_download_pdf(clean_id)
 
     try:
         import fitz
@@ -418,9 +442,9 @@ def get_book_info(file_id: str):
         raise HTTPException(status_code=500, detail=f"Không thể đọc file PDF: {str(e)}")
 
     return {
-        "id": file_id,
-        "name": item["name"],
-        "series": item.get("series", ""),
+        "id": clean_id,
+        "name": item["name"] if item else f"Document ({clean_id[:8]})",
+        "series": item.get("series", "Tùy Chọn") if item else "Tùy Chọn",
         "total_pages": page_count,
     }
 
@@ -500,11 +524,12 @@ def get_rendered_page(
 # Background Sync Task for Google Drive Folder
 # ============================================================================
 
-def background_sync_drive():
+def background_sync_drive(folder_id_override: Optional[str] = None):
     """
     Background worker that crawls Google Drive folder and indexes files.
     """
-    root_folder_id = get_library_config("root_folder_id", "1eEWmqXZZmDXx4QsmsTsnjkgUMp7pe6EH")
+    raw_id = folder_id_override or get_library_config("root_folder_id", "1eEWmqXZZmDXx4QsmsTsnjkgUMp7pe6EH")
+    root_folder_id = extract_drive_id(raw_id)
     set_library_config("sync_status", "syncing")
 
     try:
