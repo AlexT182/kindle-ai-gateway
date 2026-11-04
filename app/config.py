@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-APP_VERSION = "2.1.9"
+APP_VERSION = "2.2.0"
 
 
 def _bool_env(name: str, default: bool) -> bool:
