@@ -117,6 +117,22 @@ Bộ nhớ trong của Kindle chỉ có vài GB. Toàn bộ kho truyện tranh g
 
 ---
 
+### CÁCH 4: Mẹo Cài Đặt Đọc Manga PDF Full Khung Hình, Không Bị Cắt Mép (Full-Page & No-Crop)
+
+Nhiều bạn khi mở truyện tranh scan PDF (*Nữ Hoàng Ai Cập*, *BEASTARS*, *7 Seeds*...) thấy tranh bị cắt mất đầu/chân hoặc bị lẹm viền khung tranh. Dưới đây là cách chỉnh chuẩn xác nhất:
+
+1. **Nguyên nhân**: Màn hình Kindle Paperwhite 4 có tỉ lệ 1:1.35 (khổ vuông), trong khi trang truyện tranh scan có tỉ lệ 1:1.62 (thon dài). Mặc định KOReader để chế độ phóng to theo chiều rộng (*Fit to width*) hoặc bật *Auto-crop*, khiến chiều dọc trang bị dài tràn ra ngoài màn hình tới 17% (bị che mất phần trên/dưới).
+2. **Cách chỉnh xem trọn vẹn 100% trang truyện**:
+   - Khi đang mở tập truyện, **chạm vào mép trên cùng màn hình** để hiện thanh menu điều khiển.
+   - Chọn **tab thứ 2 từ trái sang** (biểu tượng trang giấy / tỉ lệ `[a|A]`).
+   - Tại dòng **Zoom mode (Thu phóng)**: Chạm vào và chọn **"Fit to page" (Khớp toàn trang)** (biểu tượng hình chữ nhật có 4 mũi tên hướng vào tâm). Ngay lập tức 100% trang truyện từ đỉnh xuống đáy sẽ thu vừa khít màn hình, thấy trọn vẹn toàn bộ tranh và chữ, không bị cắt bất kỳ góc nào.
+   - Tại dòng **Page crop (Cắt lề)**: Chạm vào và chọn **"No crop" (Không cắt)** để tránh thuật toán tự cắt lẹm vào khung tranh manga.
+3. **Mẹo đọc chữ to siêu nét cho mắt cận (Landscape Mode)**:
+   - Nếu thấy chữ hơi nhỏ khi để máy dọc, hãy vào menu chọn xoay màn hình sang **Nằm ngang (Landscape)** và chọn **"Fit to width"**.
+   - Lúc này KOReader sẽ tự động chia 1 trang truyện thành 2 lần lật (nửa trên và nửa dưới trang), hình vẽ và lời thoại to đùng, siêu nét, đọc cực kỳ sướng mắt!
+
+---
+
 ## 5. TRA CỨU TỪ ĐIỂN ANH - VIỆT OFFLINE & KHO TỪ VỰNG (VOCABULARY BUILDER)
 
 Chiếc Kindle đã được tích hợp bộ từ điển **Anh - Việt Thích Học Offline (19MB)** với hàng trăm ngàn từ:
@@ -231,7 +247,6 @@ with open(target_dir / "HUONG_DAN_SU_DUNG_KINDLE.md", "w", encoding="utf-8") as 
 
 # ============================================================================
 # 2. Write Clean Plain Text file (.txt)
-# (Strip markdown formatting syntax like **, `, # so it reads cleanly as plain text)
 # ============================================================================
 plain_text = md_content
 plain_text = re.sub(r"\*\*(.*?)\*\*", r"\1", plain_text)  # Remove bold **
@@ -245,7 +260,6 @@ with open(target_dir / "HUONG_DAN_SU_DUNG_KINDLE.txt", "w", encoding="utf-8") as
 # ============================================================================
 # 3. Create High-Quality EPUB with Full HTML Conversion & Table of Contents
 # ============================================================================
-# Convert Markdown to proper XHTML using Python markdown package
 html_body = markdown.markdown(
     md_content,
     extensions=["extra", "sane_lists", "toc"]
@@ -262,7 +276,6 @@ for line in md_content.splitlines():
         title = line[3:].strip()
         anchor = f"chap-{chap_num}"
         chapters.append((anchor, title, chap_num))
-        # Add anchor to html_body
         old_h2 = f"<h2>{html.escape(title)}</h2>"
         new_h2 = f'<h2 id="{anchor}">{html.escape(title)}</h2>'
         html_body = html_body.replace(old_h2, new_h2)
@@ -338,7 +351,6 @@ xhtml_content = f"""<?xml version="1.0" encoding="utf-8"?>
 </body>
 </html>"""
 
-# Generate toc.ncx navPoints
 nav_points_xml = []
 for anchor, title, num in chapters:
     nav_points_xml.append(f"""    <navPoint id="navPoint-{num}" playOrder="{num}">
@@ -352,7 +364,7 @@ toc_ncx_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
-    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-03-v5-complete"/>
+    <meta name="dtb:uid" content="urn:uuid:kindle-guide-2026-11-04-v6-manga-fit"/>
   </head>
   <docTitle><text>Sổ Tay Toàn Tập Hướng Dẫn Sử Dụng Kindle</text></docTitle>
   <navMap>
@@ -366,7 +378,7 @@ content_opf_content = """<?xml version="1.0" encoding="UTF-8"?>
     <dc:title>Sổ Tay Toàn Tập Hướng Dẫn Sử Dụng Kindle</dc:title>
     <dc:creator>Antigravity</dc:creator>
     <dc:language>vi</dc:language>
-    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-03-v5-complete</dc:identifier>
+    <dc:identifier id="BookID">urn:uuid:kindle-guide-2026-11-04-v6-manga-fit</dc:identifier>
   </metadata>
   <manifest>
     <item id="guide" href="guide.xhtml" media-type="application/xhtml+xml"/>
